@@ -141,6 +141,10 @@ the [Go programming language](https://go.dev/). Bug fixes, new features, and
 other contributions are welcome; please read the [contributing](CONTRIBUTING.md)
 and [code of conduct](CODE_OF_CONDUCT.md) pages.
 
+If you would like to use the `adif` package in your own Go programs, be aware
+that this code is still in a “version zero” state and APIs may change without
+notice.  If you find this useful as a library, please let me know.
+
 ### Source Code Headers
 
 Every file containing source code must include copyright and license
