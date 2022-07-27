@@ -23,7 +23,60 @@ adifmt infer -field band my_original_log.adi \
 
 ## Quick start
 
-TODO: Document the requisite `go install` command and other environment setup.
+ADIF Multitool is not yet available as a binary distribution, so you will need
+a Go compiler on your system.  To check, run `go version` at the command line.
+If the `go` program is not found, [download and install it](https://go.dev/dl/).
+Then run `go install github.com/flwyd/adif-multitool` to make the `adifmt`
+command available.  (You may need to add the `$GOBIN` environment variable to
+your path.)  To see if it works, run `adifmt -help`.  If the command is not
+found, try `go run github.com/flwyd/adif-multitool/adifmt -help`
+
+To do something useful with ADIF Multitool, the syntax is
+
+```
+adifmt command [flags] files...
+```
+
+For example, the `cat` command concatenates all input files and outputs ADIF
+data to standard output:
+
+```sh
+adifmt cat log1.adi log2.adi > combined.adi
+```
+
+prints all of the records in the two `logX.adi` files to the `combined.adi`
+file.
+
+Flags control input and output options.  For example, to print records with
+a UNIX newline between fields, two newlines between records, and use lower
+case for all field names:
+
+```sh
+adifmt cat -adi-field-separator=newline \
+  -adi-record-separator=2newline \
+  -adi-lower-case \
+  log1.adi
+```
+
+Multiple input and output formats are supported (currently ADI per the ADIF
+spec and CSV with field names matching the ADIF list).
+
+```sh
+adifmt cat -input=adi -output=csv log1.adi > log1.csv
+adifmt cat -input=csv -output=adi log2.adi > log2.adi
+```
+
+`-input` need not be specified if it’s implied by the file name, and
+`-ouput=adi` is the default.
+
+If no file names are given, input is read from standard input:
+
+```
+gunzip --stdout mylog.csv.gz | adifmt cat -input=csv | gzip > mylog.adi.gz
+```
+
+This will be useful in composing several `adifmt` invocations together, once
+more commands than `cat` are supported.
 
 ## Features (under construction)
 
@@ -91,7 +144,9 @@ and [code of conduct](CODE_OF_CONDUCT.md) pages.
 ### Source Code Headers
 
 Every file containing source code must include copyright and license
-information.
+information.  Use the [`addlicense` tool](https://github.com/google/addlicense)
+to ensure it’s present when adding files:
+`addlicense -c “Google LLC” -l apache .`
 
 Apache header:
 
