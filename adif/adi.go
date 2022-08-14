@@ -124,6 +124,7 @@ func (_ *ADIIO) Read(in Source) (*Logfile, error) {
 
 func (o *ADIIO) Write(l *Logfile, out io.Writer) error {
 	b := bufio.NewWriter(out)
+	defer b.Flush()
 	if _, err := b.WriteString(fmt.Sprintf("Generated %s%s", time.Now().Format(time.RFC1123Z), o.RecordSep.Val())); err != nil {
 		return fmt.Errorf("error writing ADI header: %v", err)
 	}

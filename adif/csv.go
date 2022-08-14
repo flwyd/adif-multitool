@@ -84,6 +84,7 @@ func (o *CSVIO) Write(l *Logfile, out io.Writer) error {
 		}
 	}
 	c := csv.NewWriter(out)
+	defer c.Flush()
 	c.Comma = o.Comma
 	c.UseCRLF = o.UseCRLF
 	// CSV header row
@@ -103,7 +104,6 @@ func (o *CSVIO) Write(l *Logfile, out io.Writer) error {
 			return fmt.Errorf("error writing CSV record %d to %s: %v", i, l, err)
 		}
 	}
-	c.Flush()
 	return nil
 }
 
