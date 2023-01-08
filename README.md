@@ -78,7 +78,77 @@ gunzip --stdout mylog.csv.gz | adifmt cat -input=csv | gzip > mylog.adi.gz
 This will be useful in composing several `adifmt` invocations together, once
 more commands than `cat` are supported.
 
-## Features (under construction)
+Commands can be combined in a Unix-style pipeline.  The `fix` command
+automatically changes some values to match the expected ADIF format such as
+changing a time field from `12:34:56` to `123456` and a date from `2012-03-04`
+to `20120304`.  The `select` command prints only a subset of fields.  These can
+be combined:
+
+```sh
+adifmt fix log1.adi | adifmt select -fields qso_date,time_on,call > minimal.adi
+```
+
+creates a file named `minimal.adi` with just the date, time, and callsign from
+each record in the input file `log1.adi`.
+
+## Features
+
+### Commands
+
+Name     | Description |
+-------- | ----------- |
+`cat`    | Concatenate all input files to standard output |
+`fix`    | Correct field formats to match the ADIF specification |
+`select` | Print only specific fields from the input; skip records with no matching fields |
+
+#### cat
+
+`adifmt cat` reads all input records and prints them to standard output.  Given
+several input files (perhaps one per day, callsign, or location) `cat` will
+combine them into a single file.  `cat` can also be used to convert from one
+format to another, e.g. `adifmt cat -output=csv mylog.adi` to convert from ADI
+format to CSV.  (If `-input` is not specified the file type is inferred from the
+file name; if `-output` is not specified ADI is used.)
+
+#### fix
+
+`adifmt fix` coerces some fields into the format dictated by the ADIF
+specification.  The rule of thumb for default fixes is that they should be
+unsurprising to almost anyone, like converting `3:45 PM` to `1545` for a time
+field.  Currently only date and time fields are coerced, and dates must already
+be in year, month, day order.  In the future, other formats may be fixable,
+including varieties of the Boolean data types, decimal coordinates to
+degrees/minutes/seconds, forcing some string fields to upper case, and perhaps
+correcting some common variations on enum fields, e.g. `USA` →
+`UNITED STATES OF AMERICA`.  A future update will also provide flags like date
+formats so that day/month/year or month/day/year input data can be unambiguously
+fixed.
+
+#### select
+
+`adifmt select` outputs only the specified fields.  Currently each field must
+be specified by name, either in a comma-separated list or by specifying the
+`-field` flag multiple times.  The following uses are equivalent:
+
+```sh
+adifmt select -fields call,qso_date,time_on,time_off mylog.adi
+adifmt select -fields call -fields qso_date -fields time_on,time_off mylog.adi
+```
+
+`select` can be effectively combined with other standard Unix utilities.  To
+find duplicate QSOs by date, band, and mode, use
+[sort](https://man7.org/linux/man-pages/man1/sort.1.html) and
+[uniq](https://man7.org/linux/man-pages/man1/uniq.1.html):
+
+```sh
+adifmt select -fields call,qso_date,band,mode -output csv mylog.adi \
+  | sort | uniq -d
+```
+
+This is similar to a SQL `SELECT` clause, except it cannot (yet?) transform the
+values it selects.
+
+### Future features (under construction)
 
 ADIF Multitool was created because I was recording
 [Parks on the Air](https://parksontheair.com/) logs on paper and then typing
@@ -105,7 +175,6 @@ Features I plan to add:
     that enumeration fields values are in the enum list, etc.
 *   Filter a log to only records matching some criteria, similar to a SQL
     `WHERE` clause.
-*   Print only certain fields for each record, similar to a SQL `SELECT` clause.
 *   Add, edit, or remove specific fields for each record, e.g., setting your
     station's location.
 *   Infer missing fields based on the values of other fields. For example, the
@@ -118,7 +187,9 @@ Features I plan to add:
     the same callsign on the same band with the same mode on the same Zulu day
     and the same `MY_SIG_INFO` value.
 *   Count the total number of records or the number of distinct values of a
-    field.
+    field.  (The total number of records can currently be counted with
+    `-output=csv`, piping the output to `wc -l`, and subtracting 1 for the
+    header row.)
 
 ### Non-goals
 
@@ -155,7 +226,7 @@ to ensure it’s present when adding files:
 Apache header:
 
 ```
-Copyright 2022 Google LLC
+Copyright 2023 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
