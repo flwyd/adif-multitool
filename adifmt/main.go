@@ -60,7 +60,7 @@ func (v runeValue) Set(s string) error {
 func (v runeValue) Get() rune { return *v.r }
 
 var (
-	cmds  = []cmd.Command{cmd.Cat}
+	cmds  = []cmd.Command{cmd.Cat, cmd.Fix}
 	adiio = adif.NewADIIO()
 	csvio = adif.NewCSVIO()
 	ctx   = &cmd.Context{
@@ -135,7 +135,8 @@ func main() {
 			global.Parse(os.Args[2:])
 			err := c.Run(ctx, global.Args())
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "error running %s: %v\n", cmd, err)
+				fmt.Fprintf(os.Stderr, "Error running %s: %v\n", cmd, err)
+				os.Exit(1)
 			}
 			return
 		}

@@ -16,9 +16,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/flwyd/adif-multitool/adif"
 )
@@ -31,29 +28,12 @@ func runCat(ctx *Context, args []string) error {
 	srcs := argSources(args...)
 	out := adif.NewLogfile("")
 	for _, f := range srcs {
-		src, err := f.Open()
-		if err != nil {
-			return err
-		}
-		ext := strings.TrimPrefix(filepath.Ext(src.Name()), ".")
-		format, err := adif.ParseFormat(ext)
-		if err != nil {
-			format = ctx.InputFormat
-		}
-		r := ctx.Readers[format]
-		l, err := r.Read(src)
+		l, err := readSource(ctx, f)
 		if err != nil {
 			return fmt.Errorf("error reading %s: %v", f, err)
 		}
 		// TODO merge headers and comments
 		out.Records = append(out.Records, l.Records...)
 	}
-	ctx.SetHeaders(out)
-	w, ok := ctx.Writers[ctx.OutputFormat]
-	if !ok {
-		return fmt.Errorf("unknown output format %q", ctx.OutputFormat)
-	}
-	// TODO flag to save to file rather than stdout?
-	w.Write(out, os.Stdout)
-	return nil
+	return write(ctx, out)
 }

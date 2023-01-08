@@ -15,10 +15,24 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/flwyd/adif-multitool/adif"
 )
+
+func write(ctx *Context, l *adif.Logfile) error {
+	ctx.SetHeaders(l)
+	w, ok := ctx.Writers[ctx.OutputFormat]
+	if !ok {
+		return fmt.Errorf("unknown output format %q", ctx.OutputFormat)
+	}
+	// TODO flag to save to file rather than stdout
+	w.Write(l, os.Stdout)
+	return nil
+}
 
 func argSources(filenames ...string) []argSource {
 	if len(filenames) == 0 {
@@ -29,6 +43,24 @@ func argSources(filenames ...string) []argSource {
 		s = append(s, fileSource{f})
 	}
 	return s
+}
+
+func readSource(ctx *Context, f argSource) (*adif.Logfile, error) {
+	src, err := f.Open()
+	if err != nil {
+		return nil, err
+	}
+	ext := strings.TrimPrefix(filepath.Ext(src.Name()), ".")
+	format, err := adif.ParseFormat(ext)
+	if err != nil {
+		format = ctx.InputFormat
+	}
+	r := ctx.Readers[format]
+	l, err := r.Read(src)
+	if err != nil {
+		return nil, fmt.Errorf("error reading %s: %v", f, err)
+	}
+	return l, nil
 }
 
 type argSource interface{ Open() (adif.Source, error) }
