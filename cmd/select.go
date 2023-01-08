@@ -32,6 +32,8 @@ func (f *fieldList) String() string {
 	return strings.Join(*f, ",")
 }
 
+func (f *fieldList) Get() fieldList { return *f }
+
 func (f *fieldList) Set(s string) error {
 	fields := strings.Split(s, ",")
 	for _, x := range fields {

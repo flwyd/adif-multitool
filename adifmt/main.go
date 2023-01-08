@@ -112,6 +112,8 @@ func init() {
 			fmt.Fprintf(out, "%s: %s\n", c.Name, c.Description)
 		}
 		fmt.Fprintln(out)
+		// TODO this includes command flags, not just global; it would be nice to
+		// highlight those
 		fmt.Fprintln(out, "Global flags:")
 		global.PrintDefaults()
 		fmt.Fprintln(out)
@@ -127,6 +129,10 @@ func main() {
 		os.Exit(2)
 	}
 	cmd := os.Args[1]
+	if cmd == "-help" || cmd == "help" {
+		global.Usage()
+		os.Exit(2)
+	}
 	for _, c := range cmds {
 		if c.Name == cmd {
 			if c.AddFlags != nil {
@@ -142,6 +148,11 @@ func main() {
 		}
 	}
 	fmt.Fprintf(global.Output(), "Unknown command %q\n", cmd)
-	global.Usage()
+	cmdNames := make([]string, 0, len(cmds))
+	for _, cmd := range cmds {
+		cmdNames = append(cmdNames, cmd.Name)
+	}
+	fmt.Fprintf(global.Output(), "Commands are %s\n", strings.Join(cmdNames, ", "))
+	fmt.Fprintf(global.Output(), "Run %s -help for more details\n", os.Args[0])
 	os.Exit(2)
 }
