@@ -24,6 +24,7 @@ type Context struct {
 	OutputFormat   adif.Format
 	Readers        map[adif.Format]adif.Reader
 	Writers        map[adif.Format]adif.Writer
+	CommandCtx     interface{}
 }
 
 func (c *Context) SetHeaders(l *adif.Logfile) {

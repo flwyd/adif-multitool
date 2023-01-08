@@ -60,11 +60,11 @@ func (v runeValue) Set(s string) error {
 func (v runeValue) Get() rune { return *v.r }
 
 var (
-	cmds  = []cmd.Command{cmd.Cat, cmd.Fix}
+	cmds  = []cmd.Command{cmd.Cat, cmd.Fix, cmd.Select}
 	adiio = adif.NewADIIO()
 	csvio = adif.NewCSVIO()
 	ctx   = &cmd.Context{
-		ADIFVersion: "3.1.2",
+		ADIFVersion: "3.1.4",
 		ProgramName: filepath.Base(os.Args[0]),
 		Readers:     map[adif.Format]adif.Reader{adif.FormatADI: adiio, adif.FormatCSV: csvio},
 		Writers:     map[adif.Format]adif.Writer{adif.FormatADI: adiio, adif.FormatCSV: csvio},
@@ -130,7 +130,7 @@ func main() {
 	for _, c := range cmds {
 		if c.Name == cmd {
 			if c.AddFlags != nil {
-				c.AddFlags(global)
+				c.AddFlags(ctx, global)
 			}
 			global.Parse(os.Args[2:])
 			err := c.Run(ctx, global.Args())
