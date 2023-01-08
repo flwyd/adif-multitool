@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,34 +17,12 @@ package cmd
 import (
 	"flag"
 	"fmt"
-	"strings"
 
 	"github.com/flwyd/adif-multitool/adif"
 )
 
-var Select = Command{Name: "select", Run: runSelect,
-	Description: "Print only specific fields from the input; skip records with no matching fields",
-	AddFlags:    selectFlags}
-
-type fieldList []string
-
-func (f *fieldList) String() string {
-	return strings.Join(*f, ",")
-}
-
-func (f *fieldList) Get() fieldList { return *f }
-
-func (f *fieldList) Set(s string) error {
-	fields := strings.Split(s, ",")
-	for _, x := range fields {
-		x = strings.ToUpper(strings.TrimSpace(x))
-		if x == "" {
-			return fmt.Errorf("empty field name in %q", fields)
-		}
-		*f = append(*f, x)
-	}
-	return nil
-}
+var Select = Command{Name: "select", Run: runSelect, AddFlags: selectFlags,
+	Description: "Print only specific fields from the input; skip records with no matching fields"}
 
 type selectContext struct {
 	fields fieldList

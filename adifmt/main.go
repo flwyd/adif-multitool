@@ -60,7 +60,7 @@ func (v runeValue) Set(s string) error {
 func (v runeValue) Get() rune { return *v.r }
 
 var (
-	cmds  = []cmd.Command{cmd.Cat, cmd.Fix, cmd.Select}
+	cmds  = []cmd.Command{cmd.Cat, cmd.Edit, cmd.Fix, cmd.Select}
 	adiio = adif.NewADIIO()
 	csvio = adif.NewCSVIO()
 	ctx   = &cmd.Context{

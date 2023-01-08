@@ -110,6 +110,18 @@ format to another, e.g. `adifmt cat -output=csv mylog.adi` to convert from ADI
 format to CSV.  (If `-input` is not specified the file type is inferred from the
 file name; if `-output` is not specified ADI is used.)
 
+#### edit
+
+`adifmt edit` adds, changes, or removes fields in each input record.  Flags can
+be specified multiple times, e.g.
+`adifmt edit -add my_gridsquare=FN31pr -add “my_name=Hiram Percy Maxim” log.adi`
+
+The `-set` flag (`name=value`) changes the value of the given field on all
+records, adding it if it is not present.  The `-add` flag (`name=value`) only
+adds the field if it is not already present in the record.  The `-remove` flag
+(field names, optionally comma-separated) deletes the field from all records.
+The `-remove-blank` removes all blank fields (string representation is empty).
+
 #### fix
 
 `adifmt fix` coerces some fields into the format dictated by the ADIF
@@ -175,8 +187,6 @@ Features I plan to add:
     that enumeration fields values are in the enum list, etc.
 *   Filter a log to only records matching some criteria, similar to a SQL
     `WHERE` clause.
-*   Add, edit, or remove specific fields for each record, e.g., setting your
-    station's location.
 *   Infer missing fields based on the values of other fields. For example, the
     `BAND` field can be inferred from the frequency; `MODE` can be inferred from
     `SUBMODE`; `OPERATOR`, `STATION_CALLSIGN`, and `OWNER_CALLSIGN` can stand in
