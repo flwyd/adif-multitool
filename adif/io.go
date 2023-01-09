@@ -14,7 +14,10 @@
 
 package adif
 
-import "io"
+import (
+	"io"
+	"strings"
+)
 
 type Source interface {
 	io.Reader
@@ -29,3 +32,17 @@ type Reader interface {
 type Writer interface {
 	Write(*Logfile, io.Writer) error
 }
+
+// StringSource implements Source with a strings.Reader to aid testing.
+type StringSource struct {
+	Reader   *strings.Reader
+	Filename string
+}
+
+func (s StringSource) Read(p []byte) (int, error) {
+	return s.Reader.Read(p)
+}
+
+func (s StringSource) Close() error { return nil }
+
+func (s StringSource) Name() string { return s.Filename }

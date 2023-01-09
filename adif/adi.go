@@ -25,13 +25,18 @@ import (
 
 // TODO options like space/newline field separators, lf/crlf for records, case
 type ADIIO struct {
-	LowerCase bool // TODO consider a case enum: keep, upper, lower
-	FieldSep  Separator
-	RecordSep Separator
+	LowerCase       bool // TODO consider a case enum: keep, upper, lower
+	FieldSep        Separator
+	RecordSep       Separator
+	HeaderCommentFn func(*Logfile) string
 }
 
 func NewADIIO() *ADIIO {
-	return &ADIIO{FieldSep: SeparatorSpace, RecordSep: SeparatorNewline}
+	return &ADIIO{FieldSep: SeparatorSpace, RecordSep: SeparatorNewline,
+		HeaderCommentFn: func(l *Logfile) string {
+			return fmt.Sprintf("Generated %s with %d records", time.Now().Format(time.RFC1123Z), len(l.Records))
+		},
+	}
 }
 
 func (_ *ADIIO) Read(in Source) (*Logfile, error) {
@@ -125,7 +130,7 @@ func (_ *ADIIO) Read(in Source) (*Logfile, error) {
 func (o *ADIIO) Write(l *Logfile, out io.Writer) error {
 	b := bufio.NewWriter(out)
 	defer b.Flush()
-	if _, err := b.WriteString(fmt.Sprintf("Generated %s%s", time.Now().Format(time.RFC1123Z), o.RecordSep.Val())); err != nil {
+	if _, err := b.WriteString(o.HeaderCommentFn(l) + o.RecordSep.Val()); err != nil {
 		return fmt.Errorf("error writing ADI header: %v", err)
 	}
 	for _, f := range l.Header.Fields() {
@@ -155,7 +160,7 @@ func (o *ADIIO) writeField(f Field, b *bufio.Writer) error {
 	if f.Type == Unspecified {
 		tag = fmt.Sprintf("<%s:%d>", o.fixCase(f.Name), len(f.Value))
 	} else {
-		tag = fmt.Sprintf("<%s:%s:%d>", o.fixCase(f.Name), o.fixCase(f.Type.Identifier()), len(f.Value))
+		tag = fmt.Sprintf("<%s:%d:%s>", o.fixCase(f.Name), len(f.Value), o.fixCase(f.Type.Identifier()))
 	}
 	if _, err := b.WriteString(fmt.Sprintf("%s%s%s", tag, f.Value, o.FieldSep.Val())); err != nil {
 		return fmt.Errorf("error writing %s: %v", f, err)
