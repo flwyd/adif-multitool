@@ -29,18 +29,21 @@ func write(ctx *Context, l *adif.Logfile) error {
 	if !ok {
 		return fmt.Errorf("unknown output format %q", ctx.OutputFormat)
 	}
-	// TODO flag to save to file rather than stdout
-	w.Write(l, os.Stdout)
+	w.Write(l, ctx.Out)
 	return nil
 }
 
-func argSources(filenames ...string) []argSource {
-	if len(filenames) == 0 {
-		return []argSource{stdinSource{}}
+func argSources(ctx *Context, filenames ...string) []argSource {
+	fs := ctx.fs
+	if fs == nil {
+		fs = osFilesystem{}
 	}
-	s := make([]argSource, 0, len(filenames))
-	for _, f := range filenames {
-		s = append(s, fileSource{f})
+	if len(filenames) == 0 {
+		return []argSource{fs.Lookup("-")}
+	}
+	s := make([]argSource, len(filenames))
+	for i, f := range filenames {
+		s[i] = fs.Lookup(f)
 	}
 	return s
 }
@@ -65,24 +68,25 @@ func readSource(ctx *Context, f argSource) (*adif.Logfile, error) {
 
 type argSource interface{ Open() (adif.Source, error) }
 
-type fileSource struct {
-	filename string
-}
+type fileSource struct{ filename string }
 
-func (s fileSource) Open() (adif.Source, error) {
-	return os.Open(s.filename)
-}
+func (s fileSource) Open() (adif.Source, error) { return os.Open(s.filename) }
 
-func (s fileSource) String() string {
-	return s.filename
-}
+func (s fileSource) String() string { return s.filename }
 
 type stdinSource struct{}
 
-func (s stdinSource) Open() (adif.Source, error) {
-	return os.Stdin, nil
-}
+func (s stdinSource) Open() (adif.Source, error) { return os.Stdin, nil }
 
-func (s stdinSource) String() string {
-	return os.Stdin.Name()
+func (s stdinSource) String() string { return os.Stdin.Name() }
+
+type filesystem interface{ Lookup(name string) argSource }
+
+type osFilesystem struct{}
+
+func (_ osFilesystem) Lookup(name string) argSource {
+	if name == "-" || name == os.Stdin.Name() {
+		return stdinSource{}
+	}
+	return fileSource{filename: name}
 }

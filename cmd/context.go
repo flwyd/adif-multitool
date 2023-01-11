@@ -14,7 +14,11 @@
 
 package cmd
 
-import "github.com/flwyd/adif-multitool/adif"
+import (
+	"io"
+
+	"github.com/flwyd/adif-multitool/adif"
+)
 
 type Context struct {
 	ProgramName    string
@@ -24,7 +28,9 @@ type Context struct {
 	OutputFormat   adif.Format
 	Readers        map[adif.Format]adif.Reader
 	Writers        map[adif.Format]adif.Writer
+	Out            io.Writer
 	CommandCtx     interface{}
+	fs             filesystem
 }
 
 func (c *Context) SetHeaders(l *adif.Logfile) {

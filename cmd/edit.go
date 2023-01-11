@@ -63,7 +63,7 @@ func runEdit(ctx *Context, args []string) error {
 			return fmt.Errorf("%q in both -set and -add", f.Name)
 		}
 	}
-	srcs := argSources(args...)
+	srcs := argSources(ctx, args...)
 	out := adif.NewLogfile("")
 	for _, f := range srcs {
 		l, err := readSource(ctx, f)

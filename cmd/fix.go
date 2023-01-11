@@ -30,7 +30,7 @@ var allNumeric = regexp.MustCompile("^[0-9]+$")
 
 func runFix(ctx *Context, args []string) error {
 	// TODO add any needed flags
-	srcs := argSources(args...)
+	srcs := argSources(ctx, args...)
 	out := adif.NewLogfile("")
 	for _, src := range srcs {
 		l, err := readSource(ctx, src)

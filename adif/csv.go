@@ -51,7 +51,7 @@ func (o *CSVIO) Read(in Source) (*Logfile, error) {
 	for line, err := c.Read(); err != io.EOF; line, err = c.Read() {
 		lnum, _ := c.FieldPos(0)
 		if err != nil {
-			return nil, fmt.Errorf("error reading CSV %s line %d", in.Name(), lnum)
+			return nil, fmt.Errorf("error reading CSV %s line %d: %v", in.Name(), lnum, err)
 		}
 		r := NewRecord()
 		for i, v := range line {

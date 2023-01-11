@@ -36,7 +36,7 @@ func selectFlags(ctx *Context, fs *flag.FlagSet) {
 
 func runSelect(ctx *Context, args []string) error {
 	con := ctx.CommandCtx.(*selectContext)
-	srcs := argSources(args...)
+	srcs := argSources(ctx, args...)
 	out := adif.NewLogfile("")
 	for _, f := range srcs {
 		l, err := readSource(ctx, f)
