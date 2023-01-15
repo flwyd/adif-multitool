@@ -32,6 +32,7 @@ func runCat(ctx *Context, args []string) error {
 		if err != nil {
 			return fmt.Errorf("error reading %s: %v", f, err)
 		}
+		updateFieldOrder(out, l.FieldOrder)
 		// TODO merge headers and comments
 		out.Records = append(out.Records, l.Records...)
 	}

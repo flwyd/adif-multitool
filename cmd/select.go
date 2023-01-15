@@ -36,8 +36,12 @@ func selectFlags(ctx *Context, fs *flag.FlagSet) {
 
 func runSelect(ctx *Context, args []string) error {
 	con := ctx.CommandCtx.(*selectContext)
+	if len(con.fields) == 0 {
+		return fmt.Errorf("no fields provided, try adifmt select -fields CALL,BAND")
+	}
 	srcs := argSources(ctx, args...)
 	out := adif.NewLogfile("")
+	out.FieldOrder = con.fields
 	for _, f := range srcs {
 		l, err := readSource(ctx, f)
 		if err != nil {

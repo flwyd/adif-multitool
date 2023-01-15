@@ -37,6 +37,7 @@ func runFix(ctx *Context, args []string) error {
 		if err != nil {
 			return fmt.Errorf("error reading %s: %v", src, err)
 		}
+		updateFieldOrder(out, l.FieldOrder)
 		for _, rec := range l.Records {
 			out.Records = append(out.Records, fixRecord(rec))
 		}

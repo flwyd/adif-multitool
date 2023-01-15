@@ -90,3 +90,17 @@ func (_ osFilesystem) Lookup(name string) argSource {
 	}
 	return fileSource{filename: name}
 }
+
+func updateFieldOrder(l *adif.Logfile, fields []string) {
+	seen := make(map[string]bool)
+	for _, f := range l.FieldOrder {
+		seen[strings.ToUpper(f)] = true
+	}
+	for _, f := range fields {
+		n := strings.ToUpper(f)
+		if !seen[n] {
+			l.FieldOrder = append(l.FieldOrder, f)
+			seen[n] = true
+		}
+	}
+}

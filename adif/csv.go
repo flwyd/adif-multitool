@@ -47,6 +47,10 @@ func (o *CSVIO) Read(in Source) (*Logfile, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error reading CSV header row from %s: %v", in.Name(), err)
 	}
+	l.FieldOrder = make([]string, len(h))
+	for i, n := range h {
+		l.FieldOrder[i] = strings.ToUpper(n)
+	}
 	// TODO if there are any USERDEF fields, add them to l.Header
 	for line, err := c.Read(); err != io.EOF; line, err = c.Read() {
 		lnum, _ := c.FieldPos(0)
@@ -69,11 +73,13 @@ func (o *CSVIO) Read(in Source) (*Logfile, error) {
 }
 
 func (o *CSVIO) Write(l *Logfile, out io.Writer) error {
-	if len(l.Records) == 0 {
-		return nil // CONSIDER logging a warning since we don't print any headers
-	}
-	order := make([]string, 0, len(l.Records[0].fields))
+	order := make([]string, len(l.FieldOrder))
 	seen := make(map[string]bool)
+	for i, n := range l.FieldOrder {
+		n = strings.ToUpper(n)
+		order[i] = n
+		seen[n] = true
+	}
 	for _, r := range l.Records {
 		for _, f := range r.Fields() {
 			n := strings.ToUpper(f.Name)
@@ -82,6 +88,9 @@ func (o *CSVIO) Write(l *Logfile, out io.Writer) error {
 				seen[n] = true
 			}
 		}
+	}
+	if len(order) == 0 {
+		return nil
 	}
 	c := csv.NewWriter(out)
 	defer c.Flush()

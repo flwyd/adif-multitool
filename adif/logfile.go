@@ -15,14 +15,19 @@
 package adif
 
 type Logfile struct {
-	Records  []*Record
-	Header   *Record
-	Comment  string
-	Filename string
+	Records    []*Record
+	Header     *Record
+	Comment    string
+	Filename   string
+	FieldOrder []string
 }
 
 func NewLogfile(name string) *Logfile {
-	return &Logfile{Records: make([]*Record, 0), Header: NewRecord(), Filename: name}
+	return &Logfile{
+		Records:  make([]*Record, 0),
+		Header:   NewRecord(),
+		Filename: name,
+	}
 }
 
 func (f *Logfile) String() string {

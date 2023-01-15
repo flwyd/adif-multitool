@@ -25,9 +25,10 @@ import (
 
 // TODO options like space/newline field separators, lf/crlf for records, case
 type ADIIO struct {
-	LowerCase       bool // TODO consider a case enum: keep, upper, lower
-	FieldSep        Separator
-	RecordSep       Separator
+	LowerCase bool // TODO consider a case enum: keep, upper, lower
+	FieldSep  Separator
+	RecordSep Separator
+	// TODO add Comment string to Record, just print that
 	HeaderCommentFn func(*Logfile) string
 }
 
@@ -142,9 +143,20 @@ func (o *ADIIO) Write(l *Logfile, out io.Writer) error {
 		return fmt.Errorf("error writing ADI header: %v", err)
 	}
 	for i, r := range l.Records {
+		seen := make(map[string]bool)
+		for _, n := range l.FieldOrder {
+			if f, ok := r.Get(n); ok {
+				if err := o.writeField(f, b); err != nil {
+					return fmt.Errorf("error writing ADI record #%d: %v", i, err)
+				}
+				seen[f.Name] = true
+			}
+		}
 		for _, f := range r.Fields() {
-			if err := o.writeField(f, b); err != nil {
-				return fmt.Errorf("error writing ADI record #%d: %v", i, err)
+			if !seen[f.Name] {
+				if err := o.writeField(f, b); err != nil {
+					return fmt.Errorf("error writing ADI record #%d: %v", i, err)
+				}
 			}
 		}
 		if _, err := b.WriteString(fmt.Sprintf("<%s>%s", o.fixCase("EOR"), o.RecordSep.Val())); err != nil {

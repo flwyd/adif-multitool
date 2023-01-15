@@ -22,7 +22,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestEmpty(t *testing.T) {
+func TestCatEmpty(t *testing.T) {
 	io := adif.NewADIIO()
 	io.HeaderCommentFn = func(*adif.Logfile) string { return "My Comment" }
 	out := &bytes.Buffer{}
@@ -46,7 +46,7 @@ func TestEmpty(t *testing.T) {
 	}
 }
 
-func TestADIToCSV(t *testing.T) {
+func TestEditADIToCSV(t *testing.T) {
 	adi := adif.NewADIIO()
 	csv := adif.NewCSVIO()
 	out := &bytes.Buffer{}
@@ -87,7 +87,7 @@ Fox Trot,,Hotel,Golf,,
 	}
 }
 
-func TestCSVToADI(t *testing.T) {
+func TestCatCSVToADI(t *testing.T) {
 	adi := adif.NewADIIO()
 	adi.HeaderCommentFn = func(*adif.Logfile) string { return "My Comment" }
 	csv := adif.NewCSVIO()
@@ -119,8 +119,8 @@ Fox Trot,Golf,Hotel,,
 <ADIF_VER:5>3.1.4 <PROGRAMID:8>cat test <PROGRAMVERSION:5>1.2.3 <EOH>
 <FIELD_1:4>Alfa <FOO:5>Bravo <FIELD_2:7>Charlie <EOR>
 <FIELD_1:5>Delta <FOO:4>Echo <FIELD_2:0> <EOR>
-<FIELD_1:8>Fox Trot <BAR:4>Golf <FIELD_2:5>Hotel <TODAY:0> <NOW:0> <EOR>
-<FIELD_1:0> <BAR:7>Juliett <FIELD_2:5>India <TODAY:8>19870605 <NOW:4>1234 <EOR>
+<FIELD_1:8>Fox Trot <FIELD_2:5>Hotel <BAR:4>Golf <TODAY:0> <NOW:0> <EOR>
+<FIELD_1:0> <FIELD_2:5>India <BAR:7>Juliett <TODAY:8>19870605 <NOW:4>1234 <EOR>
 `
 		if diff := cmp.Diff(want, got); diff != "" {
 			t.Errorf("Cat.Run(ctx, foo.ctx, bar.ctx) unexpected output, diff:\n%s", diff)
