@@ -27,6 +27,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/flwyd/adif-multitool/adif"
+	"github.com/flwyd/adif-multitool/adif/spec"
 	"github.com/flwyd/adif-multitool/cmd"
 )
 
@@ -60,11 +61,11 @@ func (v runeValue) Set(s string) error {
 func (v runeValue) Get() rune { return *v.r }
 
 var (
-	cmds  = []cmd.Command{cmd.Cat, cmd.Edit, cmd.Fix, cmd.Select}
+	cmds  = []cmd.Command{cmd.Cat, cmd.Edit, cmd.Fix, cmd.Select, cmd.Validate}
 	adiio = adif.NewADIIO()
 	csvio = adif.NewCSVIO()
 	ctx   = &cmd.Context{
-		ADIFVersion: "3.1.4",
+		ADIFVersion: spec.ADIFVersion,
 		ProgramName: filepath.Base(os.Args[0]),
 		Readers:     map[adif.Format]adif.Reader{adif.FormatADI: adiio, adif.FormatCSV: csvio},
 		Writers:     map[adif.Format]adif.Writer{adif.FormatADI: adiio, adif.FormatCSV: csvio},

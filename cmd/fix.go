@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/flwyd/adif-multitool/adif"
+	"github.com/flwyd/adif-multitool/adif/spec"
 )
 
 var Fix = Command{Name: "fix", Run: runFix,
@@ -45,40 +46,31 @@ func runFix(ctx *Context, args []string) error {
 	return write(ctx, out)
 }
 
-var (
-	// TODO type registry from ADIF spec so these aren't needed
-	dateFields = map[string]bool{
-		"CLUBLOG_QSO_UPLOAD_DATE":  true,
-		"EQSL_QSLRDATE":            true,
-		"EQSL_QSLSDATE":            true,
-		"HAMLOGEU_QSO_UPLOAD_DATE": true,
-		"HAMQTH_QSO_UPLOAD_DATE":   true,
-		"HRDLOG_QSO_UPLOAD_DATE":   true,
-		"LOTW_QSLRDATE":            true,
-		"LOTW_QSLSDATE":            true,
-		"QRZCOM_QSO_UPLOAD_DATE":   true,
-		"QSLRDATE":                 true,
-		"QSLSDATE":                 true,
-		"QSO_DATE":                 true,
-		"QSO_DATE_OFF":             true,
-	}
-	timeFields = map[string]bool{
-		"TIME_OFF": true,
-		"TIME_ON":  true,
-	}
-)
-
 func fixRecord(r *adif.Record) *adif.Record {
 	fields := r.Fields()
 	for i, f := range fields {
-		if f.Type == adif.Date || dateFields[strings.ToUpper(f.Name)] {
+		if fieldType(f) == spec.DateDataType {
 			f.Value = fixDate(f.Value)
-		} else if f.Type == adif.Time || timeFields[strings.ToUpper(f.Name)] {
+		} else if fieldType(f) == spec.TimeDataType {
 			f.Value = fixTime(f.Value)
 		}
 		fields[i] = f
 	}
 	return adif.NewRecord(fields...)
+}
+
+func fieldType(f adif.Field) spec.DataType {
+	if fs, ok := spec.Fields[strings.ToUpper(f.Name)]; ok {
+		return fs.Type
+	}
+	if f.Type.Identifier() != "" {
+		for _, dt := range spec.DataTypes {
+			if dt.Indicator == f.Type.Identifier() {
+				return dt
+			}
+		}
+	}
+	return spec.StringDataType // reasonable default
 }
 
 var dateFormats = []string{"2006-1-2", "2006/1/2", "2006.1.2"}
