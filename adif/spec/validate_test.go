@@ -472,3 +472,107 @@ func TestValidateContestID(t *testing.T) {
 		testValidator(t, tc, emptyCtx, "ValidateContestId")
 	}
 }
+
+func TestGridsquare(t *testing.T) {
+	tests := []validateTest{
+		{field: GridsquareField, value: "", want: Valid},
+		// First letter pair is only valid A-R, thuogh we don't check this
+		{field: GridsquareField, value: "AA", want: Valid},
+		{field: MyGridsquareField, value: "rr", want: Valid},
+		{field: GridsquareField, value: "AA00", want: Valid},
+		{field: MyGridsquareField, value: "CD12", want: Valid},
+		{field: GridsquareField, value: "jk28", want: Valid},
+		{field: MyGridsquareField, value: "XX99", want: Valid},
+		// Second letter pair is only valid A-X, thuogh we don't check this
+		{field: GridsquareField, value: "AB34ef", want: Valid},
+		{field: MyGridsquareField, value: "gh56IJ", want: Valid},
+		{field: GridsquareField, value: "KL78mn", want: Valid},
+		{field: MyGridsquareField, value: "QR09XX", want: Valid},
+		{field: GridsquareField, value: "AA00xx99", want: Valid},
+		{field: MyGridsquareField, value: "rh63NG50", want: Valid},
+		{field: GridsquareField, value: "rr99aa00", want: Valid},
+		{field: MyGridsquareField, value: ",", want: InvalidError},
+		{field: MyGridsquareField, value: "F,", want: InvalidError},
+		{field: MyGridsquareField, value: "JK3,", want: InvalidError},
+		{field: GridsquareField, value: "12", want: InvalidError},
+		{field: MyGridsquareField, value: "12CD", want: InvalidError},
+		{field: GridsquareField, value: "12CD34", want: InvalidError},
+		{field: MyGridsquareField, value: "12CD34GH", want: InvalidError},
+		{field: GridsquareField, value: "AB12C3", want: InvalidError},
+		{field: MyGridsquareField, value: "AB123C", want: InvalidError},
+		{field: GridsquareField, value: "AB12CDEF", want: InvalidError},
+		{field: MyGridsquareField, value: "AB12CD3F", want: InvalidError},
+		{field: GridsquareField, value: "AB12CDE3", want: InvalidError},
+		{field: MyGridsquareField, value: "AB12CD34EF", want: InvalidError},
+		{field: GridsquareField, value: "AB12CD34EF56", want: InvalidError},
+		{field: MyGridsquareField, value: "AB 12", want: InvalidError},
+		{field: GridsquareField, value: "AB 12 cd", want: InvalidError},
+		{field: MyGridsquareField, value: "AB 12 cd 34", want: InvalidError},
+		{field: GridsquareField, value: "ÐÞ12", want: InvalidError},
+		{field: GridsquareField, value: "HI๕๙", want: InvalidError},
+		{field: MyGridsquareField, value: "JK99dé", want: InvalidError},
+	}
+	for _, tc := range tests {
+		testValidator(t, tc, emptyCtx, "ValidateGridsquare")
+	}
+}
+
+func TestGridsquareExt(t *testing.T) {
+	// Gridsquare extension has max length 4 (2 letters, 2 numbers)
+	tests := []validateTest{
+		{field: GridsquareExtField, value: "", want: Valid},
+		// First letter pair is only valid A-R, thuogh we don't check this
+		{field: GridsquareExtField, value: "AA", want: Valid},
+		{field: MyGridsquareExtField, value: "rr", want: Valid},
+		{field: GridsquareExtField, value: "AA00", want: Valid},
+		{field: MyGridsquareExtField, value: "CD12", want: Valid},
+		{field: GridsquareExtField, value: "jk28", want: Valid},
+		{field: MyGridsquareExtField, value: "XX99", want: Valid},
+		// Second letter pair is only valid A-X, thuogh we don't check this
+		{field: GridsquareExtField, value: "AB34ef", want: InvalidError},
+		{field: MyGridsquareExtField, value: "gh56IJ", want: InvalidError},
+		{field: GridsquareExtField, value: "KL78mn", want: InvalidError},
+		{field: MyGridsquareExtField, value: "QR09XX", want: InvalidError},
+		{field: GridsquareExtField, value: "AA00xx99", want: InvalidError},
+		{field: MyGridsquareExtField, value: "rh63NG50", want: InvalidError},
+		{field: GridsquareExtField, value: "rr99aa00", want: InvalidError},
+		{field: MyGridsquareExtField, value: ",", want: InvalidError},
+		{field: MyGridsquareExtField, value: "F,", want: InvalidError},
+		{field: MyGridsquareExtField, value: "JK8,", want: InvalidError},
+		{field: MyGridsquareExtField, value: "G73,", want: InvalidError},
+		{field: GridsquareExtField, value: "12", want: InvalidError},
+		{field: MyGridsquareExtField, value: "12CD", want: InvalidError},
+		{field: GridsquareExtField, value: "12CD34", want: InvalidError},
+		{field: MyGridsquareExtField, value: "AB 12", want: InvalidError},
+		{field: GridsquareExtField, value: "ÐÞ12", want: InvalidError},
+		{field: GridsquareExtField, value: "HI๕๙", want: InvalidError},
+		{field: MyGridsquareExtField, value: "DÉ41", want: InvalidError},
+	}
+	for _, tc := range tests {
+		testValidator(t, tc, emptyCtx, "ValidateGridsquareExt")
+	}
+}
+
+func TestGridsquareList(t *testing.T) {
+	// Validator doesn't currently check that locators are adjacent
+	tests := []validateTest{
+		{field: VuccGridsField, value: "", want: Valid},
+		{field: MyVuccGridsField, value: ",", want: Valid},
+		{field: MyVuccGridsField, value: ",HI59", want: Valid},
+		{field: VuccGridsField, value: "DN70,DM79", want: Valid},
+		{field: MyVuccGridsField, value: "DN70,DM79,DN80,DM89", want: Valid},
+		{field: VuccGridsField, value: "AA00xx,RR99aa", want: Valid},
+		{field: MyVuccGridsField, value: "AA00xx,RR99aa,GO83NU", want: Valid},
+		{field: VuccGridsField, value: "Rq98Po87,nm65LK43,JH21,ig", want: Valid},
+		{field: VuccGridsField, value: " ", want: InvalidError},
+		{field: MyVuccGridsField, value: " , ", want: InvalidError},
+		{field: VuccGridsField, value: "DN70;DM79", want: InvalidError},
+		{field: VuccGridsField, value: "AB12cd,ÃB13gf", want: InvalidError},
+		{field: MyVuccGridsField, value: "AB12cd,DE34fg,56hijk", want: InvalidError},
+		{field: MyVuccGridsField, value: "RR99,AA0", want: InvalidError},
+		{field: VuccGridsField, value: "AB12cd,EF34gh56jk", want: InvalidError},
+	}
+	for _, tc := range tests {
+		testValidator(t, tc, emptyCtx, "ValidateGridsquareList")
+	}
+}

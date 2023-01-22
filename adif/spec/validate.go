@@ -20,6 +20,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -74,6 +75,9 @@ var TypeValidators = map[string]FieldValidator{
 	"IntlCharacter":            ValidateIntlCharacter,
 	"Date":                     ValidateDate,
 	"Digit":                    ValidateDigit,
+	"GridSquare":               gridsquarerValidator(8),
+	"GridSquareExt":            gridsquarerValidator(4),
+	"GridSquareList":           listValidator(gridsquarerValidator(8)),
 	"Integer":                  ValidateNumber,
 	"IntlString":               ValidateIntlString,
 	"IntlMultilineString":      ValidateIntlString,
@@ -84,9 +88,6 @@ var TypeValidators = map[string]FieldValidator{
 	"Time":                     ValidateTime,
 	"AwardList":                ValidateNoop, // TODO
 	"CreditList":               ValidateNoop, // TODO
-	"GridSquare":               ValidateNoop, // TODO
-	"GridSquareExt":            ValidateNoop, // TODO
-	"GridSquareList":           ValidateNoop, // TODO
 	"IOTARefNo":                ValidateNoop, // TODO
 	"Location":                 ValidateNoop, // TODO
 	"POTARef":                  ValidateNoop, // TODO
@@ -338,6 +339,51 @@ func ValidateEnumScope(val string, f Field, ctx ValidationContext) Validation {
 		}
 	}
 	return valid()
+}
+
+func gridsquarerValidator(maxLen int) FieldValidator {
+	return func(val string, f Field, ctx ValidationContext) Validation {
+		if val == "" {
+			return valid()
+		}
+		if len(val) > maxLen {
+			return errorf("%s grid square too long (max %d) %q", f.Name, maxLen, val)
+		}
+		if len(val)%2 != 0 {
+			return errorf("%s odd grid square length %q", f.Name, val)
+		}
+		// Maidenhead locator alternates two letters, two digits
+		for i, c := range val {
+			if !isASCIIChar(c) {
+				return errorf("%s invalid grid square %q", f.Name, val)
+			}
+			switch i % 4 {
+			case 0, 1:
+				if !unicode.IsLetter(c) {
+					return errorf("%s non-letter in position %d %q", f.Name, i, val)
+				}
+			case 2, 3:
+				if !unicode.IsNumber(c) {
+					return errorf("%s non-digit in position %d %q", f.Name, i, val)
+				}
+			}
+		}
+		return valid()
+	}
+}
+
+func listValidator(fv FieldValidator) FieldValidator {
+	return func(val string, f Field, ctx ValidationContext) Validation {
+		if val == "" {
+			return valid()
+		}
+		for _, v := range strings.Split(val, ",") {
+			if res := fv(v, f, ctx); res.Validity != Valid {
+				return res
+			}
+		}
+		return valid()
+	}
 }
 
 func isASCIIChar(c rune) bool { return c >= 32 && c <= 126 }
