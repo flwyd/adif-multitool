@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/flwyd/adif-multitool/adif"
 )
@@ -94,5 +95,32 @@ func (f *fieldAssignments) Set(s string) error {
 		}
 	}
 	f.values = append(f.values, a.values...)
+	return nil
+}
+
+type timeZone struct {
+	tz *time.Location
+}
+
+func (z *timeZone) String() string {
+	if z.tz == nil {
+		return time.UTC.String()
+	}
+	return z.tz.String()
+}
+
+func (z *timeZone) Get() *time.Location {
+	if z.tz == nil {
+		return time.UTC
+	}
+	return z.tz
+}
+
+func (z *timeZone) Set(s string) error {
+	l, err := time.LoadLocation(s)
+	if err != nil {
+		return fmt.Errorf("invalid time zone %q: %v", s, err)
+	}
+	z.tz = l
 	return nil
 }

@@ -33,13 +33,27 @@ type Enumeration struct {
 func (e Enumeration) String() string { return e.Name }
 
 func (e Enumeration) Value(val string) []EnumValue {
-	res := make([]EnumValue, 0, 2) // Band is lower case, most others upper
+	res := make([]EnumValue, 0, 2)
 	for _, v := range e.Values {
+		// Band is lower case, most others upper
 		if strings.EqualFold(val, v.String()) {
 			res = append(res, v)
 		}
 	}
 	return res
+}
+
+func (e Enumeration) ScopeProperty() string {
+	switch e.Name {
+	case "Primary_Administrative_Subdivision":
+		return "DXCC Entity Code"
+	case "Secondary_Administrative_Subdivision":
+		return "DXCC Entity Code"
+	case "Submode":
+		return "Mode"
+	default:
+		return ""
+	}
 }
 
 var Enumerations = make(map[string]Enumeration)

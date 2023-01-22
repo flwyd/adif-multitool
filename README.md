@@ -8,13 +8,15 @@ logs from ham radio software. Each `adifmt` invocation reads log files from the
 command line or standard input and prints an ADIF log to standard output,
 allowing multiple commands to be chained together in a pipeline. For example, to
 add a `BAND` field based on the `FREQ` (radio frequency) field, add your
-station's maidenhead locator (`MY_GRIDSQURE`) to all entries, and save a log
-file containing only SSB voice contacts, a pipeline might look like
+station's maidenhead locator (`MY_GRIDSQURE`) to all entries, validate that all
+fields are properly formatted, and save a log file containing only SSB voice
+contacts, a pipeline might look like
 
 ```sh
 adifmt infer -field band my_original_log.adi \
   | adifmt edit -add my_gridsquare=FN31pr \
   | adifmt filter -field mode=SSB \
+  | adifmt validate
   > my_ssb_log.adi
 ```
 
@@ -63,7 +65,7 @@ spec and CSV with field names matching the ADIF list).
 
 ```sh
 adifmt cat -input=adi -output=csv log1.adi > log1.csv
-adifmt cat -input=csv -output=adi log2.adi > log2.adi
+adifmt cat -input=csv -output=adi log2.csv > log2.adi
 ```
 
 `-input` need not be specified if it’s implied by the file name, and
@@ -93,13 +95,30 @@ each record in the input file `log1.adi`.
 
 ## Features
 
+### Input/Output formats
+
+`adifmt` can read from and write to the following formats.  ADI (tag-based) and
+ADX (XML-based) formats are [specified by ADIF](https://adif.org.uk/adiif).
+Others use standard formats for arbitrary key-value data.  Format-specific
+options are configured with flags.  Formats are inferred from file names or can
+be set explicitly via `-input` and `-output` flags.
+
+Name  | Extension | Notes
+---- -| --------- | -----
+ADI   | `.adi`    | Outputs `IntlString` (Unicode fields) in UTF-8
+ADX   | `.adx`    | TODO: Implementation coming soon
+CSV   | `.csv`    | Comma-separated values; other delimiters like tab supported via the `-csv-field-separator` flag
+JSON  | `.json`   | TODO: Implementation coming soon
+
 ### Commands
 
-Name     | Description |
--------- | ----------- |
-`cat`    | Concatenate all input files to standard output |
-`fix`    | Correct field formats to match the ADIF specification |
-`select` | Print only specific fields from the input; skip records with no matching fields |
+Name       | Description |
+---------- | ----------- |
+`cat`      | Concatenate all input files to standard output |
+`edit`     | Add, change, remove, or adjust fields |
+`fix`      | Correct field formats to match the ADIF specification |
+`select`   | Print only specific fields from the input; skip records with no matching fields |
+`validate` | Print errors and warnings for fields which don’t match the ADIF specification
 
 #### cat
 
@@ -166,6 +185,25 @@ adifmt select -fields call,qso_date,band,mode -output csv mylog.adi \
 This is similar to a SQL `SELECT` clause, except it cannot (yet?) transform the
 values it selects.
 
+#### validate
+
+`adifmt validate` checks that field values match the format and enumeration
+values in [the ADIF specification](https://adif.org.uk/adif).  Errors and
+warnings are printed to standard error.  If any field has an error, nothing is
+printed to standard output and exit status is `0`; if no errors are present (or
+only warnings), the input will be printed to standard output as in
+[`cat`](#cat) and exit status is `1`.
+
+Validations include field type syntax like number and date formats;
+enumeration values like modes and bands, and number ranges.  The ADIF
+specification allows some fields to have values which do not match the
+enumerated options, for example for `SUBMODE` it says “use enumeration values
+for interoperability” but the type is string, allowing any value.  These
+warnings will be printed to standard error with `adifmt validate` but will not
+block the logfile from being printed to standard output.
+
+Some but not all validation errors can be corrected with [`adifmt fix`](#fix).
+
 ### Future features (under construction)
 
 ADIF Multitool was created because I was recording
@@ -179,18 +217,16 @@ files" following the
 simple tools that do one thing and can be easily composed together to build more
 powerful expressions.
 
-There are a lot of things that a ham radio log file could do, and I would like
-`adifmt` to do many of them. Development is in the early stages, so it doesn't
-do very much *yet*. If you've got a use case for working with ADIF files, please
-create a GitHub issue to discuss how it might work.
+There are a lot of things that a ham radio log file program could do, and I
+would like `adifmt` to do many of them. Development is in the early stages, so
+it doesn't do very much *yet*. If you've got a use case for working with ADIF
+files, please create a GitHub issue to discuss how it might work.
 
 Features I plan to add:
 
 *   Support several input and output formats: ADI and ADX from ADIF along with
     CSV and JSON. Maybe convert to and from Cabrillo format for contests.
-*   Validate (and fix where possible) fields which don't meet ADIF expectations.
-    For example, ensure that date and time strings match the ADIF format, check
-    that enumeration fields values are in the enum list, etc.
+*   Validate more fields.  Include warnings in record comments.
 *   Filter a log to only records matching some criteria, similar to a SQL
     `WHERE` clause.
 *   Infer missing fields based on the values of other fields. For example, the

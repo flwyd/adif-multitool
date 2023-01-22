@@ -29,7 +29,7 @@ var Validate = Command{Name: "validate", Run: runValidate,
 func runValidate(ctx *Context, args []string) error {
 	// TODO add any needed flags
 	log := os.Stderr
-	var errors int
+	var errors, warnings int
 	srcs := argSources(ctx, args...)
 	out := adif.NewLogfile("")
 	for _, f := range srcs {
@@ -48,9 +48,13 @@ func runValidate(ctx *Context, args []string) error {
 				}
 				if fs, ok := spec.Fields[f.Name]; ok {
 					if dtv := spec.TypeValidators[fs.Type.Name]; dtv != nil {
-						if err := dtv(f.Value, fs, vctx); err != nil {
+						switch v := dtv(f.Value, fs, vctx); v.Validity {
+						case spec.InvalidError:
 							errors++
-							fmt.Fprintf(log, "Error on %s record %d: %v\n", l, i, err)
+							fmt.Fprintf(log, "ERROR on %s record %d: %s\n", l, i, v)
+						case spec.InvalidWarning:
+							warnings++
+							fmt.Fprintf(log, "WARNING on %s record %d: %s\n", l, i, v)
 						}
 					}
 				}
@@ -58,7 +62,11 @@ func runValidate(ctx *Context, args []string) error {
 		}
 	}
 	if errors > 0 {
-		return fmt.Errorf("validate got %d errors", errors)
+		return fmt.Errorf("validate got %d errors and %d warnings", errors, warnings)
 	}
-	return write(ctx, out)
+	err := write(ctx, out)
+	if warnings > 0 {
+		fmt.Fprintf(log, "validate got %d warnings\n", warnings)
+	}
+	return err
 }

@@ -23,11 +23,49 @@ import (
 	"unicode/utf8"
 )
 
+type Validity int
+
+const (
+	Valid Validity = iota
+	InvalidError
+	InvalidWarning
+)
+
+func (v Validity) String() string {
+	switch v {
+	case Valid:
+		return "Valid"
+	case InvalidError:
+		return "InvalidError"
+	case InvalidWarning:
+		return "InvalidWarning"
+	}
+	panic(v)
+}
+
+type Validation struct {
+	Validity
+	Message string
+}
+
+func (v Validation) String() string { return v.Message }
+
+func valid() Validation { return Validation{Validity: Valid} }
+func errorf(format string, a ...any) Validation {
+	return Validation{Validity: InvalidError, Message: fmt.Sprintf(format, a...)}
+}
+func warningf(format string, a ...any) Validation {
+	return Validation{Validity: InvalidWarning, Message: fmt.Sprintf(format, a...)}
+}
+
 var allNumeric = regexp.MustCompile("^[0-9]*$")
 
-type ValidationContext struct{}
+type ValidationContext struct {
+	UnknownEnumValueWarning bool // if true, values not in an enumeration are a warning, otherwise an error
+	FieldValue              func(name string) string
+}
 
-type FieldValidator func(value string, f Field, ctx ValidationContext) error
+type FieldValidator func(value string, f Field, ctx ValidationContext) Validation
 
 var TypeValidators = map[string]FieldValidator{
 	"Boolean":                  ValidateBoolean,
@@ -59,92 +97,109 @@ var TypeValidators = map[string]FieldValidator{
 	"WWFFRef":                  ValidateNoop, // TODO
 }
 
-func ValidateNoop(value string, f Field, ctx ValidationContext) error { return nil }
+func ValidateNoop(value string, f Field, ctx ValidationContext) Validation { return valid() }
 
-func ValidateBoolean(val string, f Field, ctx ValidationContext) error {
+func ValidateBoolean(val string, f Field, ctx ValidationContext) Validation {
 	switch val {
 	case "Y", "N", "y", "n":
-		return nil
+		return valid()
 	default:
-		return fmt.Errorf("%s invalid boolean %q", f.Name, val)
+		return errorf("%s invalid boolean %q", f.Name, val)
 	}
 }
 
-func ValidateCharacter(val string, f Field, ctx ValidationContext) error {
+func ValidateCharacter(val string, f Field, ctx ValidationContext) Validation {
 	if len(val) != 1 {
-		return fmt.Errorf("%s not a single character %q", f.Name, val)
+		return errorf("%s not a single character %q", f.Name, val)
 	}
 	if !isASCIIChar(rune(val[0])) {
-		return fmt.Errorf("%s not a printable ASCII character %q", f.Name, val)
+		return errorf("%s not a printable ASCII character %q", f.Name, val)
 	}
-	return nil
+	return valid()
 }
 
-func ValidateString(val string, f Field, ctx ValidationContext) error {
+func ValidateString(val string, f Field, ctx ValidationContext) Validation {
 	for _, c := range val {
 		if c == '\n' || c == '\r' {
 			if !strings.Contains(f.Type.Name, "Multiline") {
-				return fmt.Errorf("%s contains newlines but is not a MultilineString %q", f.Name, val)
+				return errorf("%s contains newlines but is not a MultilineString %q", f.Name, val)
 			}
 		} else if !isASCIIChar(c) {
-			return fmt.Errorf("%s not a printable ASCII string %q", f.Name, val)
+			return errorf("%s not a printable ASCII string %q", f.Name, val)
 		}
 	}
-	return nil
+	if f.EnumName != "" {
+		// CONTEST_ID and SUBMODE are string fiields with an enumeration; mismatches are warnings not errors
+		ctx.UnknownEnumValueWarning = true
+		return ValidateEnumeration(val, f, ctx)
+	}
+	return valid()
 }
 
-func ValidateIntlCharacter(val string, f Field, ctx ValidationContext) error {
+func ValidateIntlCharacter(val string, f Field, ctx ValidationContext) Validation {
 	if utf8.RuneCountInString(val) != 1 {
-		return fmt.Errorf("%s not a single character %q", f.Name, val)
+		return errorf("%s not a single character %q", f.Name, val)
 	}
 	c, _ := utf8.DecodeRuneInString(val)
 	if c == utf8.RuneError {
-		return fmt.Errorf("%s invalid Unicode encoding %q", f.Name, val)
+		return errorf("%s invalid Unicode encoding %q", f.Name, val)
 	}
 	if c == '\n' || c == '\r' {
-		return fmt.Errorf("%s line break not allowed in Character fields %q", f.Name, val)
+		return errorf("%s line break not allowed in Character fields %q", f.Name, val)
 	}
-	return nil
+	return valid()
 }
 
-func ValidateIntlString(val string, f Field, ctx ValidationContext) error {
+func ValidateIntlString(val string, f Field, ctx ValidationContext) Validation {
 	for _, c := range val {
 		if c == '\n' || c == '\r' {
 			if !strings.Contains(f.Type.Name, "Multiline") {
-				return fmt.Errorf("%s contains newlines but is not a MultilineIntlString %q", f.Name, val)
+				return errorf("%s contains newlines but is not a MultilineIntlString %q", f.Name, val)
 			}
 		}
 	}
 	// TODO investigate whether control characters and other Unicode characters are intentionally allowed
-	return nil
+	if f.EnumScope != "" {
+		return ValidateEnumScope(val, f, ctx)
+	}
+	return valid()
 }
 
-func ValidateDigit(val string, f Field, ctx ValidationContext) error {
+func ValidateDigit(val string, f Field, ctx ValidationContext) Validation {
 	if len(val) != 1 {
-		return fmt.Errorf("%s not a single digit %q", f.Name, val)
+		return errorf("%s not a single digit %q", f.Name, val)
 	}
 	d := val[0]
 	if d < '0' || d > '9' {
-		return fmt.Errorf("%s not an ASCII digit %q", f.Name, val)
+		return errorf("%s not an ASCII digit %q", f.Name, val)
 	}
-	return nil
+	return valid()
 }
 
-func ValidateNumber(val string, f Field, ctx ValidationContext) error {
+func ValidateNumber(val string, f Field, ctx ValidationContext) Validation {
+	if val == "" {
+		return errorf("%s empty number", f.Name)
+	}
+	for _, r := range val {
+		if (r < '0' || r > '9') && (r != '-' && r != '.') {
+			// ADIF spec doesn't allow +123 or 1.23e7 as numbers
+			return errorf("%s invalid number %q", f.Name, val)
+		}
+	}
 	var num float64
 	if strings.IndexRune(val, '.') >= 0 {
 		if strings.Contains(f.Type.Name, "Integer") {
-			return fmt.Errorf("%s invalid integer %q", f.Name, val)
+			return errorf("%s invalid integer %q", f.Name, val)
 		}
 		n, err := strconv.ParseFloat(val, 64)
 		if err != nil {
-			return fmt.Errorf("%s invalid decimal %q: %v", f.Name, val, err)
+			return errorf("%s invalid decimal %q: %v", f.Name, val, err)
 		}
 		num = n
 	} else {
 		n, err := strconv.ParseInt(val, 10, 64)
 		if err != nil {
-			return fmt.Errorf("%s invalid integer %q: %v", f.Name, val, err)
+			return errorf("%s invalid integer %q: %v", f.Name, val, err)
 		}
 		num = float64(n)
 	}
@@ -155,10 +210,10 @@ func ValidateNumber(val string, f Field, ctx ValidationContext) error {
 	if minstr != "" || f.Type.Name == "PositiveInteger" {
 		min, err := strconv.ParseFloat(minstr, 64)
 		if err != nil {
-			return fmt.Errorf("specification error! invalid minimum %q in field %v: %v", minstr, f, err)
+			return errorf("specification error! invalid minimum %q in field %v: %v", minstr, f, err)
 		}
 		if num < min {
-			return fmt.Errorf("%s value %s below minimum %s", f.Name, val, minstr)
+			return errorf("%s value %s below minimum %s", f.Name, val, minstr)
 		}
 	}
 	maxstr := f.Maximum
@@ -168,49 +223,56 @@ func ValidateNumber(val string, f Field, ctx ValidationContext) error {
 	if maxstr != "" {
 		max, err := strconv.ParseFloat(maxstr, 64)
 		if err != nil {
-			return fmt.Errorf("specification error! invalid maximum %q in field %v: %v", maxstr, f, err)
+			return errorf("specification error! invalid maximum %q in field %v: %v", maxstr, f, err)
 		}
 		if num > max {
-			return fmt.Errorf("%s value %s above maximum %s", f.Name, val, maxstr)
+			return errorf("%s value %s above maximum %s", f.Name, val, maxstr)
 		}
 	}
-	return nil
+	return valid()
 }
 
-func ValidateDate(val string, f Field, ctx ValidationContext) error {
+func ValidateDate(val string, f Field, ctx ValidationContext) Validation {
 	if !allNumeric.MatchString(val) {
-		return fmt.Errorf("%s invalid date %q", f.Name, val)
+		return errorf("%s invalid date %q", f.Name, val)
 	}
 	if len(val) != 8 {
-		return fmt.Errorf("%s not an 8-digit date %q", f.Name, val)
+		return errorf("%s not an 8-digit date %q", f.Name, val)
 	}
-	return nil
+	d, err := time.Parse("20060102", val)
+	if err != nil {
+		return errorf("%s invalid date %q", f.Name, val)
+	}
+	if d.Year() < 1930 {
+		return errorf("%s year before 1930 %q", f.Name, val)
+	}
+	return valid()
 }
 
-func ValidateTime(val string, f Field, ctx ValidationContext) error {
+func ValidateTime(val string, f Field, ctx ValidationContext) Validation {
 	if !allNumeric.MatchString(val) {
-		return fmt.Errorf("%s invalid time %q", f.Name, val)
+		return errorf("%s invalid time %q", f.Name, val)
 	}
 	switch len(val) {
 	case 4:
 		_, err := time.Parse("1504", val)
 		if err != nil {
-			return fmt.Errorf("%s time out of HH:MM range %q", f.Name, val)
+			return errorf("%s time out of HH:MM range %q", f.Name, val)
 		}
 	case 6:
 		_, err := time.Parse("150406", val)
 		if err != nil {
-			return fmt.Errorf("%s time out of HH:MM:SS range %q", f.Name, val)
+			return errorf("%s time out of HH:MM:SS range %q", f.Name, val)
 		}
 	default:
-		return fmt.Errorf("%s not an 4- or 6-digit time %q", f.Name, val)
+		return errorf("%s not an 4- or 6-digit time %q", f.Name, val)
 	}
-	return nil
+	return valid()
 }
 
-func ValidateEnumeration(val string, f Field, ctx ValidationContext) error {
+func ValidateEnumeration(val string, f Field, ctx ValidationContext) Validation {
 	if val == "" {
-		return nil
+		return valid()
 	}
 	e := f.Enum()
 	if e.Name == "" {
@@ -221,19 +283,61 @@ func ValidateEnumeration(val string, f Field, ctx ValidationContext) error {
 			// allow values like ILERA and 50ESKILSTUNA so just accept anything
 			return ValidateString(val, f, ctx)
 		}
-		return fmt.Errorf("%s unknown enumeration %q", f.Name, f.EnumName)
+		return errorf("%s unknown enumeration %q", f.Name, f.EnumName)
 	}
 	vals := e.Value(val)
 	if len(vals) == 0 {
 		if e.Name == "Secondary_Administrative_Subdivision" {
 			// TODO add ValidateCounties; ADIF spec only lists Alaska values but has
 			// references to formats and other sources in III.B.12
-			return nil
+			return valid()
 		}
-		return fmt.Errorf("%s unknown value %q for enumeration %s", f.Name, val, e.Name)
+		fn := errorf
+		if ctx.UnknownEnumValueWarning {
+			fn = warningf
+		}
+		return fn("%s unknown value %q for enumeration %s", f.Name, val, e.Name)
 	}
-	// TODO check EnumScope
-	return nil
+	if f.EnumScope != "" {
+		return ValidateEnumScope(val, f, ctx)
+	}
+	return valid()
+}
+
+func ValidateEnumScope(val string, f Field, ctx ValidationContext) Validation {
+	if val == "" || f.EnumScope == "" {
+		return valid()
+	}
+	e := f.Enum()
+	vals := e.Value(val)
+	if len(vals) == 0 {
+		fn := errorf
+		if ctx.UnknownEnumValueWarning {
+			fn = warningf
+		}
+		return fn("%s unknown value %q for enumeration %s", f.Name, val, e.Name)
+	}
+	var sval string
+	if ctx.FieldValue != nil {
+		sval = ctx.FieldValue(f.EnumScope)
+	}
+	if sval != "" {
+		var match bool
+		prop := e.ScopeProperty()
+		if prop == "" {
+			return warningf("%s config error! %s doesn't have a ScopeProperty", f.Name, e.Name)
+		}
+		for _, v := range vals {
+			if v.Property(prop) == sval {
+				match = true
+				break
+			}
+		}
+		if !match {
+			return warningf("%s value %q is not valid for %s=%q", f.Name, val, f.EnumScope, sval)
+		}
+	}
+	return valid()
 }
 
 func isASCIIChar(c rune) bool { return c >= 32 && c <= 126 }
