@@ -122,6 +122,12 @@ adds the field if it is not already present in the record.  The `-remove` flag
 (field names, optionally comma-separated) deletes the field from all records.
 The `-remove-blank` removes all blank fields (string representation is empty).
 
+The `-time-zone-from` and `-time-zone-to` flags will shift the `TIME_ON` and
+`TIME_OFF` fields (along with `QSO_DATE` and `QSO_DATE_OFF` if applicable) from
+one time zone to another, defaulting to UTC.  For example, if you have a CSV
+file with contact times in your local QTH in New South Wales you can convert it
+to UTC (Zulu time) with `adifmt edit -time-zone-from Australia/Sydney file.csv`.
+
 #### fix
 
 `adifmt fix` coerces some fields into the format dictated by the ADIF

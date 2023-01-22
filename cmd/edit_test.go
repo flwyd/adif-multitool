@@ -16,7 +16,9 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/flwyd/adif-multitool/adif"
 	"github.com/google/go-cmp/cmp"
@@ -126,6 +128,86 @@ foo3,bar3,
 `
 		if diff := cmp.Diff(want, got); diff != "" {
 			t.Errorf("Edit.Run(ctx, foo.adi) unexpected output, diff:\n%s", diff)
+		}
+	}
+}
+
+func TestAdjustTimeZone(t *testing.T) {
+	type state struct {
+		dateOn, dateOff, timeOn, timeOff string
+	}
+	toCsv := func(s state) string {
+		return fmt.Sprintf("%s,%s,%s,%s", s.dateOn, s.timeOn, s.dateOff, s.timeOff)
+	}
+	zones := make(map[string]*time.Location)
+	for _, z := range []string{"UTC", "Asia/Bangkok", "Asia/Kolkata", "Asia/Shanghai", "America/New_York"} {
+		l, err := time.LoadLocation(z)
+		if err != nil {
+			t.Fatalf("could not load time zone %s: %v", z, err)
+		}
+		zones[z] = l
+	}
+	tests := []struct {
+		start, want state
+		from, to    *time.Location
+		wantErr     bool
+	}{
+		{
+			start: state{dateOn: "", dateOff: "", timeOn: "2008", timeOff: "0102"},
+			want:  state{dateOn: "", dateOff: "", timeOn: "1208", timeOff: "1702"},
+			from:  zones["Asia/Shanghai"], to: zones["UTC"],
+			wantErr: true,
+		},
+		{
+			start: state{dateOn: "", dateOff: "", timeOn: "2008", timeOff: "0102"},
+			want:  state{dateOn: "", dateOff: "", timeOn: "2008", timeOff: "0102"},
+			from:  zones["America/New_York"], to: zones["America/New_York"],
+			wantErr: false,
+		},
+		{
+			start: state{dateOn: "20080808", dateOff: "20080809", timeOn: "2008", timeOff: "0102"},
+			want:  state{dateOn: "20080808", dateOff: "20080808", timeOn: "1208", timeOff: "1702"},
+			from:  zones["Asia/Shanghai"], to: zones["UTC"],
+		},
+		{
+			start: state{dateOn: "20201231", dateOff: "20201231", timeOn: "231545", timeOff: "232010"},
+			want:  state{dateOn: "20210101", dateOff: "20210101", timeOn: "041545", timeOff: "042010"},
+			from:  zones["America/New_York"], to: zones["UTC"],
+		},
+		{
+			start: state{dateOn: "20210519", dateOff: "20210519", timeOn: "123456", timeOff: "1312"},
+			want:  state{dateOn: "20210519", dateOff: "20210519", timeOn: "110456", timeOff: "1142"},
+			from:  zones["Asia/Bangkok"], to: zones["Asia/Kolkata"],
+		},
+	}
+	header := "QSO_DATE,TIME_ON,QSO_DATE_OFF,TIME_OFF"
+	for _, tc := range tests {
+		csv := adif.NewCSVIO()
+		out := &bytes.Buffer{}
+		file1 := fmt.Sprintf("%s\n%s\n", header, toCsv(tc.start))
+		ctx := &Context{
+			ProgramName:    "edit test",
+			ProgramVersion: "1.2.3",
+			ADIFVersion:    "3.1.4",
+			OutputFormat:   adif.FormatCSV,
+			Readers:        map[adif.Format]adif.Reader{adif.FormatCSV: csv},
+			Writers:        map[adif.Format]adif.Writer{adif.FormatCSV: csv},
+			Out:            out,
+			fs:             fakeFilesystem{map[string]string{"foo.csv": file1}},
+			CommandCtx:     &editContext{fromZone: timeZone{tz: tc.from}, toZone: timeZone{tz: tc.to}}}
+		if tc.wantErr {
+			if err := Edit.Run(ctx, []string{"foo.csv"}); err == nil {
+				got := out.String()
+				t.Errorf("edit -time-zone-from=%s -time-zone-to=%s from\n%swant error, got\n%s", tc.from, tc.to, file1, got)
+			}
+		} else if err := Edit.Run(ctx, []string{"foo.csv"}); err != nil {
+			t.Errorf("edit -time-zone-from=%s -time-zone-to=%s from\n%sgot error %v", tc.from, tc.to, file1, err)
+		} else {
+			got := out.String()
+			want := fmt.Sprintf("%s\n%s\n", header, toCsv(tc.want))
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Errorf("edit -time-zone-from=%s -time-zone-to=%s from\n%sgot diff\n%s", tc.from, tc.to, file1, diff)
+			}
 		}
 	}
 }

@@ -16,8 +16,10 @@ package cmd
 import (
 	"flag"
 	"fmt"
+	"time"
 
 	"github.com/flwyd/adif-multitool/adif"
+	"github.com/flwyd/adif-multitool/adif/spec"
 )
 
 var Edit = Command{Name: "edit", Run: runEdit, AddFlags: editFlags,
@@ -28,6 +30,8 @@ type editContext struct {
 	set         fieldAssignments
 	remove      fieldList
 	removeBlank bool
+	fromZone    timeZone
+	toZone      timeZone
 }
 
 func editFlags(ctx *Context, fs *flag.FlagSet) {
@@ -37,8 +41,10 @@ func editFlags(ctx *Context, fs *flag.FlagSet) {
 		remove: make(fieldList, 0)}
 	fs.Var(&cctx.add, "add", "Add `field=value` if field is not already in a record (repeatable)")
 	fs.Var(&cctx.set, "set", "Set `field=value` for all records (repeatable)")
-	fs.Var(&cctx.remove, "remove", "Remove fields from all records (comma-separated, repeatable)")
+	fs.Var(&cctx.remove, "remove", "Remove `fields` from all records (comma-separated, repeatable)")
 	fs.BoolVar(&cctx.removeBlank, "remove-blank", false, "Remove all blank fields")
+	fs.Var(&cctx.fromZone, "time-zone-from", "Adjust times and dates from this time `zone` into -time-zone-to (default UTC)")
+	fs.Var(&cctx.toZone, "time-zone-to", "Adjust times and dates into this time `zone` from -time-zone-from (default UTC)")
 	ctx.CommandCtx = &cctx
 }
 
@@ -63,6 +69,9 @@ func runEdit(ctx *Context, args []string) error {
 			return fmt.Errorf("%q in both -set and -add", f.Name)
 		}
 	}
+	fromTz := cctx.fromZone.Get()
+	toTz := cctx.toZone.Get()
+	adjustTz := fromTz.String() != toTz.String()
 	srcs := argSources(ctx, args...)
 	out := adif.NewLogfile("")
 	for _, f := range srcs {
@@ -102,9 +111,60 @@ func runEdit(ctx *Context, args []string) error {
 				seen[f.Name] = true
 			}
 			if len(fields) > 0 {
-				out.Records = append(out.Records, adif.NewRecord(fields...))
+				rec := adif.NewRecord(fields...)
+				if adjustTz {
+					if err := adjustTimeZone(rec, fromTz, toTz); err != nil {
+						return fmt.Errorf("could not adjust time zone: %w", err)
+					}
+				}
+				out.Records = append(out.Records, rec)
 			}
 		}
 	}
 	return write(ctx, out)
+}
+
+func adjustTimeZone(r *adif.Record, from, to *time.Location) error {
+	dayfmt := "20060102"
+	adjust := func(timef, dayf, dayfallback adif.Field) error {
+		timefmt := "150405"
+		if len(timef.Value) == 4 {
+			timefmt = "1504"
+		}
+		day := dayf
+		if dayf.Value == "" {
+			day = dayfallback
+		}
+		t, err := time.ParseInLocation(dayfmt+timefmt, day.Value+timef.Value, from)
+		if err != nil {
+			return fmt.Errorf("invalid %s %s: %w", day, timef, err)
+		}
+		t = t.In(to)
+		timef.Value = t.Format(timefmt)
+		r.Set(timef)
+		if dayf.Value != "" {
+			dayf.Value = t.Format(dayfmt)
+			r.Set(dayf)
+		}
+		return nil
+	}
+	ton, tonok := r.Get(spec.TimeOnField.Name)
+	toff, toffok := r.Get(spec.TimeOffField.Name)
+	don, donok := r.Get(spec.QsoDateField.Name)
+	doff, doffok := r.Get(spec.QsoDateOffField.Name)
+	if !donok && !doffok {
+		return fmt.Errorf("no %s or %s field for %s %s",
+			spec.QsoDateField.Name, spec.QsoDateOffField.Name, ton, toff)
+	}
+	if tonok {
+		if err := adjust(ton, don, doff); err != nil {
+			return err
+		}
+	}
+	if toffok {
+		if err := adjust(toff, doff, don); err != nil {
+			return err
+		}
+	}
+	return nil
 }
