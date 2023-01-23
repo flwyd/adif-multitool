@@ -473,7 +473,7 @@ func TestValidateContestID(t *testing.T) {
 	}
 }
 
-func TestGridsquare(t *testing.T) {
+func TestValidateGridsquare(t *testing.T) {
 	tests := []validateTest{
 		{field: GridsquareField, value: "", want: Valid},
 		// First letter pair is only valid A-R, thuogh we don't check this
@@ -574,5 +574,44 @@ func TestGridsquareList(t *testing.T) {
 	}
 	for _, tc := range tests {
 		testValidator(t, tc, emptyCtx, "ValidateGridsquareList")
+	}
+}
+
+func TestValidateLocation(t *testing.T) {
+	// TODO add a field validator that ensures latitude is only north/south and <= 90 and longitude is only east/west
+	tests := []validateTest{
+		{field: LatField, value: "", want: Valid},
+		{field: LonField, value: "", want: Valid},
+		{field: LatField, value: "N000 00.000", want: Valid},
+		{field: LatField, value: "S000 00.000", want: Valid},
+		{field: LonField, value: "E000 00.000", want: Valid},
+		{field: LonField, value: "W000 00.000", want: Valid},
+		{field: MyLatField, value: "N001 00.000", want: Valid},
+		{field: MyLatField, value: "S090 00.000", want: Valid},
+		{field: MyLonField, value: "E009 00.000", want: Valid},
+		{field: MyLonField, value: "W180 00.000", want: Valid},
+		{field: LatField, value: "N012 34.567", want: Valid},
+		{field: LatField, value: "S023 59.999", want: Valid},
+		{field: LonField, value: "E000 00.001", want: Valid},
+		{field: LonField, value: "W120 30.050", want: Valid},
+		{field: LatField, value: "Equator", want: InvalidError},
+		{field: LonField, value: "Greenwich", want: InvalidError},
+		{field: LatField, value: "X012 34.567", want: InvalidError},
+		{field: LatField, value: "N01234.567", want: InvalidError},
+		{field: LatField, value: "N012 3.4567", want: InvalidError},
+		{field: LatField, value: "S23 59.999", want: InvalidError},
+		{field: LonField, value: "E0 00.001", want: InvalidError},
+		{field: LonField, value: "W120 30.05", want: InvalidError},
+		{field: LonField, value: "W123 4.567", want: InvalidError},
+		{field: LonField, value: "120 30.050", want: InvalidError},
+		{field: LonField, value: "E123 45.678extra", want: InvalidError},
+		{field: MyLatField, value: "12.345678", want: InvalidError},
+		{field: MyLatField, value: "-6.543", want: InvalidError},
+		{field: MyLonField, value: "123 45.678E", want: InvalidError},
+		{field: MyLonField, value: `123 45' 54.321"`, want: InvalidError},
+		{field: MyLonField, value: `-123° 45' 54.321"`, want: InvalidError},
+	}
+	for _, tc := range tests {
+		testValidator(t, tc, emptyCtx, "ValidateLocation")
 	}
 }

@@ -22,6 +22,8 @@ import (
 	"time"
 	"unicode"
 	"unicode/utf8"
+
+	"golang.org/x/exp/constraints"
 )
 
 type Validity int
@@ -59,7 +61,10 @@ func warningf(format string, a ...any) Validation {
 	return Validation{Validity: InvalidWarning, Message: fmt.Sprintf(format, a...)}
 }
 
-var allNumeric = regexp.MustCompile("^[0-9]*$")
+var (
+	allNumeric  = regexp.MustCompile("^[0-9]*$")
+	locationPat = regexp.MustCompile(`^(?i)([NESW])([0-9]{3}) ([0-9]{2}\.[0-9]{3})$`)
+)
 
 type ValidationContext struct {
 	UnknownEnumValueWarning bool // if true, values not in an enumeration are a warning, otherwise an error
@@ -81,6 +86,7 @@ var TypeValidators = map[string]FieldValidator{
 	"Integer":                  ValidateNumber,
 	"IntlString":               ValidateIntlString,
 	"IntlMultilineString":      ValidateIntlString,
+	"Location":                 ValidateLocation,
 	"MultilineString":          ValidateString,
 	"Number":                   ValidateNumber,
 	"PositiveInteger":          ValidateNumber,
@@ -89,7 +95,6 @@ var TypeValidators = map[string]FieldValidator{
 	"AwardList":                ValidateNoop, // TODO
 	"CreditList":               ValidateNoop, // TODO
 	"IOTARefNo":                ValidateNoop, // TODO
-	"Location":                 ValidateNoop, // TODO
 	"POTARef":                  ValidateNoop, // TODO
 	"POTARefList":              ValidateNoop, // TODO
 	"SOTARef":                  ValidateNoop, // TODO
@@ -171,7 +176,7 @@ func ValidateDigit(val string, f Field, ctx ValidationContext) Validation {
 		return errorf("%s not a single digit %q", f.Name, val)
 	}
 	d := val[0]
-	if d < '0' || d > '9' {
+	if !between(d, '0', '9') {
 		return errorf("%s not an ASCII digit %q", f.Name, val)
 	}
 	return valid()
@@ -182,7 +187,7 @@ func ValidateNumber(val string, f Field, ctx ValidationContext) Validation {
 		return errorf("%s empty number", f.Name)
 	}
 	for _, r := range val {
-		if (r < '0' || r > '9') && (r != '-' && r != '.') {
+		if !between(r, '0', '9') && (r != '-' && r != '.') {
 			// ADIF spec doesn't allow +123 or 1.23e7 as numbers
 			return errorf("%s invalid number %q", f.Name, val)
 		}
@@ -267,6 +272,27 @@ func ValidateTime(val string, f Field, ctx ValidationContext) Validation {
 		}
 	default:
 		return errorf("%s not an 4- or 6-digit time %q", f.Name, val)
+	}
+	return valid()
+}
+
+func ValidateLocation(val string, f Field, ctx ValidationContext) Validation {
+	if val == "" {
+		return valid()
+	}
+	g := locationPat.FindStringSubmatch(val)
+	if g == nil {
+		return errorf("%s invalid location format, make sure to zero-pad %q", f.Name, val)
+	}
+	if deg, err := strconv.ParseInt(g[2], 10, 64); err != nil {
+		return errorf("%s non-numeric degrees in %q", f.Name, val)
+	} else if !between(deg, 0, 180) {
+		return errorf("%s degrees out of range in %q", f.Name, val)
+	}
+	if min, err := strconv.ParseFloat(g[3], 10); err != nil {
+		return errorf("%s non-numeric degrees in %q", f.Name, val)
+	} else if !between(min, 0.0, 60.0) {
+		return errorf("%s minutes out of range in %q", f.Name, val)
 	}
 	return valid()
 }
@@ -386,4 +412,8 @@ func listValidator(fv FieldValidator) FieldValidator {
 	}
 }
 
-func isASCIIChar(c rune) bool { return c >= 32 && c <= 126 }
+func isASCIIChar(c rune) bool { return between(c, 32, 126) }
+
+func between[T constraints.Ordered](val, low, high T) bool {
+	return val >= low && val <= high
+}
