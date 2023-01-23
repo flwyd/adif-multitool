@@ -29,7 +29,7 @@ type Context struct {
 	Readers        map[adif.Format]adif.Reader
 	Writers        map[adif.Format]adif.Writer
 	Out            io.Writer
-	CommandCtx     interface{}
+	CommandCtx     any
 	fs             filesystem
 }
 
