@@ -64,6 +64,16 @@ func warningf(format string, a ...any) Validation {
 var (
 	allNumeric  = regexp.MustCompile("^[0-9]*$")
 	locationPat = regexp.MustCompile(`^(?i)([NESW])([0-9]{3}) ([0-9]{2}\.[0-9]{3})$`)
+	// POTA reference A-B@C-D. A is the program identifier (generally an ITU callsign prefix).
+	// B is a 4- or 5-digit park number, zero padded.  @C-D is an optional location qualifier.
+	// ADIF says C-D follows ISO 3166-2 which would be 2-3 letters, but POTA has
+	// some nonstandard country codes: F (France), G (Great Britain), and 9M (Malaysia).
+	// There are also non-standard subdivisions, including long English county abbreviations.
+	potaPat = regexp.MustCompile(
+		"^(?i)[A-Z0-9]{1,4}-[0-9]{4,5}(?:@(?:[A-Z]{2}|F|G|9M)-[A-Z0-9]{2,9})?$")
+	sotaPat = regexp.MustCompile("^(?i)[A-Z0-9]{1,4}/[A-Z]{2}-[0-9]{3}$")
+	iotaPat = regexp.MustCompile("^(?i)(AF|AN|AS|EU|NA|OC|SA)-[0-9]{3}$")
+	wwffPat = regexp.MustCompile("^(?i)[A-Z0-9]{1,4}FF-[0-9]{4}$")
 )
 
 type ValidationContext struct {
@@ -86,21 +96,21 @@ var TypeValidators = map[string]FieldValidator{
 	"Integer":                  ValidateNumber,
 	"IntlString":               ValidateIntlString,
 	"IntlMultilineString":      ValidateIntlString,
+	"IOTARefNo":                formatValidator("IOTA reference", iotaPat),
 	"Location":                 ValidateLocation,
 	"MultilineString":          ValidateString,
 	"Number":                   ValidateNumber,
+	"POTARef":                  formatValidator("POTA reference", potaPat),
+	"POTARefList":              listValidator(formatValidator("POTA reference", potaPat)),
 	"PositiveInteger":          ValidateNumber,
+	"SOTARef":                  formatValidator("SOTA reference", sotaPat),
 	"String":                   ValidateString,
 	"Time":                     ValidateTime,
+	"WWFFRef":                  formatValidator("WWFF reference", wwffPat),
 	"AwardList":                ValidateNoop, // TODO
 	"CreditList":               ValidateNoop, // TODO
-	"IOTARefNo":                ValidateNoop, // TODO
-	"POTARef":                  ValidateNoop, // TODO
-	"POTARefList":              ValidateNoop, // TODO
-	"SOTARef":                  ValidateNoop, // TODO
 	"SecondarySubdivisionList": ValidateNoop, // TODO
 	"SponsoredAwardList":       ValidateNoop, // TODO
-	"WWFFRef":                  ValidateNoop, // TODO
 }
 
 func ValidateNoop(value string, f Field, ctx ValidationContext) Validation { return valid() }
@@ -407,6 +417,18 @@ func listValidator(fv FieldValidator) FieldValidator {
 			if res := fv(v, f, ctx); res.Validity != Valid {
 				return res
 			}
+		}
+		return valid()
+	}
+}
+
+func formatValidator(name string, p *regexp.Regexp) FieldValidator {
+	return func(val string, f Field, ctx ValidationContext) Validation {
+		if val == "" {
+			return valid()
+		}
+		if !p.MatchString(val) {
+			return errorf("%s invalid %s format %q", f.Name, name, val)
 		}
 		return valid()
 	}

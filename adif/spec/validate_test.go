@@ -615,3 +615,110 @@ func TestValidateLocation(t *testing.T) {
 		testValidator(t, tc, emptyCtx, "ValidateLocation")
 	}
 }
+
+func TestValidateIOTARef(t *testing.T) {
+	tests := []validateTest{
+		{field: IotaField, value: "", want: Valid},
+		{field: IotaField, value: "AF-001", want: Valid},
+		{field: IotaField, value: "AN-999", want: Valid},
+		{field: IotaField, value: "AS-123", want: Valid},
+		{field: IotaField, value: "EU-321", want: Valid},
+		{field: IotaField, value: "na-500", want: Valid},
+		{field: IotaField, value: "OC-842", want: Valid},
+		{field: IotaField, value: "SA-767", want: Valid},
+		{field: IotaField, value: "-", want: InvalidError},
+		{field: IotaField, value: "987", want: InvalidError},
+		{field: IotaField, value: "AF-1", want: InvalidError},
+		{field: IotaField, value: "AN-9999", want: InvalidError},
+		{field: IotaField, value: "AS123", want: InvalidError},
+		{field: IotaField, value: "-321", want: InvalidError},
+		{field: IotaField, value: "AQ-123", want: InvalidError},
+		{field: IotaField, value: "EUROPE-555", want: InvalidError},
+		{field: IotaField, value: "N.A-876", want: InvalidError},
+		{field: IotaField, value: "SA 432", want: InvalidError},
+		{field: IotaField, value: "AF-345,AF-678", want: InvalidError},
+		{field: IotaField, value: "AS-12C", want: InvalidError},
+		{field: IotaField, value: "OC-022 Bali", want: InvalidError},
+	}
+	for _, tc := range tests {
+		testValidator(t, tc, emptyCtx, "ValidateIOTARef")
+	}
+}
+
+func TestValidatePOTARef(t *testing.T) {
+	tests := []validateTest{
+		{field: PotaRefField, value: "", want: Valid},
+		{field: MyPotaRefField, value: "K-0001", want: Valid},
+		{field: PotaRefField, value: "5B-0123", want: Valid},
+		{field: MyPotaRefField, value: "ja-1491", want: Valid},
+		{field: PotaRefField, value: "CE9-0001", want: Valid},
+		{field: MyPotaRefField, value: "ca-0016@cl-at", want: Valid},
+		{field: PotaRefField, value: "K-0103@US-KP4", want: Valid},
+		{field: MyPotaRefField, value: "9M-0129@9M-WM", want: Valid},
+		{field: PotaRefField, value: "G-0086@G-NORTHANTS", want: Valid},
+		{field: MyPotaRefField, value: "K-0028,VE-0110", want: Valid},
+		{field: PotaRefField, value: "3D2-0003,3D2-0004,3D2-0005", want: Valid},
+		{field: MyPotaRefField, value: "BY-0004@CN-SA,BY-0004@CN-SX", want: Valid},
+		{field: PotaRefField, value: "-", want: InvalidError},
+		{field: MyPotaRefField, value: "K-1", want: InvalidError},
+		{field: PotaRefField, value: "5B-123", want: InvalidError},
+		{field: MyPotaRefField, value: "LA1234", want: InvalidError},
+		{field: PotaRefField, value: "-1491", want: InvalidError},
+		{field: MyPotaRefField, value: "CE9", want: InvalidError},
+		{field: PotaRefField, value: "ca-0016@-at", want: InvalidError},
+		{field: MyPotaRefField, value: "K-0103@KP4-PR", want: InvalidError},
+		{field: PotaRefField, value: "4X-0040@4X-HA", want: InvalidError},
+		{field: MyPotaRefField, value: "G-0048@G-NOTTINGHAMSHIRE", want: InvalidError},
+		{field: PotaRefField, value: "K-0028 , VE-0110", want: InvalidError},
+		{field: MyPotaRefField, value: "3D2-0003,3D2-0004,3D20005", want: InvalidError},
+		{field: PotaRefField, value: "BY-0004@CNSA,BY-0004@CN-SX", want: InvalidError},
+	}
+	for _, tc := range tests {
+		testValidator(t, tc, emptyCtx, "ValidatePOTARef")
+	}
+}
+
+func TestValidateSOTARef(t *testing.T) {
+	tests := []validateTest{
+		{field: SotaRefField, value: "", want: Valid},
+		{field: MySotaRefField, value: "F/AB-456", want: Valid},
+		{field: SotaRefField, value: "ZS/WC-971", want: Valid},
+		{field: MySotaRefField, value: "CE3/CO-099", want: Valid},
+		{field: SotaRefField, value: "w0c/fr-226", want: Valid},
+		{field: MySotaRefField, value: "9A/DH-173", want: Valid},
+		{field: SotaRefField, value: "3Y/BV-001", want: Valid},
+		{field: MySotaRefField, value: "/", want: InvalidError},
+		{field: SotaRefField, value: "F-AB/456", want: InvalidError},
+		{field: MySotaRefField, value: "WC-971", want: InvalidError},
+		{field: SotaRefField, value: "CE3/CO-99", want: InvalidError},
+		{field: MySotaRefField, value: "PY2/SAO-123", want: InvalidError},
+		{field: SotaRefField, value: "VP8/SG-1234", want: InvalidError},
+		{field: MySotaRefField, value: "ALGERIA/JK-123", want: InvalidError},
+		{field: SotaRefField, value: "JA/NN-211 Fuji", want: InvalidError},
+		{field: MySotaRefField, value: "W0C/FR-110,W0C/FR-118", want: InvalidError},
+	}
+	for _, tc := range tests {
+		testValidator(t, tc, emptyCtx, "ValidateSOTARef")
+	}
+}
+
+func TestValidateWWFFRef(t *testing.T) {
+	tests := []validateTest{
+		{field: WwffRefField, value: "", want: Valid},
+		{field: MyWwffRefField, value: "FFF-3210", want: Valid},
+		{field: WwffRefField, value: "1SFF-0001", want: Valid},
+		{field: MyWwffRefField, value: "cuff-0193", want: Valid},
+		{field: WwffRefField, value: "3D2FF-0007", want: Valid},
+		{field: MyWwffRefField, value: "-", want: InvalidError},
+		{field: WwffRefField, value: "FFF/3210", want: InvalidError},
+		{field: MyWwffRefField, value: "1SFF 0001", want: InvalidError},
+		{field: WwffRefField, value: "cuff-12345", want: InvalidError},
+		{field: MyWwffRefField, value: "3D2FF-7", want: InvalidError},
+		{field: WwffRefField, value: "ZSAA-1234", want: InvalidError},
+		{field: MyWwffRefField, value: "SHFF-0014 Serengeti", want: InvalidError},
+		{field: WwffRefField, value: "KFF-0043,KFF-0042", want: InvalidError},
+	}
+	for _, tc := range tests {
+		testValidator(t, tc, emptyCtx, "ValidateWWFFRef")
+	}
+}
