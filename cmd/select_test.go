@@ -36,8 +36,8 @@ func TestSelectNoFields(t *testing.T) {
 		ProgramVersion: "1.2.3",
 		ADIFVersion:    "3.1.4",
 		OutputFormat:   adif.FormatCSV,
-		Readers:        map[adif.Format]adif.Reader{adif.FormatADI: adi, adif.FormatCSV: csv},
-		Writers:        map[adif.Format]adif.Writer{adif.FormatADI: adi, adif.FormatCSV: csv},
+		Readers:        readers(adi, csv),
+		Writers:        writers(adi, csv),
 		Out:            out,
 		fs:             fakeFilesystem{map[string]string{"foo.adi": adiFile}},
 		CommandCtx:     cctx}
@@ -69,8 +69,8 @@ func TestSelectSingleFile(t *testing.T) {
 			ProgramVersion: "1.2.3",
 			ADIFVersion:    "3.1.4",
 			OutputFormat:   adif.FormatCSV,
-			Readers:        map[adif.Format]adif.Reader{adif.FormatADI: adi, adif.FormatCSV: csv},
-			Writers:        map[adif.Format]adif.Writer{adif.FormatADI: adi, adif.FormatCSV: csv},
+			Readers:        readers(adi, csv),
+			Writers:        writers(adi, csv),
 			Out:            out,
 			fs:             fakeFilesystem{map[string]string{"foo.adi": adiFile}},
 			CommandCtx:     cctx}

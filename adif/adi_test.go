@@ -24,7 +24,7 @@ import (
 // TODO test a file without a header (first character is <)
 
 func TestEmptyADI(t *testing.T) {
-	input := StringSource{Filename: "empty.adi",
+	input := StringReader{Filename: "empty.adi",
 		Reader: strings.NewReader("Created on 2001-02-03 at 4:05\n")}
 	adi := NewADIIO()
 	if parsed, err := adi.Read(input); err != nil {
@@ -37,7 +37,7 @@ func TestEmptyADI(t *testing.T) {
 }
 
 func TestReadADI(t *testing.T) {
-	input := StringSource{Filename: "test.adi", Reader: strings.NewReader(
+	input := StringReader{Filename: "test.adi", Reader: strings.NewReader(
 		`Generated today <ADIF_VER:5>3.1.4 <CREATED_TIMESTAMP:15>20220102 153456 <PROGRAMID:11>adi_test <PROGRAMVERSION:5>1.2.3 <EOH>
 <QSO_DATE:8>19901031 <TIME_ON:4>1234  <BAND:3>40M<CALLSIGN:4>W1AW
 <NAME:18>Hiram Percey Maxim <EOR>

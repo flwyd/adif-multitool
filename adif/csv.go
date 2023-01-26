@@ -33,7 +33,9 @@ func NewCSVIO() *CSVIO {
 	return &CSVIO{Comma: ','}
 }
 
-func (o *CSVIO) Read(in Source) (*Logfile, error) {
+func (o *CSVIO) String() string { return "csv" }
+
+func (o *CSVIO) Read(in NamedReader) (*Logfile, error) {
 	l := NewLogfile(in.Name())
 	c := csv.NewReader(in)
 	c.Comma = o.Comma
@@ -115,5 +117,3 @@ func (o *CSVIO) Write(l *Logfile, out io.Writer) error {
 	}
 	return nil
 }
-
-func (o *CSVIO) String() string { return "csv" }

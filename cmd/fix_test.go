@@ -34,8 +34,8 @@ func TestFixEmpty(t *testing.T) {
 		ProgramVersion: "1.2.3",
 		ADIFVersion:    "3.1.4",
 		OutputFormat:   adif.FormatADI,
-		Readers:        map[adif.Format]adif.Reader{adif.FormatADI: adi, adif.FormatCSV: csv},
-		Writers:        map[adif.Format]adif.Writer{adif.FormatADI: adi, adif.FormatCSV: csv},
+		Readers:        readers(adi, csv),
+		Writers:        writers(adi, csv),
 		Out:            out,
 		fs:             fakeFilesystem{map[string]string{"foo.csv": file1}},
 		CommandCtx: &editContext{
@@ -88,8 +88,8 @@ func TestFixDate(t *testing.T) {
 				ProgramVersion: "1.2.3",
 				ADIFVersion:    "3.1.4",
 				OutputFormat:   adif.FormatADI,
-				Readers:        map[adif.Format]adif.Reader{adif.FormatADI: adi, adif.FormatCSV: csv},
-				Writers:        map[adif.Format]adif.Writer{adif.FormatADI: adi, adif.FormatCSV: csv},
+				Readers:        readers(adi, csv),
+				Writers:        writers(adi, csv),
 				Out:            out,
 				fs:             fakeFilesystem{map[string]string{"foo.csv": file1}}}
 			if err := Fix.Run(ctx, []string{"foo.csv"}); err != nil {
@@ -148,8 +148,8 @@ func TestFixTime(t *testing.T) {
 				ProgramVersion: "1.2.3",
 				ADIFVersion:    "3.1.4",
 				OutputFormat:   adif.FormatADI,
-				Readers:        map[adif.Format]adif.Reader{adif.FormatADI: adi, adif.FormatCSV: csv},
-				Writers:        map[adif.Format]adif.Writer{adif.FormatADI: adi, adif.FormatCSV: csv},
+				Readers:        readers(adi, csv),
+				Writers:        writers(adi, csv),
 				Out:            out,
 				fs:             fakeFilesystem{map[string]string{"foo.csv": file1}}}
 			if err := Fix.Run(ctx, []string{"foo.csv"}); err != nil {

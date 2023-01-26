@@ -31,8 +31,8 @@ func TestCatEmpty(t *testing.T) {
 		ProgramVersion: "1.2.3",
 		ADIFVersion:    "3.1.4",
 		OutputFormat:   adif.FormatADI,
-		Readers:        map[adif.Format]adif.Reader{adif.FormatADI: io},
-		Writers:        map[adif.Format]adif.Writer{adif.FormatADI: io},
+		Readers:        readers(io),
+		Writers:        writers(io),
 		Out:            out,
 		fs:             fakeFilesystem{map[string]string{"-": ""}}}
 	if err := Cat.Run(ctx, []string{}); err != nil {
@@ -67,8 +67,8 @@ func TestEditADIToCSV(t *testing.T) {
 		ProgramVersion: "1.2.3",
 		ADIFVersion:    "3.1.4",
 		OutputFormat:   adif.FormatCSV,
-		Readers:        map[adif.Format]adif.Reader{adif.FormatADI: adi, adif.FormatCSV: csv},
-		Writers:        map[adif.Format]adif.Writer{adif.FormatADI: adi, adif.FormatCSV: csv},
+		Readers:        readers(adi, csv),
+		Writers:        writers(adi, csv),
 		Out:            out,
 		fs:             fakeFilesystem{map[string]string{"foo.adi": file1, "bar.adi": file2}}}
 	if err := Cat.Run(ctx, []string{"foo.adi", "bar.adi"}); err != nil {
@@ -107,8 +107,8 @@ Fox Trot,Golf,Hotel,,
 		ProgramVersion: "1.2.3",
 		ADIFVersion:    "3.1.4",
 		OutputFormat:   adif.FormatADI,
-		Readers:        map[adif.Format]adif.Reader{adif.FormatADI: adi, adif.FormatCSV: csv},
-		Writers:        map[adif.Format]adif.Writer{adif.FormatADI: adi, adif.FormatCSV: csv},
+		Readers:        readers(adi, csv),
+		Writers:        writers(adi, csv),
 		Out:            out,
 		fs:             fakeFilesystem{map[string]string{"foo.csv": file1, "bar.csv": file2}}}
 	if err := Cat.Run(ctx, []string{"foo.csv", "bar.csv"}); err != nil {

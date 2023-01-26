@@ -22,7 +22,7 @@ import (
 )
 
 func TestEmptyCSV(t *testing.T) {
-	input := StringSource{Filename: "empty.csv",
+	input := StringReader{Filename: "empty.csv",
 		Reader: strings.NewReader("QSO_DATE,TIME_ON,BAND,CALLSIGN,NAME\n")}
 	csv := NewCSVIO()
 	if parsed, err := csv.Read(input); err != nil {
@@ -35,7 +35,7 @@ func TestEmptyCSV(t *testing.T) {
 }
 
 func TestReadCSV(t *testing.T) {
-	input := StringSource{Filename: "test.csv", Reader: strings.NewReader(
+	input := StringReader{Filename: "test.csv", Reader: strings.NewReader(
 		`QSO_DATE,TIME_ON,BAND,CALLSIGN,NAME
 19901031,1234,40M,W1AW,Hiram Percey Maxim
 20221224,095846,1.25cm,N0P,Santa Claus

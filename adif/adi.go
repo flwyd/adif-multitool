@@ -40,7 +40,9 @@ func NewADIIO() *ADIIO {
 	}
 }
 
-func (_ *ADIIO) Read(in Source) (*Logfile, error) {
+func (_ *ADIIO) String() string { return "adi" }
+
+func (_ *ADIIO) Read(in NamedReader) (*Logfile, error) {
 	l := NewLogfile(in.Name())
 	r := bufio.NewReader(in)
 	s, err := r.ReadString('<')

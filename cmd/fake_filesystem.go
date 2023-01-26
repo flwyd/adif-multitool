@@ -26,8 +26,8 @@ type fakeSource struct {
 	reader *strings.Reader
 }
 
-func (s fakeSource) Open() (adif.Source, error) {
-	return adif.StringSource{Reader: s.reader, Filename: s.name}, nil
+func (s fakeSource) Open() (adif.NamedReader, error) {
+	return adif.StringReader{Reader: s.reader, Filename: s.name}, nil
 }
 
 func (s fakeSource) String() string { return s.name }
@@ -36,7 +36,7 @@ type errorSource struct {
 	err error
 }
 
-func (s errorSource) Open() (adif.Source, error) { return nil, s.err }
+func (s errorSource) Open() (adif.NamedReader, error) { return nil, s.err }
 
 type fakeFilesystem struct{ files map[string]string }
 

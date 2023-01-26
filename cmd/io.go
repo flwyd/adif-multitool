@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -53,6 +54,9 @@ func readSource(ctx *Context, f argSource) (*adif.Logfile, error) {
 	if err != nil {
 		return nil, err
 	}
+	if c, ok := src.(io.Closer); ok {
+		defer c.Close()
+	}
 	ext := strings.TrimPrefix(filepath.Ext(src.Name()), ".")
 	format, err := adif.ParseFormat(ext)
 	if err != nil {
@@ -66,17 +70,19 @@ func readSource(ctx *Context, f argSource) (*adif.Logfile, error) {
 	return l, nil
 }
 
-type argSource interface{ Open() (adif.Source, error) }
+type argSource interface {
+	Open() (adif.NamedReader, error)
+}
 
 type fileSource struct{ filename string }
 
-func (s fileSource) Open() (adif.Source, error) { return os.Open(s.filename) }
+func (s fileSource) Open() (adif.NamedReader, error) { return os.Open(s.filename) }
 
 func (s fileSource) String() string { return s.filename }
 
 type stdinSource struct{}
 
-func (s stdinSource) Open() (adif.Source, error) { return os.Stdin, nil }
+func (s stdinSource) Open() (adif.NamedReader, error) { return os.Stdin, nil }
 
 func (s stdinSource) String() string { return os.Stdin.Name() }
 
