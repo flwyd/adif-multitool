@@ -14,15 +14,18 @@ import (
 const (
 	// FormatADI is a Format of type ADI.
 	FormatADI Format = iota
+	// FormatADX is a Format of type ADX.
+	FormatADX
 	// FormatCSV is a Format of type CSV.
 	FormatCSV
 )
 
-const _FormatName = "ADICSV"
+const _FormatName = "ADIADXCSV"
 
 var _FormatNames = []string{
 	_FormatName[0:3],
 	_FormatName[3:6],
+	_FormatName[6:9],
 }
 
 // FormatNames returns a list of possible string values of Format.
@@ -34,7 +37,8 @@ func FormatNames() []string {
 
 var _FormatMap = map[Format]string{
 	FormatADI: _FormatName[0:3],
-	FormatCSV: _FormatName[3:6],
+	FormatADX: _FormatName[3:6],
+	FormatCSV: _FormatName[6:9],
 }
 
 // String implements the Stringer interface.
@@ -48,8 +52,10 @@ func (x Format) String() string {
 var _FormatValue = map[string]Format{
 	_FormatName[0:3]:                  FormatADI,
 	strings.ToLower(_FormatName[0:3]): FormatADI,
-	_FormatName[3:6]:                  FormatCSV,
-	strings.ToLower(_FormatName[3:6]): FormatCSV,
+	_FormatName[3:6]:                  FormatADX,
+	strings.ToLower(_FormatName[3:6]): FormatADX,
+	_FormatName[6:9]:                  FormatCSV,
+	strings.ToLower(_FormatName[6:9]): FormatCSV,
 }
 
 // ParseFormat attempts to convert a string to a Format.

@@ -63,12 +63,13 @@ func (v runeValue) Get() rune { return *v.r }
 var (
 	cmds  = []cmd.Command{cmd.Cat, cmd.Edit, cmd.Fix, cmd.Select, cmd.Validate}
 	adiio = adif.NewADIIO()
+	adxio = adif.NewADXIO()
 	csvio = adif.NewCSVIO()
 	ctx   = &cmd.Context{
 		ADIFVersion: spec.ADIFVersion,
 		ProgramName: filepath.Base(os.Args[0]),
-		Readers:     map[adif.Format]adif.Reader{adif.FormatADI: adiio, adif.FormatCSV: csvio},
-		Writers:     map[adif.Format]adif.Writer{adif.FormatADI: adiio, adif.FormatCSV: csvio},
+		Readers:     map[adif.Format]adif.Reader{adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio},
+		Writers:     map[adif.Format]adif.Writer{adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio},
 		Out:         os.Stdout,
 	}
 	global = flag.NewFlagSet(os.Args[0], flag.ExitOnError)

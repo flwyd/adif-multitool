@@ -15,5 +15,5 @@
 //go:generate go run github.com/abice/go-enum -f=$GOFILE --nocase --flag --names
 package adif
 
-// ENUM(ADI, CSV)
+// ENUM(ADI, ADX, CSV)
 type Format int

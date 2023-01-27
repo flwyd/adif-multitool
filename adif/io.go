@@ -50,3 +50,5 @@ func (s StringReader) Read(p []byte) (int, error) {
 }
 
 func (s StringReader) Name() string { return s.Filename }
+
+func (s StringReader) String() string { return s.Filename }
