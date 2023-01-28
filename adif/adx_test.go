@@ -151,37 +151,38 @@ Inverted L antenna, 70' above ground
 	l.Header.Set(Field{Name: "PROGRAMVERSION", Value: "1.2.3"})
 	l.Header.Set(Field{Name: "CREATED_TIMESTAMP", Value: "20220102 153456"})
 	want := xml.Header + `<ADX>
- <HEADER>
-  <ADIF_VER>3.1.4</ADIF_VER>
-  <PROGRAMID>adx_test</PROGRAMID>
-  <PROGRAMVERSION>1.2.3</PROGRAMVERSION>
-  <CREATED_TIMESTAMP>20220102 153456</CREATED_TIMESTAMP>
- </HEADER>
- <RECORDS>
-  <RECORD>
-   <QSO_DATE TYPE="D">19901031</QSO_DATE>
-   <TIME_ON TYPE="T">1234</TIME_ON>
-   <BAND>40M</BAND>
-   <CALLSIGN>W1AW</CALLSIGN>
-   <NAME TYPE="S">Hiram Percey Maxim</NAME>
-  </RECORD>
-  <RECORD>
-   <QSO_DATE>20221224</QSO_DATE>
-   <TIME_ON>095846</TIME_ON>
-   <BAND TYPE="E">1.25cm</BAND>
-   <CALLSIGN TYPE="S">N0P</CALLSIGN>
-   <NAME>Santa Claus</NAME>
-  </RECORD>
-  <RECORD>
-   <QSO_DATE TYPE="D">19190219</QSO_DATE>
-   <RIG TYPE="M">100 watt C.W.&#xA;Armstrong regenerative circuit&#xA;Inverted L antenna, 70&#39; above ground&#xA;</RIG>
-   <FREQ TYPE="N">7.654</FREQ>
-   <CALLSIGN TYPE="S">1AY</CALLSIGN>
-   <NAME TYPE="S">&#34;C.G.&#34; Tuska</NAME>
-  </RECORD>
- </RECORDS>
+  <HEADER>
+    <ADIF_VER>3.1.4</ADIF_VER>
+    <PROGRAMID>adx_test</PROGRAMID>
+    <PROGRAMVERSION>1.2.3</PROGRAMVERSION>
+    <CREATED_TIMESTAMP>20220102 153456</CREATED_TIMESTAMP>
+  </HEADER>
+  <RECORDS>
+    <RECORD>
+      <QSO_DATE TYPE="D">19901031</QSO_DATE>
+      <TIME_ON TYPE="T">1234</TIME_ON>
+      <BAND>40M</BAND>
+      <CALLSIGN>W1AW</CALLSIGN>
+      <NAME TYPE="S">Hiram Percey Maxim</NAME>
+    </RECORD>
+    <RECORD>
+      <QSO_DATE>20221224</QSO_DATE>
+      <TIME_ON>095846</TIME_ON>
+      <BAND TYPE="E">1.25cm</BAND>
+      <CALLSIGN TYPE="S">N0P</CALLSIGN>
+      <NAME>Santa Claus</NAME>
+    </RECORD>
+    <RECORD>
+      <QSO_DATE TYPE="D">19190219</QSO_DATE>
+      <RIG TYPE="M">100 watt C.W.&#xA;Armstrong regenerative circuit&#xA;Inverted L antenna, 70&#39; above ground&#xA;</RIG>
+      <FREQ TYPE="N">7.654</FREQ>
+      <CALLSIGN TYPE="S">1AY</CALLSIGN>
+      <NAME TYPE="S">&#34;C.G.&#34; Tuska</NAME>
+    </RECORD>
+  </RECORDS>
 </ADX>`
 	adx := NewADXIO()
+	adx.Indent = 2
 	out := &strings.Builder{}
 	if err := adx.Write(l, out); err != nil {
 		t.Errorf("Read(%v) got error %v", l, err)

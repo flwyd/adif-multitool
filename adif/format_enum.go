@@ -18,14 +18,17 @@ const (
 	FormatADX
 	// FormatCSV is a Format of type CSV.
 	FormatCSV
+	// FormatJSON is a Format of type JSON.
+	FormatJSON
 )
 
-const _FormatName = "ADIADXCSV"
+const _FormatName = "ADIADXCSVJSON"
 
 var _FormatNames = []string{
 	_FormatName[0:3],
 	_FormatName[3:6],
 	_FormatName[6:9],
+	_FormatName[9:13],
 }
 
 // FormatNames returns a list of possible string values of Format.
@@ -36,9 +39,10 @@ func FormatNames() []string {
 }
 
 var _FormatMap = map[Format]string{
-	FormatADI: _FormatName[0:3],
-	FormatADX: _FormatName[3:6],
-	FormatCSV: _FormatName[6:9],
+	FormatADI:  _FormatName[0:3],
+	FormatADX:  _FormatName[3:6],
+	FormatCSV:  _FormatName[6:9],
+	FormatJSON: _FormatName[9:13],
 }
 
 // String implements the Stringer interface.
@@ -50,12 +54,14 @@ func (x Format) String() string {
 }
 
 var _FormatValue = map[string]Format{
-	_FormatName[0:3]:                  FormatADI,
-	strings.ToLower(_FormatName[0:3]): FormatADI,
-	_FormatName[3:6]:                  FormatADX,
-	strings.ToLower(_FormatName[3:6]): FormatADX,
-	_FormatName[6:9]:                  FormatCSV,
-	strings.ToLower(_FormatName[6:9]): FormatCSV,
+	_FormatName[0:3]:                   FormatADI,
+	strings.ToLower(_FormatName[0:3]):  FormatADI,
+	_FormatName[3:6]:                   FormatADX,
+	strings.ToLower(_FormatName[3:6]):  FormatADX,
+	_FormatName[6:9]:                   FormatCSV,
+	strings.ToLower(_FormatName[6:9]):  FormatCSV,
+	_FormatName[9:13]:                  FormatJSON,
+	strings.ToLower(_FormatName[9:13]): FormatJSON,
 }
 
 // ParseFormat attempts to convert a string to a Format.

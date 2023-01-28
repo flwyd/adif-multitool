@@ -60,3 +60,24 @@ func (r *Record) Set(f Field) error {
 	}
 	return nil
 }
+
+func (r *Record) String() string {
+	return fmt.Sprint(r.fields)
+}
+
+// Equal compares to records for equality of fields, ignoring order.
+func (r *Record) Equal(o *Record) bool {
+	if len(r.fields) != len(r.fields) {
+		return false
+	}
+	for _, f := range r.fields {
+		ff, ok := o.Get(f.Name)
+		if !ok {
+			return false
+		}
+		if ff != f {
+			return false
+		}
+	}
+	return true
+}

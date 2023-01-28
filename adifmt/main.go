@@ -61,16 +61,21 @@ func (v runeValue) Set(s string) error {
 func (v runeValue) Get() rune { return *v.r }
 
 var (
-	cmds  = []cmd.Command{cmd.Cat, cmd.Edit, cmd.Fix, cmd.Select, cmd.Validate}
-	adiio = adif.NewADIIO()
-	adxio = adif.NewADXIO()
-	csvio = adif.NewCSVIO()
-	ctx   = &cmd.Context{
+	cmds   = []cmd.Command{cmd.Cat, cmd.Edit, cmd.Fix, cmd.Select, cmd.Validate}
+	adiio  = adif.NewADIIO()
+	adxio  = adif.NewADXIO()
+	csvio  = adif.NewCSVIO()
+	jsonio = adif.NewJSONIO()
+	ctx    = &cmd.Context{
 		ADIFVersion: spec.ADIFVersion,
 		ProgramName: filepath.Base(os.Args[0]),
-		Readers:     map[adif.Format]adif.Reader{adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio},
-		Writers:     map[adif.Format]adif.Writer{adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio},
-		Out:         os.Stdout,
+		Readers: map[adif.Format]adif.Reader{
+			adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio,
+		},
+		Writers: map[adif.Format]adif.Writer{
+			adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio,
+		},
+		Out: os.Stdout,
 	}
 	global = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 )
@@ -98,13 +103,23 @@ func init() {
 	global.Var(&adiio.RecordSep, "adi-record-separator",
 		"ADI files: record `separator`\n"+sepHelp)
 
+	// ADX flags
+	global.IntVar(&adxio.Indent, "adx-indent", 1, "Indent nested ADX structures `n` spaces, 0 for no whitespace")
+
 	// CSV flags
+	// ToDO csv-lower-case
 	// TODO separate comma values for input and output?
 	global.Var(&runeValue{&csvio.Comma}, "csv-field-separator", "CSV files: field separator `character` if not comma")
 	global.Var(&runeValue{&csvio.Comment}, "csv-comment", "CSV files: ignore lines beginnig with `character`")
 	global.BoolVar(&csvio.LazyQuotes, "csv-lazy-quotes", false, "CSV files: be relaxed about quoting rules")
 	global.BoolVar(&csvio.TrimLeadingSpace, "csv-trim-space", false, "CSV files: ignore leading space in fields")
 	global.BoolVar(&csvio.UseCRLF, "csv-crlf", false, "CSV files: output MS Windows line endings")
+
+	// JSON flags
+	// TODO json-lower-case
+	global.BoolVar(&jsonio.HTMLSafe, "json-html-safe", false, "Escape characters including < > & for use in HTML")
+	global.IntVar(&jsonio.Indent, "json-indent", 1, "Indent nested JSON structures `n` spaces, 0 for no whitespace")
+	global.BoolVar(&jsonio.TypedOutput, "json-typed-output", false, "Output JSON numbers and booleans instead of strings")
 
 	global.Usage = func() {
 		out := global.Output()

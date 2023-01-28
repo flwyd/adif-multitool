@@ -18,6 +18,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"strings"
 )
 
 type adxField struct {
@@ -72,7 +73,7 @@ type adxFile struct {
 }
 
 type ADXIO struct {
-	// TODO
+	Indent int
 }
 
 func NewADXIO() *ADXIO {
@@ -81,7 +82,7 @@ func NewADXIO() *ADXIO {
 
 func (_ *ADXIO) String() string { return "adx" }
 
-func (_ *ADXIO) Read(in NamedReader) (*Logfile, error) {
+func (o *ADXIO) Read(in NamedReader) (*Logfile, error) {
 	l := NewLogfile(in.Name())
 	f := adxFile{}
 	d := xml.NewDecoder(in)
@@ -96,7 +97,7 @@ func (_ *ADXIO) Read(in NamedReader) (*Logfile, error) {
 	return l, nil
 }
 
-func (_ *ADXIO) Write(l *Logfile, out io.Writer) error {
+func (o *ADXIO) Write(l *Logfile, out io.Writer) error {
 	f := adxFile{}
 	f.Header = newAdxRecord(l.Header)
 	for _, r := range l.Records {
@@ -108,7 +109,7 @@ func (_ *ADXIO) Write(l *Logfile, out io.Writer) error {
 		return fmt.Errorf("could not write XML header to %s: only wrote %d bytes", out, n)
 	}
 	e := xml.NewEncoder(out)
-	e.Indent("", " ")
+	e.Indent("", strings.Repeat(" ", o.Indent))
 	start := xml.StartElement{Name: xml.Name{Local: "ADX"}}
 	if err := e.EncodeElement(&f, start); err != nil {
 		return fmt.Errorf("error writing ADX file %s: %w", l.Filename, err)

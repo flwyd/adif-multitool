@@ -26,12 +26,13 @@ adifmt infer -field band my_original_log.adi \
 ## Quick start
 
 ADIF Multitool is not yet available as a binary distribution, so you will need
-a Go compiler on your system.  To check, run `go version` at the command line.
-If the `go` program is not found, [download and install it](https://go.dev/dl/).
-Then run `go install github.com/flwyd/adif-multitool` to make the `adifmt`
-command available.  (You may need to add the `$GOBIN` environment variable to
-your path.)  To see if it works, run `adifmt -help`.  If the command is not
-found, try `go run github.com/flwyd/adif-multitool/adifmt -help`
+a Go compiler on your system (version at least 1.18).  To check, run
+`go version` at the command line.  If the `go` program is not found,
+[download and install it](https://go.dev/dl/).  Then run
+`go install github.com/flwyd/adif-multitool` to make the `adifmt` command
+available.  (You may need to add the `$GOBIN` environment variable to your
+path.)  To see if it works, run `adifmt help`.  If the command is not found,
+try `go run github.com/flwyd/adif-multitool/adifmt -help`
 
 To do something useful with ADIF Multitool, the syntax is
 
@@ -69,7 +70,11 @@ adifmt cat -input=csv -output=adi log2.csv > log2.adi
 ```
 
 `-input` need not be specified if it’s implied by the file name, and
-`-ouput=adi` is the default.
+`-ouput=adi` is the default.  Input files can be in different formats:
+
+```sh
+adifmt cat log1.adi log2.adx log3.csv log4.json > combined.adi
+```
 
 If no file names are given, input is read from standard input:
 
@@ -106,9 +111,30 @@ be set explicitly via `-input` and `-output` flags.
 Name  | Extension | Notes
 ---- -| --------- | -----
 ADI   | `.adi`    | Outputs `IntlString` (Unicode fields) in UTF-8
-ADX   | `.adx`    | TODO: Implementation coming soon
+ADX   | `.adx`    |
 CSV   | `.csv`    | Comma-separated values; other delimiters like tab supported via the `-csv-field-separator` flag
-JSON  | `.json`   | TODO: Implementation coming soon
+JSON  | `.json`   | Can parse number and boolean typed data, to write the set the `-json-typed-output` flag
+
+Input files can have fields with any names, even if they’re not part of the ADIF
+spec.  (Proper user-defined field metadata handling is still TODO.)  ADX XML
+tags must be upper case; other formats accept any case field names in input
+files and use `UPPER_SNAKE_CASE` for output.  JSON input files should be
+structured as follows.  `HEADER` is optional.
+
+```json
+{
+ “HEADER”: {
+  “ADIF_VER”: “3.1.4”,
+  “more”: “header fields”
+ },
+ “RECORDS”: [
+  {
+   “CALL”: “W1AW”,
+   “more”: “record fields”
+  }
+ ]
+}
+```
 
 ### Commands
 
@@ -209,7 +235,7 @@ Some but not all validation errors can be corrected with [`adifmt fix`](#fix).
 ADIF Multitool was created because I was recording
 [Parks on the Air](https://parksontheair.com/) logs on paper and then typing
 them into a spreadsheet. I needed a way to convert exported CSV files into ADIF
-format for upload to [the POTA app](https://pota.app/) while fixing
+format for upload to [the POTA website](https://pota.app/) while fixing
 incompatibilities between the spreadsheet data format and the expected ADIF
 structure. I decided to solve this problem with a "Swiss Army knife for ADIF
 files" following the
@@ -218,17 +244,19 @@ simple tools that do one thing and can be easily composed together to build more
 powerful expressions.
 
 There are a lot of things that a ham radio log file program could do, and I
-would like `adifmt` to do many of them. Development is in the early stages, so
-it doesn't do very much *yet*. If you've got a use case for working with ADIF
-files, please create a GitHub issue to discuss how it might work.
+would like `adifmt` to do many of them. The program is nearing feature maturity
+for an initial release.  If you've got a use case for working with ADIF files
+that `adifmt` can’t do yet, please create a GitHub issue to discuss how it
+might work.
 
 Features I plan to add:
 
-*   Support several input and output formats: ADI and ADX from ADIF along with
-    CSV and JSON. Maybe convert to and from Cabrillo format for contests.
 *   Validate more fields.  Include warnings in record comments.
 *   Filter a log to only records matching some criteria, similar to a SQL
     `WHERE` clause.
+*   `adifmt save file.adx` command to infer output format without the `-output`
+    flag and to avoid writing if the input has no records (e.g. due to a failed
+    `adifmt validate` earlier in the pipeline).
 *   Infer missing fields based on the values of other fields. For example, the
     `BAND` field can be inferred from the frequency; `MODE` can be inferred from
     `SUBMODE`; `OPERATOR`, `STATION_CALLSIGN`, and `OWNER_CALLSIGN` can stand in
@@ -242,6 +270,8 @@ Features I plan to add:
     field.  (The total number of records can currently be counted with
     `-output=csv`, piping the output to `wc -l`, and subtracting 1 for the
     header row.)
+*   Proper handling for user-defined field metadata.
+*   Maybe convert to and from Cabrillo format for contests?
 
 ### Non-goals
 
