@@ -35,8 +35,8 @@ func NewCSVIO() *CSVIO {
 
 func (o *CSVIO) String() string { return "csv" }
 
-func (o *CSVIO) Read(in NamedReader) (*Logfile, error) {
-	l := NewLogfile(in.Name())
+func (o *CSVIO) Read(in io.Reader) (*Logfile, error) {
+	l := NewLogfile()
 	c := csv.NewReader(in)
 	c.Comma = o.Comma
 	c.Comment = o.Comment
@@ -44,10 +44,10 @@ func (o *CSVIO) Read(in NamedReader) (*Logfile, error) {
 	c.TrimLeadingSpace = o.TrimLeadingSpace
 	h, err := c.Read()
 	if err == io.EOF {
-		return nil, fmt.Errorf("got EOF reading CSV header row from %s", in.Name())
+		return nil, fmt.Errorf("got EOF reading CSV header row")
 	}
 	if err != nil {
-		return nil, fmt.Errorf("error reading CSV header row from %s: %v", in.Name(), err)
+		return nil, fmt.Errorf("error reading CSV header row: %w", err)
 	}
 	l.FieldOrder = make([]string, len(h))
 	for i, n := range h {
@@ -57,16 +57,16 @@ func (o *CSVIO) Read(in NamedReader) (*Logfile, error) {
 	for line, err := c.Read(); err != io.EOF; line, err = c.Read() {
 		lnum, _ := c.FieldPos(0)
 		if err != nil {
-			return nil, fmt.Errorf("error reading CSV %s line %d: %v", in.Name(), lnum, err)
+			return nil, fmt.Errorf("error reading CSV line %d: %w", lnum, err)
 		}
 		r := NewRecord()
 		for i, v := range line {
 			if i >= len(h) {
 				// CONSIDER ignoring this column and logging a warning
-				return nil, fmt.Errorf("extra field value %s at line %d column %d of %s", v, lnum, i, in.Name())
+				return nil, fmt.Errorf("extra field value %s at line %d column %d", v, lnum, i)
 			}
 			if err := r.Set(Field{Name: h[i], Value: v}); err != nil {
-				return nil, fmt.Errorf("could not set field %s to %s: %v", h[i], v, err)
+				return nil, fmt.Errorf("could not set field %s to %s: %w", h[i], v, err)
 			}
 		}
 		l.Records = append(l.Records, r)
@@ -100,7 +100,7 @@ func (o *CSVIO) Write(l *Logfile, out io.Writer) error {
 	c.UseCRLF = o.UseCRLF
 	// CSV header row
 	if err := c.Write(order); err != nil {
-		return fmt.Errorf("error writing CSV header to %s: %v", l, err)
+		return fmt.Errorf("error writing CSV header to %s: %w", l, err)
 	}
 	for i, r := range l.Records {
 		row := make([]string, 0, len(r.fields))
@@ -112,7 +112,7 @@ func (o *CSVIO) Write(l *Logfile, out io.Writer) error {
 			}
 		}
 		if err := c.Write(row); err != nil {
-			return fmt.Errorf("error writing CSV record %d to %s: %v", i, l, err)
+			return fmt.Errorf("error writing CSV record %d to %s: %w", i, l, err)
 		}
 	}
 	return nil

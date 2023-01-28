@@ -31,7 +31,7 @@ func runValidate(ctx *Context, args []string) error {
 	log := os.Stderr
 	var errors, warnings int
 	srcs := argSources(ctx, args...)
-	out := adif.NewLogfile("")
+	out := adif.NewLogfile()
 	for _, f := range srcs {
 		l, err := readSource(ctx, f)
 		if err != nil {

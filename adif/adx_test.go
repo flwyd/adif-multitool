@@ -30,21 +30,19 @@ func TestEmptyADX(t *testing.T) {
 		"<ADX></ADX>",
 	}
 	for _, tc := range tests {
-		input := StringReader{Filename: "empty.adx",
-			Reader: strings.NewReader(tc)}
 		adx := NewADXIO()
-		if parsed, err := adx.Read(input); err != nil {
-			t.Errorf("Read(%v) got error %v", input, err)
+		if parsed, err := adx.Read(strings.NewReader(tc)); err != nil {
+			t.Errorf("Read(%q) got error %v", tc, err)
 		} else {
 			if got := len(parsed.Records); got != 0 {
-				t.Errorf("Read(%v) got %d records, want %d", input, got, 0)
+				t.Errorf("Read(%q) got %d records, want %d", tc, got, 0)
 			}
 		}
 	}
 }
 
 func TestReadADX(t *testing.T) {
-	input := StringReader{Filename: "test.adx", Reader: strings.NewReader(xml.Header +
+	input := xml.Header +
 		`<ADX>
 		<HEADER>
 		<ADIF_VER>3.1.4</ADIF_VER>
@@ -74,7 +72,7 @@ Inverted L antenna, 70' above ground
 <NAME TYPE="S">"C.G." Tuska</NAME></RECORD>
 </RECORDS>
 </ADX>
-`)}
+`
 	wantFields := [][]Field{
 		{
 			{Name: "QSO_DATE", Value: "19901031"},
@@ -102,26 +100,23 @@ Inverted L antenna, 70' above ground
 		},
 	}
 	adi := NewADXIO()
-	if parsed, err := adi.Read(input); err != nil {
-		t.Errorf("Read(%v) got error %v", input, err)
+	if parsed, err := adi.Read(strings.NewReader(input)); err != nil {
+		t.Errorf("Read(%q) got error %v", input, err)
 	} else {
 		for i, r := range parsed.Records {
 			fields := r.Fields()
 			if diff := cmp.Diff(wantFields[i], fields); diff != "" {
-				t.Errorf("Read(%v) record %d did not match expected, diff:\n%s", input, i, diff)
+				t.Errorf("Read(%q) record %d did not match expected, diff:\n%s", input, i, diff)
 			}
 		}
 		if gotlen := len(parsed.Records); gotlen != len(wantFields) {
-			t.Errorf("Read(%v) got %d records:\n%v\nwant %d\n%v", input, gotlen, parsed.Records[len(wantFields):], len(wantFields), wantFields)
-		}
-		if parsed.Filename != input.Filename {
-			t.Errorf("Read(%v) got Filename %q, want %q", input, parsed.Filename, input.Filename)
+			t.Errorf("Read(%q) got %d records:\n%v\nwant %d\n%v", input, gotlen, parsed.Records[len(wantFields):], len(wantFields), wantFields)
 		}
 	}
 }
 
 func TestWriteADX(t *testing.T) {
-	l := NewLogfile("test-logfile")
+	l := NewLogfile()
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "19901031", Type: Date},
 		Field{Name: "TIME_ON", Value: "1234", Type: Time},
@@ -185,7 +180,7 @@ Inverted L antenna, 70' above ground
 	adx.Indent = 2
 	out := &strings.Builder{}
 	if err := adx.Write(l, out); err != nil {
-		t.Errorf("Read(%v) got error %v", l, err)
+		t.Errorf("Write(%v) got error %v", l, err)
 	} else {
 		got := out.String()
 		if diff := cmp.Diff(want, got); diff != "" {

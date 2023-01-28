@@ -73,7 +73,7 @@ func runEdit(ctx *Context, args []string) error {
 	toTz := cctx.toZone.Get()
 	adjustTz := fromTz.String() != toTz.String()
 	srcs := argSources(ctx, args...)
-	out := adif.NewLogfile("")
+	out := adif.NewLogfile()
 	for _, f := range srcs {
 		l, err := readSource(ctx, f)
 		if err != nil {

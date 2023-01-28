@@ -42,8 +42,8 @@ func NewADIIO() *ADIIO {
 
 func (_ *ADIIO) String() string { return "adi" }
 
-func (_ *ADIIO) Read(in NamedReader) (*Logfile, error) {
-	l := NewLogfile(in.Name())
+func (_ *ADIIO) Read(in io.Reader) (*Logfile, error) {
+	l := NewLogfile()
 	r := bufio.NewReader(in)
 	s, err := r.ReadString('<')
 	if err == io.EOF {
@@ -53,7 +53,7 @@ func (_ *ADIIO) Read(in NamedReader) (*Logfile, error) {
 		return l, nil
 	}
 	if err != nil {
-		return nil, fmt.Errorf("error reading to first tag of %s: %v", in.Name(), err)
+		return nil, fmt.Errorf("error reading to first tag: %w", err)
 	}
 	if len(s) > 1 { // final byte is '<'
 		// TODO ADIF specification says the comment is part of the header, maybe
@@ -69,10 +69,10 @@ func (_ *ADIIO) Read(in NamedReader) (*Logfile, error) {
 	for { // invariant: last byte read was '<'
 		s, err = r.ReadString('>')
 		if err == io.EOF {
-			return nil, fmt.Errorf("unfinished ADI tag at end of file %s: %q", in.Name(), s)
+			return nil, fmt.Errorf("unfinished ADI tag at end: %q", s)
 		}
 		if err != nil {
-			return nil, fmt.Errorf("error reading ADI tag %q in %s: %v", s, in.Name(), err)
+			return nil, fmt.Errorf("error reading ADI tag %q: %w", s, err)
 		}
 		if s == ">" {
 			return nil, fmt.Errorf("invalid ADI tag <>")
@@ -83,10 +83,10 @@ func (_ *ADIIO) Read(in NamedReader) (*Logfile, error) {
 			switch strings.ToUpper(tag[0]) {
 			case "EOH":
 				if sawHeader {
-					return nil, fmt.Errorf("invalid ADI file with two <EOH> headers in %s", in.Name())
+					return nil, fmt.Errorf("invalid ADI file with two <EOH> headers")
 				}
 				if sawRecord {
-					return nil, fmt.Errorf("invalid ADI file with <EOH> header after first <EOR> record in %s", in.Name())
+					return nil, fmt.Errorf("invalid ADI file with <EOH> header after first <EOR> record")
 				}
 				sawHeader = true
 				l.Header = cur
@@ -96,16 +96,16 @@ func (_ *ADIIO) Read(in NamedReader) (*Logfile, error) {
 				l.Records = append(l.Records, cur)
 				cur = NewRecord()
 			default:
-				return nil, fmt.Errorf("invalid ADI field without length <%s in %s", s, in.Name())
+				return nil, fmt.Errorf("invalid ADI field without length <%s", s)
 			}
 		case 2, 3:
 			length, err := strconv.Atoi(tag[1])
 			if err != nil || length < 0 {
-				return nil, fmt.Errorf("invalid ADI field length <%s in %s", s, in.Name())
+				return nil, fmt.Errorf("invalid ADI field length <%s", s)
 			}
 			v := make([]byte, length)
 			if _, err = io.ReadFull(r, v); err != nil {
-				return nil, fmt.Errorf("error reading ADI field value <%s got %q in %s: %v", s, v, in.Name(), err)
+				return nil, fmt.Errorf("error reading ADI field value <%s got %q: %w", s, v, err)
 			}
 			// spec says everything is ASCII, but this accepts UTF-8
 			// as long as the tag length is accurate in bytes
@@ -113,19 +113,19 @@ func (_ *ADIIO) Read(in NamedReader) (*Logfile, error) {
 			if len(tag) == 3 {
 				f.Type, err = DataTypeFromIdentifier(tag[2])
 				if err != nil {
-					return nil, fmt.Errorf("%v from <%s in %s", err, s, in.Name())
+					return nil, fmt.Errorf("%v from <%s", err, s)
 				}
 			}
 			cur.Set(f)
 		default:
-			return nil, fmt.Errorf("invalid ADI tag format <%s in %s", s, in.Name())
+			return nil, fmt.Errorf("invalid ADI tag format <%s", s)
 		}
 		// arbitrary text between one field or record and the next
 		if _, err := r.ReadString('<'); err == io.EOF {
 			return l, nil
 		}
 		if err != nil {
-			return nil, fmt.Errorf("error reading ADI intra-field text in %s: %v", in.Name(), err)
+			return nil, fmt.Errorf("error reading ADI intra-field text: %w", err)
 		}
 	}
 }
@@ -134,22 +134,22 @@ func (o *ADIIO) Write(l *Logfile, out io.Writer) error {
 	b := bufio.NewWriter(out)
 	defer b.Flush()
 	if _, err := b.WriteString(o.HeaderCommentFn(l) + o.RecordSep.Val()); err != nil {
-		return fmt.Errorf("error writing ADI header: %v", err)
+		return fmt.Errorf("error writing ADI header: %w", err)
 	}
 	for _, f := range l.Header.Fields() {
 		if err := o.writeField(f, b); err != nil {
-			return fmt.Errorf("error writing ADI header: %v", err)
+			return fmt.Errorf("error writing ADI header: %w", err)
 		}
 	}
 	if _, err := b.WriteString(fmt.Sprintf("<%s>%s", o.fixCase("EOH"), o.RecordSep.Val())); err != nil {
-		return fmt.Errorf("error writing ADI header: %v", err)
+		return fmt.Errorf("error writing ADI header: %w", err)
 	}
 	for i, r := range l.Records {
 		seen := make(map[string]bool)
 		for _, n := range l.FieldOrder {
 			if f, ok := r.Get(n); ok {
 				if err := o.writeField(f, b); err != nil {
-					return fmt.Errorf("error writing ADI record #%d: %v", i, err)
+					return fmt.Errorf("error writing ADI record #%d: %w", i, err)
 				}
 				seen[f.Name] = true
 			}
@@ -157,12 +157,12 @@ func (o *ADIIO) Write(l *Logfile, out io.Writer) error {
 		for _, f := range r.Fields() {
 			if !seen[f.Name] {
 				if err := o.writeField(f, b); err != nil {
-					return fmt.Errorf("error writing ADI record #%d: %v", i, err)
+					return fmt.Errorf("error writing ADI record #%d: %w", i, err)
 				}
 			}
 		}
 		if _, err := b.WriteString(fmt.Sprintf("<%s>%s", o.fixCase("EOR"), o.RecordSep.Val())); err != nil {
-			return fmt.Errorf("error writing ADI record #%d: %v", i, err)
+			return fmt.Errorf("error writing ADI record #%d: %w", i, err)
 		}
 	}
 	return nil
@@ -177,7 +177,7 @@ func (o *ADIIO) writeField(f Field, b *bufio.Writer) error {
 		tag = fmt.Sprintf("<%s:%d:%s>", o.fixCase(f.Name), len(f.Value), o.fixCase(f.Type.Identifier()))
 	}
 	if _, err := b.WriteString(fmt.Sprintf("%s%s%s", tag, f.Value, o.FieldSep.Val())); err != nil {
-		return fmt.Errorf("error writing %s: %v", f, err)
+		return fmt.Errorf("error writing %s: %w", f, err)
 	}
 	return nil
 }

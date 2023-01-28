@@ -93,14 +93,14 @@ func NewJSONIO() *JSONIO { return &JSONIO{} }
 
 func (_ *JSONIO) String() string { return "json" }
 
-func (o *JSONIO) Read(in NamedReader) (*Logfile, error) {
+func (o *JSONIO) Read(in io.Reader) (*Logfile, error) {
 	d := json.NewDecoder(in)
 	d.UseNumber()
 	var f jsonFile
 	if err := d.Decode(&f); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("JSON decoding error: %w", err)
 	}
-	l := NewLogfile(in.Name())
+	l := NewLogfile()
 	if f.Header != nil {
 		h, err := f.Header.toRecord()
 		if err != nil {

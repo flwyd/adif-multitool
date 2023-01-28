@@ -65,24 +65,46 @@ func readSource(ctx *Context, f argSource) (*adif.Logfile, error) {
 	r := ctx.Readers[format]
 	l, err := r.Read(src)
 	if err != nil {
-		return nil, fmt.Errorf("error reading %s: %v", f, err)
+		return nil, fmt.Errorf("error reading %s: %w", src.Name(), err)
 	}
+	l.Filename = src.Name()
 	return l, nil
 }
 
+// NamedReader is an io.Reader with a name.  os.File implements this interface
+// and StringReader is provided for testing.
+type NamedReader interface {
+	io.Reader
+	Name() string
+}
+
+// StringReader implements NamedReader with a strings.Reader to aid testing.
+type StringReader struct {
+	Reader   *strings.Reader
+	Filename string
+}
+
+func (s StringReader) Read(p []byte) (int, error) {
+	return s.Reader.Read(p)
+}
+
+func (s StringReader) Name() string { return s.Filename }
+
+func (s StringReader) String() string { return s.Filename }
+
 type argSource interface {
-	Open() (adif.NamedReader, error)
+	Open() (NamedReader, error)
 }
 
 type fileSource struct{ filename string }
 
-func (s fileSource) Open() (adif.NamedReader, error) { return os.Open(s.filename) }
+func (s fileSource) Open() (NamedReader, error) { return os.Open(s.filename) }
 
 func (s fileSource) String() string { return s.filename }
 
 type stdinSource struct{}
 
-func (s stdinSource) Open() (adif.NamedReader, error) { return os.Stdin, nil }
+func (s stdinSource) Open() (NamedReader, error) { return os.Stdin, nil }
 
 func (s stdinSource) String() string { return os.Stdin.Name() }
 

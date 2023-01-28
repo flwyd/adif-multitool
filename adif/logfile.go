@@ -22,16 +22,15 @@ type Logfile struct {
 	FieldOrder []string
 }
 
-func NewLogfile(name string) *Logfile {
+func NewLogfile() *Logfile {
 	return &Logfile{
-		Records:  make([]*Record, 0),
-		Header:   NewRecord(),
-		Filename: name,
+		Records: make([]*Record, 0),
+		Header:  NewRecord(),
 	}
 }
 
 func (f *Logfile) String() string {
-	if len(f.Filename) == 0 {
+	if f.Filename == "" {
 		return "(standard input)"
 	}
 	return f.Filename

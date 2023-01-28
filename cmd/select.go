@@ -40,7 +40,7 @@ func runSelect(ctx *Context, args []string) error {
 		return fmt.Errorf("no fields provided, try adifmt select -fields CALL,BAND")
 	}
 	srcs := argSources(ctx, args...)
-	out := adif.NewLogfile("")
+	out := adif.NewLogfile()
 	out.FieldOrder = con.fields
 	for _, f := range srcs {
 		l, err := readSource(ctx, f)

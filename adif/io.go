@@ -17,16 +17,10 @@ package adif
 import (
 	"fmt"
 	"io"
-	"strings"
 )
 
-type NamedReader interface {
-	io.Reader
-	Name() string
-}
-
 type Reader interface {
-	Read(NamedReader) (*Logfile, error)
+	Read(io.Reader) (*Logfile, error)
 }
 
 type Writer interface {
@@ -38,17 +32,3 @@ type ReadWriter interface {
 	Writer
 	fmt.Stringer
 }
-
-// StringReader implements NamedReader with a strings.Reader to aid testing.
-type StringReader struct {
-	Reader   *strings.Reader
-	Filename string
-}
-
-func (s StringReader) Read(p []byte) (int, error) {
-	return s.Reader.Read(p)
-}
-
-func (s StringReader) Name() string { return s.Filename }
-
-func (s StringReader) String() string { return s.Filename }

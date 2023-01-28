@@ -24,21 +24,19 @@ import (
 // TODO test a file without a header (first character is <)
 
 func TestEmptyADI(t *testing.T) {
-	input := StringReader{Filename: "empty.adi",
-		Reader: strings.NewReader("Created on 2001-02-03 at 4:05\n")}
+	input := "Created on 2001-02-03 at 4:05\n"
 	adi := NewADIIO()
-	if parsed, err := adi.Read(input); err != nil {
-		t.Errorf("Read(%v) got error %v", input, err)
+	if parsed, err := adi.Read(strings.NewReader(input)); err != nil {
+		t.Errorf("Read(%q) got error %v", input, err)
 	} else {
 		if got := len(parsed.Records); got != 0 {
-			t.Errorf("Read(%v) got %d records, want %d", input, got, 0)
+			t.Errorf("Read(%q) got %d records, want %d", input, got, 0)
 		}
 	}
 }
 
 func TestReadADI(t *testing.T) {
-	input := StringReader{Filename: "test.adi", Reader: strings.NewReader(
-		`Generated today <ADIF_VER:5>3.1.4 <CREATED_TIMESTAMP:15>20220102 153456 <PROGRAMID:11>adi_test <PROGRAMVERSION:5>1.2.3 <EOH>
+	input := `Generated today <ADIF_VER:5>3.1.4 <CREATED_TIMESTAMP:15>20220102 153456 <PROGRAMID:11>adi_test <PROGRAMVERSION:5>1.2.3 <EOH>
 <QSO_DATE:8>19901031 <TIME_ON:4>1234  <BAND:3>40M<CALLSIGN:4>W1AW
 <NAME:18>Hiram Percey Maxim <EOR>
 
@@ -56,7 +54,7 @@ Inverted L antenna, 70' above ground
 <CaLlSiGn:3:S>1AY
 This is a random comment
 <name:12:s>"C.G." Tuska<eOr>
-`)}
+`
 	wantFields := [][]Field{
 		{
 			{Name: "QSO_DATE", Value: "19901031"},
@@ -84,26 +82,23 @@ Inverted L antenna, 70' above ground
 		},
 	}
 	adi := NewADIIO()
-	if parsed, err := adi.Read(input); err != nil {
-		t.Errorf("Read(%v) got error %v", input, err)
+	if parsed, err := adi.Read(strings.NewReader(input)); err != nil {
+		t.Errorf("Read(%q) got error %v", input, err)
 	} else {
 		for i, r := range parsed.Records {
 			fields := r.Fields()
 			if diff := cmp.Diff(wantFields[i], fields); diff != "" {
-				t.Errorf("Read(%v) record %d did not match expected, diff:\n%s", input, i, diff)
+				t.Errorf("Read(%q) record %d did not match expected, diff:\n%s", input, i, diff)
 			}
 		}
 		if gotlen := len(parsed.Records); gotlen != len(wantFields) {
-			t.Errorf("Read(%v) got %d records:\n%v\nwant %d\n%v", input, gotlen, parsed.Records[len(wantFields):], len(wantFields), wantFields)
-		}
-		if parsed.Filename != input.Filename {
-			t.Errorf("Read(%v) got Filename %q, want %q", input, parsed.Filename, input.Filename)
+			t.Errorf("Read(%q) got %d records:\n%v\nwant %d\n%v", input, gotlen, parsed.Records[len(wantFields):], len(wantFields), wantFields)
 		}
 	}
 }
 
 func TestWriteADI(t *testing.T) {
-	l := NewLogfile("test-logfile")
+	l := NewLogfile()
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "19901031", Type: Date},
 		Field{Name: "TIME_ON", Value: "1234", Type: Time},
@@ -147,7 +142,7 @@ Inverted L antenna, 70' above ground
 	adi.HeaderCommentFn = func(l *Logfile) string { return "ADI comment at the top of the file" }
 	out := &strings.Builder{}
 	if err := adi.Write(l, out); err != nil {
-		t.Errorf("Read(%v) got error %v", l, err)
+		t.Errorf("Write(%v) got error %v", l, err)
 	} else {
 		got := out.String()
 		if diff := cmp.Diff(want, got); diff != "" {

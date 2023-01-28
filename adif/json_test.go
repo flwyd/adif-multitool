@@ -29,9 +29,8 @@ func TestEmptyJson(t *testing.T) {
 		`{"HEADER": {}, "RECORDS": []}`,
 	}
 	for _, tc := range tests {
-		input := StringReader{Filename: "empty.json", Reader: strings.NewReader(tc)}
 		json := NewJSONIO()
-		if parsed, err := json.Read(input); err != nil {
+		if parsed, err := json.Read(strings.NewReader(tc)); err != nil {
 			t.Errorf("Read(%q) got error %v", tc, err)
 		} else {
 			if got := len(parsed.Records); got != 0 {
@@ -42,8 +41,7 @@ func TestEmptyJson(t *testing.T) {
 }
 
 func TestReadJSON(t *testing.T) {
-	input := StringReader{Filename: "test.json", Reader: strings.NewReader(
-		`{
+	input := `{
     "HEADER": {
       "ADIF_VER": "3.1.4",
       "CREATED_TIMESTAMP": "20220102 153456",
@@ -71,7 +69,7 @@ func TestReadJSON(t *testing.T) {
 "SILENT_KEY": true}
 ]
 }
-`)}
+`
 	wantFields := []*Record{
 		NewRecord(Field{Name: "QSO_DATE", Value: "19901031"},
 			Field{Name: "TIME_ON", Value: "1234"},
@@ -98,17 +96,17 @@ Inverted L antenna, 70' above ground
 		),
 	}
 	json := NewJSONIO()
-	if parsed, err := json.Read(input); err != nil {
-		t.Errorf("Read(%v) got error %v", input, err)
+	if parsed, err := json.Read(strings.NewReader(input)); err != nil {
+		t.Errorf("Read(%q) got error %v", input, err)
 	} else {
 		if diff := cmp.Diff(wantFields, parsed.Records); diff != "" {
-			t.Errorf("Read(%v) got diff:\n%s", input, diff)
+			t.Errorf("Read(%q) got diff:\n%s", input, diff)
 		}
 	}
 }
 
 func TestWriteJSON(t *testing.T) {
-	l := NewLogfile("test-logfile")
+	l := NewLogfile()
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "19901031", Type: Date},
 		Field{Name: "TIME_ON", Value: "1234", Type: Time},

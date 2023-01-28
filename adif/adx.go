@@ -82,12 +82,12 @@ func NewADXIO() *ADXIO {
 
 func (_ *ADXIO) String() string { return "adx" }
 
-func (o *ADXIO) Read(in NamedReader) (*Logfile, error) {
-	l := NewLogfile(in.Name())
+func (o *ADXIO) Read(in io.Reader) (*Logfile, error) {
+	l := NewLogfile()
 	f := adxFile{}
 	d := xml.NewDecoder(in)
 	if err := d.Decode(&f); err != nil {
-		return nil, fmt.Errorf("could not decode ADX file %s: %w", in.Name(), err)
+		return nil, fmt.Errorf("could not decode ADX file: %w", err)
 	}
 	l.Comment = f.Comment
 	l.Header = f.Header.Record()

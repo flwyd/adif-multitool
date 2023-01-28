@@ -26,7 +26,7 @@ var Cat = Command{Name: "cat", Run: runCat,
 func runCat(ctx *Context, args []string) error {
 	// TODO add any needed flags
 	srcs := argSources(ctx, args...)
-	out := adif.NewLogfile("")
+	out := adif.NewLogfile()
 	for _, f := range srcs {
 		l, err := readSource(ctx, f)
 		if err != nil {
