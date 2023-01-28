@@ -29,10 +29,10 @@ ADIF Multitool is not yet available as a binary distribution, so you will need
 a Go compiler on your system (version at least 1.18).  To check, run
 `go version` at the command line.  If the `go` program is not found,
 [download and install it](https://go.dev/dl/).  Then run
-`go install github.com/flwyd/adif-multitool` to make the `adifmt` command
-available.  (You may need to add the `$GOBIN` environment variable to your
-path.)  To see if it works, run `adifmt help`.  If the command is not found,
-try `go run github.com/flwyd/adif-multitool/adifmt -help`
+`go install github.com/flwyd/adif-multitool/adifmt@latest` to make the `adifmt`
+command available.  (You may need to add the `$GOBIN` environment variable to
+your path.)  To see if it works, run `adifmt help`.  If the command is not
+found, try `go run github.com/flwyd/adif-multitool/adifmt -help`
 
 To do something useful with ADIF Multitool, the syntax is
 
