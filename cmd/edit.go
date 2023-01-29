@@ -11,10 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package cmd
 
 import (
-	"flag"
 	"fmt"
 	"time"
 
@@ -22,46 +22,32 @@ import (
 	"github.com/flwyd/adif-multitool/adif/spec"
 )
 
-var Edit = Command{Name: "edit", Run: runEdit, AddFlags: editFlags,
+var Edit = Command{Name: "edit", Run: runEdit,
 	Description: "Add, remove, or change field values"}
 
-type editContext struct {
-	add         fieldAssignments
-	set         fieldAssignments
-	remove      fieldList
-	removeBlank bool
-	fromZone    timeZone
-	toZone      timeZone
-}
-
-func editFlags(ctx *Context, fs *flag.FlagSet) {
-	cctx := editContext{
-		add:    newFieldAssignments(validateAlphanumName),
-		set:    newFieldAssignments(validateAlphanumName),
-		remove: make(fieldList, 0)}
-	fs.Var(&cctx.add, "add", "Add `field=value` if field is not already in a record (repeatable)")
-	fs.Var(&cctx.set, "set", "Set `field=value` for all records (repeatable)")
-	fs.Var(&cctx.remove, "remove", "Remove `fields` from all records (comma-separated, repeatable)")
-	fs.BoolVar(&cctx.removeBlank, "remove-blank", false, "Remove all blank fields")
-	fs.Var(&cctx.fromZone, "time-zone-from", "Adjust times and dates from this time `zone` into -time-zone-to (default UTC)")
-	fs.Var(&cctx.toZone, "time-zone-to", "Adjust times and dates into this time `zone` from -time-zone-from (default UTC)")
-	ctx.CommandCtx = &cctx
+type EditContext struct {
+	Add         FieldAssignments
+	Set         FieldAssignments
+	Remove      FieldList
+	RemoveBlank bool
+	FromZone    TimeZone
+	ToZone      TimeZone
 }
 
 func runEdit(ctx *Context, args []string) error {
-	cctx := ctx.CommandCtx.(*editContext)
+	cctx := ctx.CommandCtx.(*EditContext)
 	remove := make(map[string]bool)
-	for _, n := range cctx.remove {
+	for _, n := range cctx.Remove {
 		remove[n] = true
 	}
 	set := make(map[string]adif.Field)
-	for _, f := range cctx.set.values {
+	for _, f := range cctx.Set.values {
 		if remove[f.Name] {
 			return fmt.Errorf("%q in both -set and -remove", f.Name)
 		}
 		set[f.Name] = f
 	}
-	for _, f := range cctx.add.values {
+	for _, f := range cctx.Add.values {
 		if remove[f.Name] {
 			return fmt.Errorf("%q in both -add and -remove, use -set to change values", f.Name)
 		}
@@ -69,8 +55,8 @@ func runEdit(ctx *Context, args []string) error {
 			return fmt.Errorf("%q in both -set and -add", f.Name)
 		}
 	}
-	fromTz := cctx.fromZone.Get()
-	toTz := cctx.toZone.Get()
+	fromTz := cctx.FromZone.Get()
+	toTz := cctx.ToZone.Get()
 	adjustTz := fromTz.String() != toTz.String()
 	srcs := argSources(ctx, args...)
 	out := adif.NewLogfile()
@@ -89,7 +75,7 @@ func runEdit(ctx *Context, args []string) error {
 				if remove[f.Name] {
 					continue
 				}
-				if cctx.removeBlank && f.Value == "" {
+				if cctx.RemoveBlank && f.Value == "" {
 					continue
 				}
 				seen[f.Name] = true
@@ -98,13 +84,13 @@ func runEdit(ctx *Context, args []string) error {
 				}
 				fields = append(fields, f)
 			}
-			for _, f := range cctx.set.values {
+			for _, f := range cctx.Set.values {
 				if !seen[f.Name] {
 					fields = append(fields, f)
 				}
 				seen[f.Name] = true
 			}
-			for _, f := range cctx.add.values {
+			for _, f := range cctx.Add.values {
 				if !seen[f.Name] {
 					fields = append(fields, f)
 				}

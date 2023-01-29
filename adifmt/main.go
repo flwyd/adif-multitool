@@ -31,6 +31,41 @@ import (
 	"github.com/flwyd/adif-multitool/cmd"
 )
 
+func main() {
+	ctx := &cmd.Context{}
+	if len(os.Args) < 2 {
+		fs := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
+		fs.Usage = usage(fs, "")
+		configureContext(ctx, fs)
+		fs.Usage()
+		os.Exit(2)
+	}
+
+	name := os.Args[1]
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.SetOutput(os.Stderr)
+	fs.Usage = usage(fs, name)
+	configureContext(ctx, fs)
+	if strings.HasSuffix(name, "help") {
+		fs.Usage()
+		os.Exit(2)
+	}
+	c, ok := commandNamed(name)
+	if !ok {
+		fmt.Fprintf(os.Stderr, "Unknown command %q\n", name)
+		fmt.Fprintf(os.Stderr, "Commands are %s\n", strings.Join(commandNames(), ", "))
+		fmt.Fprintf(os.Stderr, "Run %s -help for more details\n", os.Args[0])
+		os.Exit(2)
+	}
+	c.Configure(ctx, fs)
+	fs.Parse(os.Args[2:])
+	err := c.Run(ctx, fs.Args())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error running %s: %v\n", name, err)
+		os.Exit(1)
+	}
+}
+
 type runeValue struct {
 	r *rune
 }
@@ -60,117 +95,83 @@ func (v runeValue) Set(s string) error {
 
 func (v runeValue) Get() rune { return *v.r }
 
-var (
-	cmds   = []cmd.Command{cmd.Cat, cmd.Edit, cmd.Fix, cmd.Select, cmd.Validate}
-	adiio  = adif.NewADIIO()
-	adxio  = adif.NewADXIO()
-	csvio  = adif.NewCSVIO()
-	jsonio = adif.NewJSONIO()
-	ctx    = &cmd.Context{
-		ADIFVersion: spec.ADIFVersion,
-		ProgramName: filepath.Base(os.Args[0]),
-		Readers: map[adif.Format]adif.Reader{
-			adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio,
-		},
-		Writers: map[adif.Format]adif.Writer{
-			adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio,
-		},
-		Out: os.Stdout,
+func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
+	adiio := adif.NewADIIO()
+	adxio := adif.NewADXIO()
+	csvio := adif.NewCSVIO()
+	jsonio := adif.NewJSONIO()
+	ctx.ADIFVersion = spec.ADIFVersion
+	ctx.ProgramName = filepath.Base(os.Args[0])
+	ctx.Readers = map[adif.Format]adif.Reader{
+		adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio,
 	}
-	global = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-)
-
-func init() {
-	if build, ok := debug.ReadBuildInfo(); !ok {
-		ctx.ProgramVersion = "v0.0.0"
-	} else {
+	ctx.Writers = map[adif.Format]adif.Writer{
+		adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio,
+	}
+	ctx.Out = os.Stdout
+	if build, ok := debug.ReadBuildInfo(); ok {
 		ctx.ProgramVersion = build.Main.Version
+	} else {
+		ctx.ProgramVersion = "v0.0.0"
 	}
 
 	// General flags
 	fmtopts := "options: " + strings.Join(adif.FormatNames(), ", ")
-	global.Var(&ctx.InputFormat, "input",
+	fs.Var(&ctx.InputFormat, "input",
 		"input `format` when it cannot be inferred from file extension\n"+fmtopts)
-	global.Var(&ctx.OutputFormat, "output",
+	fs.Var(&ctx.OutputFormat, "output",
 		"output `format` written to stdout\n"+fmtopts)
 
 	// ADI flags
-	global.BoolVar(&adiio.LowerCase, "adi-lower-case", false,
+	fs.BoolVar(&adiio.LowerCase, "adi-lower-case", false,
 		"ADI files: print tags in lower case instead of upper case")
 	sepHelp := "options: " + strings.Join(adif.SeparatorNames(), ", ")
-	global.Var(&adiio.FieldSep, "adi-field-separator",
+	fs.Var(&adiio.FieldSep, "adi-field-separator",
 		"ADI files: field `separator`\n"+sepHelp)
-	global.Var(&adiio.RecordSep, "adi-record-separator",
+	fs.Var(&adiio.RecordSep, "adi-record-separator",
 		"ADI files: record `separator`\n"+sepHelp)
 
 	// ADX flags
-	global.IntVar(&adxio.Indent, "adx-indent", 1, "Indent nested ADX structures `n` spaces, 0 for no whitespace")
+	fs.IntVar(&adxio.Indent, "adx-indent", 1, "Indent nested ADX structures `n` spaces, 0 for no whitespace")
 
 	// CSV flags
 	// ToDO csv-lower-case
 	// TODO separate comma values for input and output?
-	global.Var(&runeValue{&csvio.Comma}, "csv-field-separator", "CSV files: field separator `character` if not comma")
-	global.Var(&runeValue{&csvio.Comment}, "csv-comment", "CSV files: ignore lines beginnig with `character`")
-	global.BoolVar(&csvio.LazyQuotes, "csv-lazy-quotes", false, "CSV files: be relaxed about quoting rules")
-	global.BoolVar(&csvio.TrimLeadingSpace, "csv-trim-space", false, "CSV files: ignore leading space in fields")
-	global.BoolVar(&csvio.UseCRLF, "csv-crlf", false, "CSV files: output MS Windows line endings")
+	fs.Var(&runeValue{&csvio.Comma}, "csv-field-separator", "CSV files: field separator `character` if not comma")
+	fs.Var(&runeValue{&csvio.Comment}, "csv-comment", "CSV files: ignore lines beginnig with `character`")
+	fs.BoolVar(&csvio.LazyQuotes, "csv-lazy-quotes", false, "CSV files: be relaxed about quoting rules")
+	fs.BoolVar(&csvio.TrimLeadingSpace, "csv-trim-space", false, "CSV files: ignore leading space in fields")
+	fs.BoolVar(&csvio.UseCRLF, "csv-crlf", false, "CSV files: output MS Windows line endings")
 
 	// JSON flags
 	// TODO json-lower-case
-	global.BoolVar(&jsonio.HTMLSafe, "json-html-safe", false, "Escape characters including < > & for use in HTML")
-	global.IntVar(&jsonio.Indent, "json-indent", 1, "Indent nested JSON structures `n` spaces, 0 for no whitespace")
-	global.BoolVar(&jsonio.TypedOutput, "json-typed-output", false, "Output JSON numbers and booleans instead of strings")
-
-	global.Usage = func() {
-		out := global.Output()
-		fmt.Fprintf(out, "Usage: %s command [flags] files...\n", os.Args[0])
-		fmt.Fprintln(out)
-		fmt.Fprintln(out, "Commands:")
-		for _, c := range cmds {
-			fmt.Fprintf(out, "%s: %s\n", c.Name, c.Description)
-		}
-		fmt.Fprintln(out)
-		// TODO this includes command flags, not just global; it would be nice to
-		// highlight those
-		fmt.Fprintln(out, "Global flags:")
-		global.PrintDefaults()
-		fmt.Fprintln(out)
-		fmt.Fprintf(out, "To see flags specific to a particular command, run\n%s command -help\n", os.Args[0])
-		fmt.Fprintln(out, "ADIF Multitool: read and transform ADIF radio logs, output to stdout")
-		fmt.Fprintln(out, "See examples at https://github.com/flwyd/adif-multitool")
-	}
+	fs.BoolVar(&jsonio.HTMLSafe, "json-html-safe", false, "Escape characters including < > & for use in HTML")
+	fs.IntVar(&jsonio.Indent, "json-indent", 1, "Indent nested JSON structures `n` spaces, 0 for no whitespace")
+	fs.BoolVar(&jsonio.TypedOutput, "json-typed-output", false, "Output JSON numbers and booleans instead of strings")
 }
 
-func main() {
-	if len(os.Args) < 2 {
-		global.Usage()
-		os.Exit(2)
-	}
-	cmd := os.Args[1]
-	if cmd == "-help" || cmd == "help" {
-		global.Usage()
-		os.Exit(2)
-	}
-	for _, c := range cmds {
-		if c.Name == cmd {
-			if c.AddFlags != nil {
-				c.AddFlags(ctx, global)
+func usage(fs *flag.FlagSet, command string) func() {
+	return func() {
+		out := fs.Output()
+		fmt.Fprintln(out, "ADIF Multitool: read and transform ADIF radio logs, output to stdout")
+		fmt.Fprintln(out, "See examples at https://github.com/flwyd/adif-multitool")
+		fmt.Fprintln(out)
+		fmt.Fprintf(out, "Usage: %s command [flags] files...\n", fs.Name())
+		fmt.Fprintln(out, "Global flags:")
+		fs.PrintDefaults()
+		fmt.Fprintln(out)
+		if c, ok := commandNamed(command); ok {
+			fmt.Fprintf(out, "%s: %s\n", c.Name, c.Description)
+			cfs := flag.NewFlagSet(command, flag.ContinueOnError)
+			c.Configure(&cmd.Context{}, cfs)
+			cfs.SetOutput(out)
+			cfs.PrintDefaults()
+		} else {
+			fmt.Fprintln(out, "Commands:")
+			for _, c := range cmds {
+				fmt.Fprintf(out, "  %s: %s\n", c.Name, c.Description)
 			}
-			global.Parse(os.Args[2:])
-			err := c.Run(ctx, global.Args())
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error running %s: %v\n", cmd, err)
-				os.Exit(1)
-			}
-			return
+			fmt.Fprintf(out, "To see flags specific to a particular command, run\n%s command -help\n", fs.Name())
 		}
 	}
-	fmt.Fprintf(global.Output(), "Unknown command %q\n", cmd)
-	cmdNames := make([]string, 0, len(cmds))
-	for _, cmd := range cmds {
-		cmdNames = append(cmdNames, cmd.Name)
-	}
-	fmt.Fprintf(global.Output(), "Commands are %s\n", strings.Join(cmdNames, ", "))
-	fmt.Fprintf(global.Output(), "Run %s -help for more details\n", os.Args[0])
-	os.Exit(2)
 }

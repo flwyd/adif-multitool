@@ -15,33 +15,26 @@
 package cmd
 
 import (
-	"flag"
 	"fmt"
 
 	"github.com/flwyd/adif-multitool/adif"
 )
 
-var Select = Command{Name: "select", Run: runSelect, AddFlags: selectFlags,
+var Select = Command{Name: "select", Run: runSelect,
 	Description: "Print only specific fields from the input; skip records with no matching fields"}
 
-type selectContext struct {
-	fields fieldList
-}
-
-func selectFlags(ctx *Context, fs *flag.FlagSet) {
-	con := selectContext{fields: make(fieldList, 0, 16)}
-	fs.Var(&con.fields, "fields", "Comma-separated or multiple instance field names to include in output")
-	ctx.CommandCtx = &con
+type SelectContext struct {
+	Fields FieldList
 }
 
 func runSelect(ctx *Context, args []string) error {
-	con := ctx.CommandCtx.(*selectContext)
-	if len(con.fields) == 0 {
+	con := ctx.CommandCtx.(*SelectContext)
+	if len(con.Fields) == 0 {
 		return fmt.Errorf("no fields provided, try adifmt select -fields CALL,BAND")
 	}
 	srcs := argSources(ctx, args...)
 	out := adif.NewLogfile()
-	out.FieldOrder = con.fields
+	out.FieldOrder = con.Fields
 	for _, f := range srcs {
 		l, err := readSource(ctx, f)
 		if err != nil {
@@ -49,8 +42,8 @@ func runSelect(ctx *Context, args []string) error {
 		}
 		// TODO merge headers and comments
 		for _, r := range l.Records {
-			fields := make([]adif.Field, 0, len(con.fields))
-			for _, name := range con.fields {
+			fields := make([]adif.Field, 0, len(con.Fields))
+			for _, name := range con.Fields {
 				if f, ok := r.Get(name); ok {
 					fields = append(fields, f)
 				}

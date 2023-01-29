@@ -30,7 +30,7 @@ func TestSelectNoFields(t *testing.T) {
 	adi := adif.NewADIIO()
 	csv := adif.NewCSVIO()
 	out := &bytes.Buffer{}
-	cctx := &selectContext{fields: make(fieldList, 0)}
+	cctx := &SelectContext{Fields: make(FieldList, 0)}
 	ctx := &Context{
 		ProgramName:    "select test",
 		ProgramVersion: "1.2.3",
@@ -63,7 +63,7 @@ func TestSelectSingleFile(t *testing.T) {
 	csv := adif.NewCSVIO()
 	for _, tc := range tests {
 		out := &bytes.Buffer{}
-		cctx := &selectContext{fields: tc.fields}
+		cctx := &SelectContext{Fields: tc.fields}
 		ctx := &Context{
 			ProgramName:    "select test",
 			ProgramVersion: "1.2.3",

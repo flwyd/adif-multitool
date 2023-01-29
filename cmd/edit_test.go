@@ -39,10 +39,10 @@ func TestEditEmpty(t *testing.T) {
 		Writers:        writers(adi, csv),
 		Out:            out,
 		fs:             fakeFilesystem{map[string]string{"foo.csv": file1}},
-		CommandCtx: &editContext{
-			add:    fieldAssignments{values: []adif.Field{{Name: "BAZ", Value: "Baz value"}}, validate: validateAlphanumName},
-			set:    fieldAssignments{values: []adif.Field{{Name: "FOO", Value: "Foo value"}}, validate: validateAlphanumName},
-			remove: []string{"BAR"},
+		CommandCtx: &EditContext{
+			Add:    FieldAssignments{values: []adif.Field{{Name: "BAZ", Value: "Baz value"}}, validate: ValidateAlphanumName},
+			Set:    FieldAssignments{values: []adif.Field{{Name: "FOO", Value: "Foo value"}}, validate: ValidateAlphanumName},
+			Remove: []string{"BAR"},
 		}}
 	if err := Edit.Run(ctx, []string{"foo.csv"}); err != nil {
 		t.Errorf("Edit.Run(ctx, foo.csv) got error %v", err)
@@ -72,10 +72,10 @@ func TestEditAddSetRemove(t *testing.T) {
 		Writers:        writers(adi),
 		Out:            out,
 		fs:             fakeFilesystem{map[string]string{"foo.adi": file1}},
-		CommandCtx: &editContext{
-			add:    fieldAssignments{values: []adif.Field{{Name: "BAZ", Value: "Baz value"}}, validate: validateAlphanumName},
-			set:    fieldAssignments{values: []adif.Field{{Name: "FOO", Value: "Foo value"}}, validate: validateAlphanumName},
-			remove: []string{"BAR"},
+		CommandCtx: &EditContext{
+			Add:    FieldAssignments{values: []adif.Field{{Name: "BAZ", Value: "Baz value"}}, validate: ValidateAlphanumName},
+			Set:    FieldAssignments{values: []adif.Field{{Name: "FOO", Value: "Foo value"}}, validate: ValidateAlphanumName},
+			Remove: []string{"BAR"},
 		}}
 	if err := Edit.Run(ctx, []string{"foo.adi"}); err != nil {
 		t.Errorf("Edit.Run(ctx) got error %v", err)
@@ -114,7 +114,7 @@ foo3,bar3,
 		Writers:        writers(adi, csv),
 		Out:            out,
 		fs:             fakeFilesystem{map[string]string{"foo.csv": file1}},
-		CommandCtx:     &editContext{removeBlank: true}}
+		CommandCtx:     &EditContext{RemoveBlank: true}}
 	if err := Edit.Run(ctx, []string{"foo.csv"}); err != nil {
 		t.Errorf("Edit.Run(ctx, foo.csv) got error %v", err)
 	} else {
@@ -194,7 +194,7 @@ func TestAdjustTimeZone(t *testing.T) {
 			Writers:        writers(csv),
 			Out:            out,
 			fs:             fakeFilesystem{map[string]string{"foo.csv": file1}},
-			CommandCtx:     &editContext{fromZone: timeZone{tz: tc.from}, toZone: timeZone{tz: tc.to}}}
+			CommandCtx:     &EditContext{FromZone: TimeZone{tz: tc.from}, ToZone: TimeZone{tz: tc.to}}}
 		if tc.wantErr {
 			if err := Edit.Run(ctx, []string{"foo.csv"}); err == nil {
 				got := out.String()

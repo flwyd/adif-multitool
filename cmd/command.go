@@ -14,11 +14,8 @@
 
 package cmd
 
-import "flag"
-
 type Command struct {
 	Name        string
 	Description string
-	AddFlags    func(ctx *Context, fs *flag.FlagSet)
 	Run         func(ctx *Context, args []string) error
 }

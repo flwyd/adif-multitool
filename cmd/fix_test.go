@@ -38,10 +38,10 @@ func TestFixEmpty(t *testing.T) {
 		Writers:        writers(adi, csv),
 		Out:            out,
 		fs:             fakeFilesystem{map[string]string{"foo.csv": file1}},
-		CommandCtx: &editContext{
-			add:    fieldAssignments{values: []adif.Field{{Name: "BAZ", Value: "Baz value"}}, validate: validateAlphanumName},
-			set:    fieldAssignments{values: []adif.Field{{Name: "FOO", Value: "Foo value"}}, validate: validateAlphanumName},
-			remove: []string{"BAR"},
+		CommandCtx: &EditContext{
+			Add:    FieldAssignments{values: []adif.Field{{Name: "BAZ", Value: "Baz value"}}, validate: ValidateAlphanumName},
+			Set:    FieldAssignments{values: []adif.Field{{Name: "FOO", Value: "Foo value"}}, validate: ValidateAlphanumName},
+			Remove: []string{"BAR"},
 		}}
 	if err := Fix.Run(ctx, []string{"foo.csv"}); err != nil {
 		t.Errorf("Fix.Run(ctx, foo.csv) got error %v", err)

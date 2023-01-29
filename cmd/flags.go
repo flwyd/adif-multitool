@@ -23,15 +23,15 @@ import (
 	"github.com/flwyd/adif-multitool/adif"
 )
 
-type fieldList []string
+type FieldList []string
 
-func (f *fieldList) String() string {
+func (f *FieldList) String() string {
 	return strings.Join(*f, ",")
 }
 
-func (f *fieldList) Get() fieldList { return *f }
+func (f *FieldList) Get() FieldList { return *f }
 
-func (f *fieldList) Set(s string) error {
+func (f *FieldList) Set(s string) error {
 	fields := strings.Split(s, ",")
 	for _, x := range fields {
 		x = strings.ToUpper(strings.TrimSpace(x))
@@ -43,7 +43,7 @@ func (f *fieldList) Set(s string) error {
 	return nil
 }
 
-type fieldAssignments struct {
+type FieldAssignments struct {
 	values   []adif.Field
 	validate func(k, v string) error
 }
@@ -51,18 +51,18 @@ type fieldAssignments struct {
 // TODO allow name:type fields
 var adifNamePat = regexp.MustCompile(`^\w+$`)
 
-func validateAlphanumName(name, value string) error {
+func ValidateAlphanumName(name, value string) error {
 	if !adifNamePat.MatchString(name) {
 		return fmt.Errorf("invalid ADIF field name %q", name)
 	}
 	return nil
 }
 
-func newFieldAssignments(validate func(k, v string) error) fieldAssignments {
-	return fieldAssignments{values: make([]adif.Field, 0), validate: validate}
+func NewFieldAssignments(validate func(k, v string) error) FieldAssignments {
+	return FieldAssignments{values: make([]adif.Field, 0), validate: validate}
 }
 
-func (a *fieldAssignments) add(k, v string) error {
+func (a *FieldAssignments) add(k, v string) error {
 	k = strings.ToUpper(strings.TrimSpace(k))
 	if err := a.validate(k, v); err != nil {
 		return err
@@ -71,7 +71,7 @@ func (a *fieldAssignments) add(k, v string) error {
 	return nil
 }
 
-func (a *fieldAssignments) String() string {
+func (a *FieldAssignments) String() string {
 	res := make([]string, len(a.values))
 	for i, f := range a.values {
 		res[i] = f.String()
@@ -79,11 +79,11 @@ func (a *fieldAssignments) String() string {
 	return strings.Join(res, ";;")
 }
 
-func (a *fieldAssignments) Get() fieldAssignments { return *a }
+func (a *FieldAssignments) Get() FieldAssignments { return *a }
 
-func (f *fieldAssignments) Set(s string) error {
+func (f *FieldAssignments) Set(s string) error {
 	chunks := strings.Split(s, ";;")
-	a := newFieldAssignments(validateAlphanumName)
+	a := NewFieldAssignments(ValidateAlphanumName)
 	for _, c := range chunks {
 		c = strings.TrimSpace(c)
 		kv := strings.SplitN(c, "=", 2)
@@ -98,25 +98,25 @@ func (f *fieldAssignments) Set(s string) error {
 	return nil
 }
 
-type timeZone struct {
+type TimeZone struct {
 	tz *time.Location
 }
 
-func (z *timeZone) String() string {
+func (z *TimeZone) String() string {
 	if z.tz == nil {
 		return time.UTC.String()
 	}
 	return z.tz.String()
 }
 
-func (z *timeZone) Get() *time.Location {
+func (z *TimeZone) Get() *time.Location {
 	if z.tz == nil {
 		return time.UTC
 	}
 	return z.tz
 }
 
-func (z *timeZone) Set(s string) error {
+func (z *TimeZone) Set(s string) error {
 	l, err := time.LoadLocation(s)
 	if err != nil {
 		return fmt.Errorf("invalid time zone %q: %v", s, err)
