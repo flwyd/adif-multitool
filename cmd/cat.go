@@ -15,8 +15,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/flwyd/adif-multitool/adif"
 )
 
@@ -25,12 +23,11 @@ var Cat = Command{Name: "cat", Run: runCat,
 
 func runCat(ctx *Context, args []string) error {
 	// TODO add any needed flags
-	srcs := argSources(ctx, args...)
 	out := adif.NewLogfile()
-	for _, f := range srcs {
-		l, err := readSource(ctx, f)
+	for _, f := range filesOrStdin(args) {
+		l, err := readFile(ctx, f)
 		if err != nil {
-			return fmt.Errorf("error reading %s: %v", f, err)
+			return err
 		}
 		updateFieldOrder(out, l.FieldOrder)
 		// TODO merge headers and comments

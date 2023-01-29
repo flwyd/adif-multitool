@@ -19,29 +19,28 @@ import (
 	"strings"
 )
 
-type fakeSource struct {
-	name   string
-	reader *strings.Reader
+// StringReader implements NamedReader with a strings.Reader to aid testing.
+type StringReader struct {
+	*strings.Reader
+	Filename string
 }
 
-func (s fakeSource) Open() (NamedReader, error) {
-	return StringReader{Reader: s.reader, Filename: s.name}, nil
-}
+func (s *StringReader) Close() error { return nil }
 
-func (s fakeSource) String() string { return s.name }
+func (s *StringReader) Name() string { return s.Filename }
 
-type errorSource struct {
-	err error
-}
-
-func (s errorSource) Open() (NamedReader, error) { return nil, s.err }
+func (s *StringReader) String() string { return s.Filename }
 
 type fakeFilesystem struct{ files map[string]string }
 
-func (fs fakeFilesystem) Lookup(name string) argSource {
+func (fs fakeFilesystem) Open(name string) (NamedReader, error) {
 	f, ok := fs.files[name]
 	if !ok {
-		return errorSource{fmt.Errorf("error opening %s", name)}
+		names := make([]string, 0, len(fs.files))
+		for k, _ := range fs.files {
+			names = append(names, k)
+		}
+		return nil, fmt.Errorf("%s does not exist, not one of %v", name, names)
 	}
-	return fakeSource{name: name, reader: strings.NewReader(f)}
+	return &StringReader{Reader: strings.NewReader(f), Filename: name}, nil
 }

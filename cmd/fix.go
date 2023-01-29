@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -31,12 +30,11 @@ var allNumeric = regexp.MustCompile("^[0-9]+$")
 
 func runFix(ctx *Context, args []string) error {
 	// TODO add any needed flags
-	srcs := argSources(ctx, args...)
 	out := adif.NewLogfile()
-	for _, src := range srcs {
-		l, err := readSource(ctx, src)
+	for _, f := range filesOrStdin(args) {
+		l, err := readFile(ctx, f)
 		if err != nil {
-			return fmt.Errorf("error reading %s: %v", src, err)
+			return err
 		}
 		updateFieldOrder(out, l.FieldOrder)
 		for _, rec := range l.Records {

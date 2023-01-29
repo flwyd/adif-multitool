@@ -34,90 +34,52 @@ func write(ctx *Context, l *adif.Logfile) error {
 	return nil
 }
 
-func argSources(ctx *Context, filenames ...string) []argSource {
+func filesOrStdin(args []string) []string {
+	if len(args) == 0 {
+		return []string{"-"}
+	}
+	return args
+}
+
+func readFile(ctx *Context, filename string) (*adif.Logfile, error) {
 	fs := ctx.fs
 	if fs == nil {
 		fs = osFilesystem{}
 	}
-	if len(filenames) == 0 {
-		return []argSource{fs.Lookup("-")}
-	}
-	s := make([]argSource, len(filenames))
-	for i, f := range filenames {
-		s[i] = fs.Lookup(f)
-	}
-	return s
-}
-
-func readSource(ctx *Context, f argSource) (*adif.Logfile, error) {
-	src, err := f.Open()
+	f, err := fs.Open(filename)
 	if err != nil {
 		return nil, err
 	}
-	if c, ok := src.(io.Closer); ok {
-		defer c.Close()
-	}
-	ext := strings.TrimPrefix(filepath.Ext(src.Name()), ".")
+	defer f.Close()
+	ext := strings.TrimPrefix(filepath.Ext(f.Name()), ".")
 	format, err := adif.ParseFormat(ext)
 	if err != nil {
 		format = ctx.InputFormat
 	}
 	r := ctx.Readers[format]
-	l, err := r.Read(src)
+	l, err := r.Read(f)
 	if err != nil {
-		return nil, fmt.Errorf("error reading %s: %w", src.Name(), err)
+		return nil, fmt.Errorf("error reading %s: %w", f.Name(), err)
 	}
-	l.Filename = src.Name()
+	l.Filename = f.Name()
 	return l, nil
 }
 
 // NamedReader is an io.Reader with a name.  os.File implements this interface
 // and StringReader is provided for testing.
 type NamedReader interface {
-	io.Reader
+	io.ReadCloser
 	Name() string
 }
 
-// StringReader implements NamedReader with a strings.Reader to aid testing.
-type StringReader struct {
-	Reader   *strings.Reader
-	Filename string
+type filesystem interface {
+	// Open opens a file with the given name with the semantics of os.File.
+	Open(name string) (NamedReader, error)
 }
-
-func (s StringReader) Read(p []byte) (int, error) {
-	return s.Reader.Read(p)
-}
-
-func (s StringReader) Name() string { return s.Filename }
-
-func (s StringReader) String() string { return s.Filename }
-
-type argSource interface {
-	Open() (NamedReader, error)
-}
-
-type fileSource struct{ filename string }
-
-func (s fileSource) Open() (NamedReader, error) { return os.Open(s.filename) }
-
-func (s fileSource) String() string { return s.filename }
-
-type stdinSource struct{}
-
-func (s stdinSource) Open() (NamedReader, error) { return os.Stdin, nil }
-
-func (s stdinSource) String() string { return os.Stdin.Name() }
-
-type filesystem interface{ Lookup(name string) argSource }
 
 type osFilesystem struct{}
 
-func (_ osFilesystem) Lookup(name string) argSource {
-	if name == "-" || name == os.Stdin.Name() {
-		return stdinSource{}
-	}
-	return fileSource{filename: name}
-}
+func (_ osFilesystem) Open(name string) (NamedReader, error) { return os.Open(name) }
 
 func updateFieldOrder(l *adif.Logfile, fields []string) {
 	seen := make(map[string]bool)

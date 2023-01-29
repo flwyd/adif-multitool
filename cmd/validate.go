@@ -30,12 +30,11 @@ func runValidate(ctx *Context, args []string) error {
 	// TODO add any needed flags
 	log := os.Stderr
 	var errors, warnings int
-	srcs := argSources(ctx, args...)
 	out := adif.NewLogfile()
-	for _, f := range srcs {
-		l, err := readSource(ctx, f)
+	for _, f := range filesOrStdin(args) {
+		l, err := readFile(ctx, f)
 		if err != nil {
-			return fmt.Errorf("error reading %s: %v", f, err)
+			return err
 		}
 		updateFieldOrder(out, l.FieldOrder)
 		// TODO merge headers and comments

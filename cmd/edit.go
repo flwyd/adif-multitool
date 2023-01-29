@@ -58,12 +58,11 @@ func runEdit(ctx *Context, args []string) error {
 	fromTz := cctx.FromZone.Get()
 	toTz := cctx.ToZone.Get()
 	adjustTz := fromTz.String() != toTz.String()
-	srcs := argSources(ctx, args...)
 	out := adif.NewLogfile()
-	for _, f := range srcs {
-		l, err := readSource(ctx, f)
+	for _, f := range filesOrStdin(args) {
+		l, err := readFile(ctx, f)
 		if err != nil {
-			return fmt.Errorf("error reading %s: %v", f, err)
+			return err
 		}
 		updateFieldOrder(out, l.FieldOrder)
 		// TODO merge headers and comments

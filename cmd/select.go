@@ -30,15 +30,14 @@ type SelectContext struct {
 func runSelect(ctx *Context, args []string) error {
 	con := ctx.CommandCtx.(*SelectContext)
 	if len(con.Fields) == 0 {
-		return fmt.Errorf("no fields provided, try adifmt select -fields CALL,BAND")
+		return fmt.Errorf("no fields provided, try %s select -fields CALL,BAND", ctx.ProgramName)
 	}
-	srcs := argSources(ctx, args...)
 	out := adif.NewLogfile()
 	out.FieldOrder = con.Fields
-	for _, f := range srcs {
-		l, err := readSource(ctx, f)
+	for _, f := range filesOrStdin(args) {
+		l, err := readFile(ctx, f)
 		if err != nil {
-			return fmt.Errorf("error reading %s: %v", f, err)
+			return err
 		}
 		// TODO merge headers and comments
 		for _, r := range l.Records {
