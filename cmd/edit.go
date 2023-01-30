@@ -23,7 +23,7 @@ import (
 )
 
 var Edit = Command{Name: "edit", Run: runEdit,
-	Description: "Add, remove, or change field values"}
+	Description: "Add, change, remove, or adjust field values"}
 
 type EditContext struct {
 	Add         FieldAssignments
