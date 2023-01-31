@@ -17,11 +17,11 @@ adifmt infer -field band my_original_log.adi \
   | adifmt edit -add my_gridsquare=FN31pr \
   | adifmt filter -field mode=SSB \
   | adifmt validate
-  > my_ssb_log.adi
+  | adifmt save my_ssb_log.adx
 ```
 
-*Note*: `adifmt` is pronounced "ADIF M T" or "ADIF multitool", not "adi fmt" nor
-"addy format".
+*Note*: `adifmt` is pronounced “ADIF M T” or “ADIF multitool”, not “adi fmt” nor
+”addy format”.
 
 ## Quick start
 
@@ -61,16 +61,19 @@ adifmt cat -adi-field-separator=newline \
   log1.adi
 ```
 
-Multiple input and output formats are supported (currently ADI per the ADIF
-spec and CSV with field names matching the ADIF list).
+Multiple input and output formats are supported (currently ADI and ADX per the
+ADIF spec, CSV with field names matching the ADIF list, and JSON with a similar
+format to ADX).
 
 ```sh
 adifmt cat -input=adi -output=csv log1.adi > log1.csv
 adifmt cat -input=csv -output=adi log2.csv > log2.adi
 ```
 
-`-input` need not be specified if it’s implied by the file name, and
-`-ouput=adi` is the default.  Input files can be in different formats:
+`-input` need not be specified if it’s implied by the file name or can be
+inferred from the structure of the data.  `-ouput=adi` is the default for
+output format.  `adifmt save` infers the output format from the file’s
+extension  Input files can be in different formats:
 
 ```sh
 adifmt cat log1.adi log2.adx log3.csv log4.json > combined.adi
@@ -79,20 +82,18 @@ adifmt cat log1.adi log2.adx log3.csv log4.json > combined.adi
 If no file names are given, input is read from standard input:
 
 ```
-gunzip --stdout mylog.csv.gz | adifmt cat -input=csv | gzip > mylog.adi.gz
+gunzip --stdout mylog.csv.gz | adifmt cat -output=adx | gzip > mylog.adx.gz
 ```
 
-This will be useful in composing several `adifmt` invocations together, once
-more commands than `cat` are supported.
-
-Commands can be combined in a Unix-style pipeline.  The `fix` command
-automatically changes some values to match the expected ADIF format such as
-changing a time field from `12:34:56` to `123456` and a date from `2012-03-04`
-to `20120304`.  The `select` command prints only a subset of fields.  These can
-be combined:
+This is useful in composing several `adifmt` invocations together.  Commands
+can be combined in a Unix-style pipeline.  The `fix` command automatically
+changes some values to match the expected ADIF format such as changing a time
+field from `12:34:56` to `123456` and a date from `2012-03-04` to `20120304`.
+The `select` command prints only a subset of fields.  The `save` command writes
+the input data to a file.  These can be combined:
 
 ```sh
-adifmt fix log1.adi | adifmt select -fields qso_date,time_on,call > minimal.adi
+adifmt fix log1.adi | adifmt select -fields qso_date,time_on,call | adifmt save minimal.adi
 ```
 
 creates a file named `minimal.adi` with just the date, time, and callsign from
@@ -123,14 +124,18 @@ structured as follows.  `HEADER` is optional.
 
 ```json
 {
- “HEADER”: {
-  “ADIF_VER”: “3.1.4”,
-  “more”: “header fields”
+ "HEADER": {
+  "ADIF_VER": "3.1.4",
+  "more": "header fields"
  },
- “RECORDS”: [
+ "RECORDS": [
   {
-   “CALL”: “W1AW”,
-   “more”: “record fields”
+   "CALL": "W1AW",
+   "more": "record fields"
+  },
+  {
+   "CALL": "NA1SSS",
+   "more": "additional record fields"
   }
  ]
 }
@@ -141,10 +146,11 @@ structured as follows.  `HEADER` is optional.
 Name       | Description |
 ---------- | ----------- |
 `cat`      | Concatenate all input files to standard output |
-`edit`     | Add, change, remove, or adjust fields |
+`edit`     | Add, change, remove, or adjust field values |
 `fix`      | Correct field formats to match the ADIF specification |
+`save`     | Save standard input to file with format inferred by extension |
 `select`   | Print only specific fields from the input; skip records with no matching fields |
-`validate` | Print errors and warnings for fields which don’t match the ADIF specification
+`validate` | Validate field values; non-zero exit and no stdout if invalid |
 
 #### cat
 
@@ -159,7 +165,7 @@ file name; if `-output` is not specified ADI is used.)
 
 `adifmt edit` adds, changes, or removes fields in each input record.  Flags can
 be specified multiple times, e.g.
-`adifmt edit -add my_gridsquare=FN31pr -add “my_name=Hiram Percy Maxim” log.adi`
+`adifmt edit -add my_gridsquare=FN31pr -add "my_name=Hiram Percy Maxim" log.adi`
 
 The `-set` flag (`name=value`) changes the value of the given field on all
 records, adding it if it is not present.  The `-add` flag (`name=value`) only
@@ -186,6 +192,18 @@ correcting some common variations on enum fields, e.g. `USA` →
 `UNITED STATES OF AMERICA`.  A future update will also provide flags like date
 formats so that day/month/year or month/day/year input data can be unambiguously
 fixed.
+
+#### save
+
+`adifmt save` writes ADIF records from standard input to a file.  The output
+format is inferred from the file name or can be given explicitly with `-output`.
+Existing files will not be overwritten unless the `-overwrite-existing` flag is
+given.  The output file will not be written (and will exit with a non-zero code)
+if there are no records in the input; this allows a chain like
+`adifmt fix log.adi | adifmt validate | adifmt save -overwrite-existing log.adi`
+which will attempt to fix any errors in `log.adi` and save back to the same file
+but which won’t touch it if validation still fails.  Writing a zero-record file
+can be forced with `-write-if-empty`.
 
 #### select
 
@@ -237,8 +255,8 @@ ADIF Multitool was created because I was recording
 them into a spreadsheet. I needed a way to convert exported CSV files into ADIF
 format for upload to [the POTA website](https://pota.app/) while fixing
 incompatibilities between the spreadsheet data format and the expected ADIF
-structure. I decided to solve this problem with a "Swiss Army knife for ADIF
-files" following the
+structure. I decided to solve this problem with a “Swiss Army knife for ADIF
+files” following the
 [Unix pipeline philosophy](https://en.wikipedia.org/wiki/Pipeline_\(Unix\)) of
 simple tools that do one thing and can be easily composed together to build more
 powerful expressions.
@@ -254,9 +272,6 @@ Features I plan to add:
 *   Validate more fields.  Include warnings in record comments.
 *   Filter a log to only records matching some criteria, similar to a SQL
     `WHERE` clause.
-*   `adifmt save file.adx` command to infer output format without the `-output`
-    flag and to avoid writing if the input has no records (e.g. due to a failed
-    `adifmt validate` earlier in the pipeline).
 *   Infer missing fields based on the values of other fields. For example, the
     `BAND` field can be inferred from the frequency; `MODE` can be inferred from
     `SUBMODE`; `OPERATOR`, `STATION_CALLSIGN`, and `OWNER_CALLSIGN` can stand in
@@ -266,10 +281,15 @@ Features I plan to add:
 *   Identify duplicate records using flexible criteria, e.g., two contacts with
     the same callsign on the same band with the same mode on the same Zulu day
     and the same `MY_SIG_INFO` value.
+*   Specify a file name template for `save` to group records by a set of fields:
+    `adifmt cat all.csv | adifmt save '{MY_CALL}@{MY_POTA_REF}-{QSO_DATE}.adi'`
+    to split a large log file into one log file for each (callsign, park, date)
+    group, matching the expected POTA filename format.
 *   Count the total number of records or the number of distinct values of a
     field.  (The total number of records can currently be counted with
     `-output=csv`, piping the output to `wc -l`, and subtracting 1 for the
-    header row.)
+    header row.)  This could match the format of the “Report” comment in the
+    test QSOs file produced with the ADIF spec.
 *   Proper handling for user-defined field metadata.
 *   Maybe convert to and from Cabrillo format for contests?
 

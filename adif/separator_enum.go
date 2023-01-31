@@ -20,13 +20,15 @@ const (
 	SeparatorTab
 	// SeparatorNewline is a Separator of type Newline.
 	SeparatorNewline
-	// Separator2newline is a Separator of type 2newline.
-	Separator2newline
+	// Separator2Newline is a Separator of type 2Newline.
+	Separator2Newline
 	// SeparatorCrlf is a Separator of type Crlf.
 	SeparatorCrlf
-	// Separator2crlf is a Separator of type 2crlf.
-	Separator2crlf
+	// Separator2Crlf is a Separator of type 2Crlf.
+	Separator2Crlf
 )
+
+var ErrInvalidSeparator = fmt.Errorf("not a valid Separator, try [%s]", strings.Join(_SeparatorNames, ", "))
 
 const _SeparatorName = "emptyspacetabnewline2newlinecrlf2crlf"
 
@@ -52,9 +54,9 @@ var _SeparatorMap = map[Separator]string{
 	SeparatorSpace:    _SeparatorName[5:10],
 	SeparatorTab:      _SeparatorName[10:13],
 	SeparatorNewline:  _SeparatorName[13:20],
-	Separator2newline: _SeparatorName[20:28],
+	Separator2Newline: _SeparatorName[20:28],
 	SeparatorCrlf:     _SeparatorName[28:32],
-	Separator2crlf:    _SeparatorName[32:37],
+	Separator2Crlf:    _SeparatorName[32:37],
 }
 
 // String implements the Stringer interface.
@@ -74,12 +76,12 @@ var _SeparatorValue = map[string]Separator{
 	strings.ToLower(_SeparatorName[10:13]): SeparatorTab,
 	_SeparatorName[13:20]:                  SeparatorNewline,
 	strings.ToLower(_SeparatorName[13:20]): SeparatorNewline,
-	_SeparatorName[20:28]:                  Separator2newline,
-	strings.ToLower(_SeparatorName[20:28]): Separator2newline,
+	_SeparatorName[20:28]:                  Separator2Newline,
+	strings.ToLower(_SeparatorName[20:28]): Separator2Newline,
 	_SeparatorName[28:32]:                  SeparatorCrlf,
 	strings.ToLower(_SeparatorName[28:32]): SeparatorCrlf,
-	_SeparatorName[32:37]:                  Separator2crlf,
-	strings.ToLower(_SeparatorName[32:37]): Separator2crlf,
+	_SeparatorName[32:37]:                  Separator2Crlf,
+	strings.ToLower(_SeparatorName[32:37]): Separator2Crlf,
 }
 
 // ParseSeparator attempts to convert a string to a Separator.
@@ -91,7 +93,7 @@ func ParseSeparator(name string) (Separator, error) {
 	if x, ok := _SeparatorValue[strings.ToLower(name)]; ok {
 		return x, nil
 	}
-	return Separator(0), fmt.Errorf("%s is not a valid Separator, try [%s]", name, strings.Join(_SeparatorNames, ", "))
+	return Separator(0), fmt.Errorf("%s is %w", name, ErrInvalidSeparator)
 }
 
 // Set implements the Golang flag.Value interface func.

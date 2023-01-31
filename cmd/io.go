@@ -15,10 +15,10 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/flwyd/adif-multitool/adif"
@@ -26,9 +26,13 @@ import (
 
 func write(ctx *Context, l *adif.Logfile) error {
 	ctx.SetHeaders(l)
-	w, ok := ctx.Writers[ctx.OutputFormat]
+	format := ctx.OutputFormat
+	if !format.IsValid() {
+		format = adif.FormatADI
+	}
+	w, ok := ctx.Writers[format]
 	if !ok {
-		return fmt.Errorf("unknown output format %q", ctx.OutputFormat)
+		return fmt.Errorf("unknown output format %q", format)
 	}
 	w.Write(l, ctx.Out)
 	return nil
@@ -51,13 +55,19 @@ func readFile(ctx *Context, filename string) (*adif.Logfile, error) {
 		return nil, err
 	}
 	defer f.Close()
-	ext := strings.TrimPrefix(filepath.Ext(f.Name()), ".")
-	format, err := adif.ParseFormat(ext)
-	if err != nil {
-		format = ctx.InputFormat
+	ior := bufio.NewReader(f)
+	format := ctx.InputFormat
+	if !format.IsValid() {
+		format, err = adif.GuessFormatFromName(f.Name())
+		if err != nil {
+			format, err = adif.GuessFormatFromContent(ior)
+			if err != nil {
+				return nil, fmt.Errorf("could not determine type of %s: %w", f.Name(), err)
+			}
+		}
 	}
 	r := ctx.Readers[format]
-	l, err := r.Read(f)
+	l, err := r.Read(ior)
 	if err != nil {
 		return nil, fmt.Errorf("error reading %s: %w", f.Name(), err)
 	}
@@ -66,20 +76,37 @@ func readFile(ctx *Context, filename string) (*adif.Logfile, error) {
 }
 
 // NamedReader is an io.Reader with a name.  os.File implements this interface
-// and StringReader is provided for testing.
+// and stringReader is provided for testing.
 type NamedReader interface {
 	io.ReadCloser
 	Name() string
 }
 
 type filesystem interface {
+	// Exists returns true if the named file is known to exist, false otherwise.
+	Exists(name string) bool
 	// Open opens a file with the given name with the semantics of os.File.
 	Open(name string) (NamedReader, error)
+	// Create creates a file and opens it for writing, truncating the file if it
+	// alrready exists.  See os.Create for more details.
+	Create(name string) (io.WriteCloser, error)
 }
 
 type osFilesystem struct{}
 
-func (_ osFilesystem) Open(name string) (NamedReader, error) { return os.Open(name) }
+func (_ osFilesystem) Exists(name string) bool {
+	_, err := os.Stat(name)
+	return err == nil
+}
+
+func (_ osFilesystem) Open(name string) (NamedReader, error) {
+	if name == "-" || name == os.Stdin.Name() {
+		return os.Stdin, nil
+	}
+	return os.Open(name)
+}
+
+func (_ osFilesystem) Create(name string) (io.WriteCloser, error) { return os.Create(name) }
 
 func updateFieldOrder(l *adif.Logfile, fields []string) {
 	seen := make(map[string]bool)

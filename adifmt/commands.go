@@ -47,6 +47,14 @@ var (
 	fixConf = cmdConfig{Command: cmd.Fix,
 		Configure: func(*cmd.Context, *flag.FlagSet) {}}
 
+	saveConf = cmdConfig{Command: cmd.Save,
+		Configure: func(ctx *cmd.Context, fs *flag.FlagSet) {
+			cctx := cmd.SaveContext{}
+			fs.BoolVar(&cctx.OverwriteExisting, "overwrite-existing", false, "Overwrite output file if it already exists")
+			fs.BoolVar(&cctx.WriteIfEmpty, "write-if-empty", false, "Write output file even if standard input has no records")
+			ctx.CommandCtx = &cctx
+		}}
+
 	selectConf = cmdConfig{Command: cmd.Select,
 		Configure: func(ctx *cmd.Context, fs *flag.FlagSet) {
 			cctx := cmd.SelectContext{Fields: make(cmd.FieldList, 0, 16)}
@@ -57,7 +65,7 @@ var (
 	validateConf = cmdConfig{Command: cmd.Validate,
 		Configure: func(*cmd.Context, *flag.FlagSet) {}}
 
-	cmds = []cmdConfig{catConf, editConf, fixConf, selectConf, validateConf}
+	cmds = []cmdConfig{catConf, editConf, fixConf, saveConf, selectConf, validateConf}
 )
 
 func commandNamed(name string) (cmdConfig, bool) {

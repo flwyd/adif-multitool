@@ -30,11 +30,11 @@ func (d Separator) Val() string {
 		return "\t"
 	case SeparatorNewline:
 		return "\n"
-	case Separator2newline:
+	case Separator2Newline:
 		return "\n\n"
 	case SeparatorCrlf:
 		return "\r\n"
-	case Separator2crlf:
+	case Separator2Crlf:
 		return "\r\n\r\n"
 	}
 	panic(fmt.Sprintf("unhandled Separator %s", d))

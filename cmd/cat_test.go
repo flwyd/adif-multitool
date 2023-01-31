@@ -30,6 +30,7 @@ func TestCatEmpty(t *testing.T) {
 		ProgramName:    "cat test",
 		ProgramVersion: "1.2.3",
 		ADIFVersion:    "3.1.4",
+		InputFormat:    adif.FormatADI,
 		OutputFormat:   adif.FormatADI,
 		Readers:        readers(io),
 		Writers:        writers(io),

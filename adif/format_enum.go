@@ -13,22 +13,22 @@ import (
 
 const (
 	// FormatADI is a Format of type ADI.
-	FormatADI Format = iota
+	FormatADI Format = "ADI"
 	// FormatADX is a Format of type ADX.
-	FormatADX
+	FormatADX Format = "ADX"
 	// FormatCSV is a Format of type CSV.
-	FormatCSV
+	FormatCSV Format = "CSV"
 	// FormatJSON is a Format of type JSON.
-	FormatJSON
+	FormatJSON Format = "JSON"
 )
 
-const _FormatName = "ADIADXCSVJSON"
+var ErrInvalidFormat = fmt.Errorf("not a valid Format, try [%s]", strings.Join(_FormatNames, ", "))
 
 var _FormatNames = []string{
-	_FormatName[0:3],
-	_FormatName[3:6],
-	_FormatName[6:9],
-	_FormatName[9:13],
+	string(FormatADI),
+	string(FormatADX),
+	string(FormatCSV),
+	string(FormatJSON),
 }
 
 // FormatNames returns a list of possible string values of Format.
@@ -38,30 +38,26 @@ func FormatNames() []string {
 	return tmp
 }
 
-var _FormatMap = map[Format]string{
-	FormatADI:  _FormatName[0:3],
-	FormatADX:  _FormatName[3:6],
-	FormatCSV:  _FormatName[6:9],
-	FormatJSON: _FormatName[9:13],
+// String implements the Stringer interface.
+func (x Format) String() string {
+	return string(x)
 }
 
 // String implements the Stringer interface.
-func (x Format) String() string {
-	if str, ok := _FormatMap[x]; ok {
-		return str
-	}
-	return fmt.Sprintf("Format(%d)", x)
+func (x Format) IsValid() bool {
+	_, err := ParseFormat(string(x))
+	return err == nil
 }
 
 var _FormatValue = map[string]Format{
-	_FormatName[0:3]:                   FormatADI,
-	strings.ToLower(_FormatName[0:3]):  FormatADI,
-	_FormatName[3:6]:                   FormatADX,
-	strings.ToLower(_FormatName[3:6]):  FormatADX,
-	_FormatName[6:9]:                   FormatCSV,
-	strings.ToLower(_FormatName[6:9]):  FormatCSV,
-	_FormatName[9:13]:                  FormatJSON,
-	strings.ToLower(_FormatName[9:13]): FormatJSON,
+	"ADI":  FormatADI,
+	"adi":  FormatADI,
+	"ADX":  FormatADX,
+	"adx":  FormatADX,
+	"CSV":  FormatCSV,
+	"csv":  FormatCSV,
+	"JSON": FormatJSON,
+	"json": FormatJSON,
 }
 
 // ParseFormat attempts to convert a string to a Format.
@@ -73,7 +69,7 @@ func ParseFormat(name string) (Format, error) {
 	if x, ok := _FormatValue[strings.ToLower(name)]; ok {
 		return x, nil
 	}
-	return Format(0), fmt.Errorf("%s is not a valid Format, try [%s]", name, strings.Join(_FormatNames, ", "))
+	return Format(""), fmt.Errorf("%s is %w", name, ErrInvalidFormat)
 }
 
 // Set implements the Golang flag.Value interface func.
