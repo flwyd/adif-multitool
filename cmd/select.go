@@ -16,6 +16,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/flwyd/adif-multitool/adif"
 )
@@ -30,10 +32,11 @@ type SelectContext struct {
 func runSelect(ctx *Context, args []string) error {
 	con := ctx.CommandCtx.(*SelectContext)
 	if len(con.Fields) == 0 {
-		return fmt.Errorf("no fields provided, try %s select -fields CALL,BAND", ctx.ProgramName)
+		return fmt.Errorf("no fields provided, try %s select -fields CALL,BAND", filepath.Base(os.Args[0]))
 	}
 	out := adif.NewLogfile()
 	out.FieldOrder = con.Fields
+	var comments commentCatcher
 	for _, f := range filesOrStdin(args) {
 		l, err := readFile(ctx, f)
 		if err != nil {
@@ -51,6 +54,8 @@ func runSelect(ctx *Context, args []string) error {
 				out.Records = append(out.Records, adif.NewRecord(fields...))
 			}
 		}
+		comments.read(l, f)
 	}
+	comments.write(out)
 	return write(ctx, out)
 }

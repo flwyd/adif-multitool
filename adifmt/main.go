@@ -24,11 +24,16 @@ import (
 	"path/filepath"
 	"runtime/debug"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/flwyd/adif-multitool/adif"
 	"github.com/flwyd/adif-multitool/adif/spec"
 	"github.com/flwyd/adif-multitool/cmd"
+)
+
+const (
+	helpUrl = "https://github.com/flwyd/adif-multitool"
 )
 
 func main() {
@@ -100,8 +105,6 @@ func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
 	adxio := adif.NewADXIO()
 	csvio := adif.NewCSVIO()
 	jsonio := adif.NewJSONIO()
-	ctx.ADIFVersion = spec.ADIFVersion
-	ctx.ProgramName = filepath.Base(os.Args[0])
 	ctx.Readers = map[adif.Format]adif.Reader{
 		adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio,
 	}
@@ -109,10 +112,19 @@ func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
 		adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio,
 	}
 	ctx.Out = os.Stdout
-	if build, ok := debug.ReadBuildInfo(); ok {
-		ctx.ProgramVersion = build.Main.Version
-	} else {
-		ctx.ProgramVersion = "v0.0.0"
+	ctx.Prepare = func(l *adif.Logfile) {
+		t := time.Now()
+		l.Header.SetComment(fmt.Sprintf("Generated at %s with %d records by %s", t.Format(time.RFC1123Z), len(l.Records), helpUrl))
+		l.Header.Set(adif.Field{Name: spec.AdifVerField.Name, Value: spec.ADIFVersion})
+		l.Header.Set(adif.Field{Name: spec.CreatedTimestampField.Name, Value: t.Format("20060102 150405")})
+		name := "adifmt"
+		ver := "v0.0.0"
+		if build, ok := debug.ReadBuildInfo(); ok {
+			name = filepath.Base(build.Path)
+			ver = build.Main.Version
+		}
+		l.Header.Set(adif.Field{Name: spec.ProgramidField.Name, Value: name})
+		l.Header.Set(adif.Field{Name: spec.ProgramversionField.Name, Value: ver})
 	}
 
 	// General flags

@@ -25,19 +25,16 @@ import (
 
 func TestFixEmpty(t *testing.T) {
 	adi := adif.NewADIIO()
-	adi.HeaderCommentFn = func(*adif.Logfile) string { return "My Comment" }
 	csv := adif.NewCSVIO()
 	out := &bytes.Buffer{}
 	file1 := "QSO_DATE,TIME_ON,TIME_OFF,CALL,MODE,BAND\n"
 	ctx := &Context{
-		ProgramName:    "fix test",
-		ProgramVersion: "1.2.3",
-		ADIFVersion:    "3.1.4",
-		OutputFormat:   adif.FormatADI,
-		Readers:        readers(adi, csv),
-		Writers:        writers(adi, csv),
-		Out:            out,
-		fs:             fakeFilesystem{map[string]string{"foo.csv": file1}},
+		OutputFormat: adif.FormatADI,
+		Readers:      readers(adi, csv),
+		Writers:      writers(adi, csv),
+		Out:          out,
+		Prepare:      testPrepare("My Comment", "3.1.4", "fix test", "1.2.3"),
+		fs:           fakeFilesystem{map[string]string{"foo.csv": file1}},
 		CommandCtx: &EditContext{
 			Add:    FieldAssignments{values: []adif.Field{{Name: "BAZ", Value: "Baz value"}}, validate: ValidateAlphanumName},
 			Set:    FieldAssignments{values: []adif.Field{{Name: "FOO", Value: "Foo value"}}, validate: ValidateAlphanumName},
@@ -56,7 +53,6 @@ func TestFixEmpty(t *testing.T) {
 
 func TestFixDate(t *testing.T) {
 	adi := adif.NewADIIO()
-	adi.HeaderCommentFn = func(*adif.Logfile) string { return "My Comment" }
 	csv := adif.NewCSVIO()
 	header := "My Comment\n<ADIF_VER:5>3.1.4 <PROGRAMID:8>fix test <PROGRAMVERSION:5>1.2.3 <EOH>\n"
 	fields := []string{
@@ -84,14 +80,12 @@ func TestFixDate(t *testing.T) {
 			out := &bytes.Buffer{}
 			file1 := fmt.Sprintf("NOT_DATE,%s\n2022-02-22,%s\n", f, tc.source)
 			ctx := &Context{
-				ProgramName:    "fix test",
-				ProgramVersion: "1.2.3",
-				ADIFVersion:    "3.1.4",
-				OutputFormat:   adif.FormatADI,
-				Readers:        readers(adi, csv),
-				Writers:        writers(adi, csv),
-				Out:            out,
-				fs:             fakeFilesystem{map[string]string{"foo.csv": file1}}}
+				OutputFormat: adif.FormatADI,
+				Readers:      readers(adi, csv),
+				Writers:      writers(adi, csv),
+				Out:          out,
+				Prepare:      testPrepare("My Comment", "3.1.4", "fix test", "1.2.3"),
+				fs:           fakeFilesystem{map[string]string{"foo.csv": file1}}}
 			if err := Fix.Run(ctx, []string{"foo.csv"}); err != nil {
 				t.Errorf("Fix.Run(ctx, foo.csv) got error %v", err)
 			} else {
@@ -107,7 +101,6 @@ func TestFixDate(t *testing.T) {
 
 func TestFixTime(t *testing.T) {
 	adi := adif.NewADIIO()
-	adi.HeaderCommentFn = func(*adif.Logfile) string { return "My Comment" }
 	csv := adif.NewCSVIO()
 	header := "My Comment\n<ADIF_VER:5>3.1.4 <PROGRAMID:8>fix test <PROGRAMVERSION:5>1.2.3 <EOH>\n"
 	fields := []string{"TIME_ON", "TIME_OFF"}
@@ -144,14 +137,12 @@ func TestFixTime(t *testing.T) {
 			out := &bytes.Buffer{}
 			file1 := fmt.Sprintf("NOT_TIME,%s\n07:06:05,%s\n", f, tc.source)
 			ctx := &Context{
-				ProgramName:    "fix test",
-				ProgramVersion: "1.2.3",
-				ADIFVersion:    "3.1.4",
-				OutputFormat:   adif.FormatADI,
-				Readers:        readers(adi, csv),
-				Writers:        writers(adi, csv),
-				Out:            out,
-				fs:             fakeFilesystem{map[string]string{"foo.csv": file1}}}
+				OutputFormat: adif.FormatADI,
+				Readers:      readers(adi, csv),
+				Writers:      writers(adi, csv),
+				Out:          out,
+				Prepare:      testPrepare("My Comment", "3.1.4", "fix test", "1.2.3"),
+				fs:           fakeFilesystem{map[string]string{"foo.csv": file1}}}
 			if err := Fix.Run(ctx, []string{"foo.csv"}); err != nil {
 				t.Errorf("Fix.Run(ctx, foo.csv) got error %v", err)
 			} else {

@@ -107,6 +107,7 @@ Inverted L antenna, 70' above ground
 
 func TestWriteJSON(t *testing.T) {
 	l := NewLogfile()
+	l.Comment = "JSON ignores comments"
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "19901031", Type: Date},
 		Field{Name: "TIME_ON", Value: "1234", Type: Time},

@@ -20,29 +20,23 @@ import (
 	"io"
 	"strconv"
 	"strings"
-	"time"
+	"unicode"
 )
 
-// TODO options like space/newline field separators, lf/crlf for records, case
 type ADIIO struct {
-	LowerCase bool // TODO consider a case enum: keep, upper, lower
+	LowerCase bool // TODO consider a case enum: keep, upper, lower, or just get rid of this option
 	FieldSep  Separator
 	RecordSep Separator
-	// TODO add Comment string to Record, just print that
-	HeaderCommentFn func(*Logfile) string
 }
 
 func NewADIIO() *ADIIO {
-	return &ADIIO{FieldSep: SeparatorSpace, RecordSep: SeparatorNewline,
-		HeaderCommentFn: func(l *Logfile) string {
-			return fmt.Sprintf("Generated %s with %d records", time.Now().Format(time.RFC1123Z), len(l.Records))
-		},
-	}
+	return &ADIIO{FieldSep: SeparatorSpace, RecordSep: SeparatorNewline}
 }
 
 func (_ *ADIIO) String() string { return "adi" }
 
-func (_ *ADIIO) Read(in io.Reader) (*Logfile, error) {
+func (o *ADIIO) Read(in io.Reader) (*Logfile, error) {
+	var comments []string
 	l := NewLogfile()
 	r := bufio.NewReader(in)
 	s, err := r.ReadString('<')
@@ -55,11 +49,8 @@ func (_ *ADIIO) Read(in io.Reader) (*Logfile, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error reading to first tag: %w", err)
 	}
-	if len(s) > 1 { // final byte is '<'
-		// TODO ADIF specification says the comment is part of the header, maybe
-		// make a Header type that contains zero-or-more comments.
-		l.Comment = s[0 : len(s)-1]
-	}
+	// final byte is '<'
+	comments = append(comments, s[0:len(s)-1])
 	// ADIF specification seems to imply that without a comment at the start
 	// of a file, and thus the first character is '<', then there is no header
 	// and the < starts the first record.  This invariant may not hold for all
@@ -89,12 +80,16 @@ func (_ *ADIIO) Read(in io.Reader) (*Logfile, error) {
 					return nil, fmt.Errorf("invalid ADI file with <EOH> header after first <EOR> record")
 				}
 				sawHeader = true
+				cur.SetComment(strings.Join(comments, o.RecordSep.Val()))
 				l.Header = cur
 				cur = NewRecord()
+				comments = nil
 			case "EOR":
 				sawRecord = true
+				cur.SetComment(strings.Join(comments, o.RecordSep.Val()))
 				l.Records = append(l.Records, cur)
 				cur = NewRecord()
+				comments = nil
 			default:
 				return nil, fmt.Errorf("invalid ADI field without length <%s", s)
 			}
@@ -121,7 +116,18 @@ func (_ *ADIIO) Read(in io.Reader) (*Logfile, error) {
 			return nil, fmt.Errorf("invalid ADI tag format <%s", s)
 		}
 		// arbitrary text between one field or record and the next
-		if _, err := r.ReadString('<'); err == io.EOF {
+		c, err := r.ReadString('<')
+		c = strings.TrimFunc(strings.TrimSuffix(c, "<"), unicode.IsSpace)
+		if c != "" {
+			comments = append(comments, c)
+		}
+		if err == io.EOF {
+			if len(cur.fields) != 0 {
+				return nil, fmt.Errorf("final record missing <EOR>: %s", cur)
+			}
+			if len(comments) > 0 {
+				l.Comment = strings.Join(comments, o.RecordSep.Val())
+			}
 			return l, nil
 		}
 		if err != nil {
@@ -133,18 +139,29 @@ func (_ *ADIIO) Read(in io.Reader) (*Logfile, error) {
 func (o *ADIIO) Write(l *Logfile, out io.Writer) error {
 	b := bufio.NewWriter(out)
 	defer b.Flush()
-	if _, err := b.WriteString(o.HeaderCommentFn(l) + o.RecordSep.Val()); err != nil {
-		return fmt.Errorf("error writing ADI header: %w", err)
-	}
-	for _, f := range l.Header.Fields() {
-		if err := o.writeField(f, b); err != nil {
+	if !l.Header.Empty() {
+		c := l.Header.GetComment()
+		if c == "" {
+			c = "ADI format, see https://adif.org.uk/"
+		}
+		if err := o.writeComment(b, c, o.RecordSep.Val()); err != nil {
+			return fmt.Errorf("error writing ADI header: %w", err)
+		}
+		for _, f := range l.Header.Fields() {
+			if err := o.writeField(f, b); err != nil {
+				return fmt.Errorf("error writing ADI header: %w", err)
+			}
+		}
+		if _, err := b.WriteString(fmt.Sprintf("<%s>%s", o.fixCase("EOH"), o.RecordSep.Val())); err != nil {
 			return fmt.Errorf("error writing ADI header: %w", err)
 		}
 	}
-	if _, err := b.WriteString(fmt.Sprintf("<%s>%s", o.fixCase("EOH"), o.RecordSep.Val())); err != nil {
-		return fmt.Errorf("error writing ADI header: %w", err)
-	}
 	for i, r := range l.Records {
+		if c := r.GetComment(); c != "" {
+			if err := o.writeComment(b, c, o.FieldSep.Val()); err != nil {
+				return fmt.Errorf("error writing ADI record comment: %w", err)
+			}
+		}
 		seen := make(map[string]bool)
 		for _, n := range l.FieldOrder {
 			if f, ok := r.Get(n); ok {
@@ -165,6 +182,11 @@ func (o *ADIIO) Write(l *Logfile, out io.Writer) error {
 			return fmt.Errorf("error writing ADI record #%d: %w", i, err)
 		}
 	}
+	if l.Comment != "" {
+		if err := o.writeComment(b, l.Comment, "\n"); err != nil {
+			return fmt.Errorf("error writing ADI comment: %w", err)
+		}
+	}
 	return nil
 }
 
@@ -178,6 +200,18 @@ func (o *ADIIO) writeField(f Field, b *bufio.Writer) error {
 	}
 	if _, err := b.WriteString(fmt.Sprintf("%s%s%s", tag, f.Value, o.FieldSep.Val())); err != nil {
 		return fmt.Errorf("error writing %s: %w", f, err)
+	}
+	return nil
+}
+
+var escapeAngleBrackets = strings.NewReplacer("<", "&lt;", ">", "&gt;")
+
+func (o *ADIIO) writeComment(w io.Writer, comment, suffix string) error {
+	if _, err := escapeAngleBrackets.WriteString(w, comment); err != nil {
+		return err
+	}
+	if _, err := escapeAngleBrackets.WriteString(w, suffix); err != nil {
+		return err
 	}
 	return nil
 }

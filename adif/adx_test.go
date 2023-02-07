@@ -44,6 +44,7 @@ func TestEmptyADX(t *testing.T) {
 func TestReadADX(t *testing.T) {
 	input := xml.Header +
 		`<ADX>
+		<!--Logfile comment.-->
 		<HEADER>
 		<ADIF_VER>3.1.4</ADIF_VER>
 		<CREATED_TIMESTAMP>20220102 153456</CREATED_TIMESTAMP>
@@ -55,11 +56,11 @@ func TestReadADX(t *testing.T) {
 <QSO_DATE>19901031</QSO_DATE> <TIME_ON>1234</TIME_ON>  <BAND>40M</BAND><CALLSIGN>W1AW</CALLSIGN>
 <NAME>Hiram Percey Maxim</NAME> </RECORD>
 <RECORD>
-	<QSO_DATE TYPE="D">20221224</QSO_DATE>
+	<QSO_DATE TYPE="D">20221224<!--Field comment #1--></QSO_DATE>
 	<TIME_ON TYPE="T">095846</TIME_ON>
 	<BAND TYPE="E">1.25cm</BAND>
 	<CALLSIGN TYPE="S">N0P</CALLSIGN>
-	<NAME TYPE="S">Santa Claus</NAME>
+	<NAME TYPE="S"><!--Field comment #2-->Santa Claus</NAME>
 </RECORD>
 <RECORD>
 <QSO_DATE>19190219</QSO_DATE>
@@ -99,6 +100,11 @@ Inverted L antenna, 70' above ground
 			{Name: "NAME", Value: `"C.G." Tuska`, Type: String},
 		},
 	}
+	wantComments := []string{
+		"",
+		"Field comment #1\nField comment #2",
+		" This is a random comment ",
+	}
 	adi := NewADXIO()
 	if parsed, err := adi.Read(strings.NewReader(input)); err != nil {
 		t.Errorf("Read(%q) got error %v", input, err)
@@ -108,15 +114,22 @@ Inverted L antenna, 70' above ground
 			if diff := cmp.Diff(wantFields[i], fields); diff != "" {
 				t.Errorf("Read(%q) record %d did not match expected, diff:\n%s", input, i, diff)
 			}
+			if got := r.GetComment(); got != wantComments[i] {
+				t.Errorf("Read(%q) record %d got comment %q want %q", input, i, got, wantComments[i])
+			}
 		}
 		if gotlen := len(parsed.Records); gotlen != len(wantFields) {
 			t.Errorf("Read(%q) got %d records:\n%v\nwant %d\n%v", input, gotlen, parsed.Records[len(wantFields):], len(wantFields), wantFields)
+		}
+		if want := "Logfile comment."; parsed.Comment != want {
+			t.Errorf("Read(%q) got logfile comment %q, want %q", input, parsed.Comment, want)
 		}
 	}
 }
 
 func TestWriteADX(t *testing.T) {
 	l := NewLogfile()
+	l.Comment = "The <last> word."
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "19901031", Type: Date},
 		Field{Name: "TIME_ON", Value: "1234", Type: Time},
@@ -131,6 +144,7 @@ func TestWriteADX(t *testing.T) {
 		Field{Name: "CALLSIGN", Value: "N0P", Type: String},
 		Field{Name: "NAME", Value: "Santa Claus"},
 	))
+	l.Records[len(l.Records)-1].SetComment("Record comment")
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "19190219", Type: Date},
 		Field{Name: "RIG", Value: `100 watt C.W.
@@ -145,8 +159,10 @@ Inverted L antenna, 70' above ground
 	l.Header.Set(Field{Name: "PROGRAMID", Value: "adx_test"})
 	l.Header.Set(Field{Name: "PROGRAMVERSION", Value: "1.2.3"})
 	l.Header.Set(Field{Name: "CREATED_TIMESTAMP", Value: "20220102 153456"})
+	l.Header.SetComment("Header comment")
 	want := xml.Header + `<ADX>
   <HEADER>
+    <!--Header comment-->
     <ADIF_VER>3.1.4</ADIF_VER>
     <PROGRAMID>adx_test</PROGRAMID>
     <PROGRAMVERSION>1.2.3</PROGRAMVERSION>
@@ -161,6 +177,7 @@ Inverted L antenna, 70' above ground
       <NAME TYPE="S">Hiram Percey Maxim</NAME>
     </RECORD>
     <RECORD>
+      <!--Record comment-->
       <QSO_DATE>20221224</QSO_DATE>
       <TIME_ON>095846</TIME_ON>
       <BAND TYPE="E">1.25cm</BAND>
@@ -175,6 +192,7 @@ Inverted L antenna, 70' above ground
       <NAME TYPE="S">&#34;C.G.&#34; Tuska</NAME>
     </RECORD>
   </RECORDS>
+  <!--The <last> word.-->
 </ADX>`
 	adx := NewADXIO()
 	adx.Indent = 2

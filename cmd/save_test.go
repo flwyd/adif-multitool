@@ -27,7 +27,6 @@ func TestSaveInferFormat(t *testing.T) {
 	adiio := adif.NewADIIO()
 	adiio.FieldSep = adif.SeparatorSpace
 	adiio.RecordSep = adif.SeparatorNewline
-	adiio.HeaderCommentFn = func(l *adif.Logfile) string { return "Test comment" }
 	adxio := adif.NewADXIO()
 	csvio := adif.NewCSVIO()
 	jsonio := adif.NewJSONIO()
@@ -40,6 +39,7 @@ func TestSaveInferFormat(t *testing.T) {
 <QSO_DATE:8>19870605
 <BAND:3>40m
 <EOR>
+Comment about Santa on the Air
 <CALL:3>N0P
 <QSO_DATE:8>20221224
 <BAND:2>2m
@@ -62,13 +62,13 @@ func TestSaveInferFormat(t *testing.T) {
 			want: `Test comment
 <ADIF_VER:5>3.1.4 <PROGRAMID:9>test save <PROGRAMVERSION:5>5.6.7 <EOH>
 <CALL:4>W1AW <QSO_DATE:8>19870605 <BAND:3>40m <EOR>
-<CALL:3>N0P <QSO_DATE:8>20221224 <BAND:2>2m <EOR>
+Comment about Santa on the Air <CALL:3>N0P <QSO_DATE:8>20221224 <BAND:2>2m <EOR>
 `,
 		},
 		{
 			name:     "infer ADX",
 			filename: "out.adx",
-			want:     xml.Header + `<ADX><HEADER><ADIF_VER>3.1.4</ADIF_VER><PROGRAMID>test save</PROGRAMID><PROGRAMVERSION>5.6.7</PROGRAMVERSION></HEADER><RECORDS><RECORD><CALL>W1AW</CALL><QSO_DATE>19870605</QSO_DATE><BAND>40m</BAND></RECORD><RECORD><CALL>N0P</CALL><QSO_DATE>20221224</QSO_DATE><BAND>2m</BAND></RECORD></RECORDS></ADX>`,
+			want:     xml.Header + `<ADX><HEADER><!--Test comment--><ADIF_VER>3.1.4</ADIF_VER><PROGRAMID>test save</PROGRAMID><PROGRAMVERSION>5.6.7</PROGRAMVERSION></HEADER><RECORDS><RECORD><CALL>W1AW</CALL><QSO_DATE>19870605</QSO_DATE><BAND>40m</BAND></RECORD><RECORD><!--Comment about Santa on the Air--><CALL>N0P</CALL><QSO_DATE>20221224</QSO_DATE><BAND>2m</BAND></RECORD></RECORDS></ADX>`,
 		},
 		{
 			name:     "infer CSV",
@@ -90,14 +90,12 @@ N0P,20221224,2m
 		fs := fakeFilesystem{files: map[string]string{os.Stdin.Name(): input}}
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := &Context{
-				ProgramName:    "test save",
-				ProgramVersion: "5.6.7",
-				ADIFVersion:    "3.1.4",
-				Readers:        map[adif.Format]adif.Reader{adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio},
-				Writers:        map[adif.Format]adif.Writer{adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio},
-				Out:            os.Stdout,
-				CommandCtx:     &SaveContext{},
-				fs:             fs,
+				Readers:    map[adif.Format]adif.Reader{adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio},
+				Writers:    map[adif.Format]adif.Writer{adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio},
+				Out:        os.Stdout,
+				CommandCtx: &SaveContext{},
+				Prepare:    testPrepare("Test comment", "3.1.4", "test save", "5.6.7"),
+				fs:         fs,
 			}
 			if err := runSave(ctx, []string{tc.filename}); err != nil {
 				if !tc.wantErr {

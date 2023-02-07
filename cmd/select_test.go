@@ -32,15 +32,13 @@ func TestSelectNoFields(t *testing.T) {
 	out := &bytes.Buffer{}
 	cctx := &SelectContext{Fields: make(FieldList, 0)}
 	ctx := &Context{
-		ProgramName:    "select test",
-		ProgramVersion: "1.2.3",
-		ADIFVersion:    "3.1.4",
-		OutputFormat:   adif.FormatCSV,
-		Readers:        readers(adi, csv),
-		Writers:        writers(adi, csv),
-		Out:            out,
-		fs:             fakeFilesystem{map[string]string{"foo.adi": adiFile}},
-		CommandCtx:     cctx}
+		OutputFormat: adif.FormatCSV,
+		Readers:      readers(adi, csv),
+		Writers:      writers(adi, csv),
+		Out:          out,
+		Prepare:      testPrepare("My Comment", "3.1.4", "select test", "1.2.3"),
+		fs:           fakeFilesystem{map[string]string{"foo.adi": adiFile}},
+		CommandCtx:   cctx}
 	if err := Select.Run(ctx, []string{"foo.adi"}); err == nil {
 		t.Errorf("Select.Run(ctx) with no fields expected error but got\n%s", out.String())
 	}
@@ -65,15 +63,13 @@ func TestSelectSingleFile(t *testing.T) {
 		out := &bytes.Buffer{}
 		cctx := &SelectContext{Fields: tc.fields}
 		ctx := &Context{
-			ProgramName:    "select test",
-			ProgramVersion: "1.2.3",
-			ADIFVersion:    "3.1.4",
-			OutputFormat:   adif.FormatCSV,
-			Readers:        readers(adi, csv),
-			Writers:        writers(adi, csv),
-			Out:            out,
-			fs:             fakeFilesystem{map[string]string{"foo.adi": adiFile}},
-			CommandCtx:     cctx}
+			OutputFormat: adif.FormatCSV,
+			Readers:      readers(adi, csv),
+			Writers:      writers(adi, csv),
+			Out:          out,
+			Prepare:      testPrepare("My Comment", "3.1.4", "select test", "1.2.3"),
+			fs:           fakeFilesystem{map[string]string{"foo.adi": adiFile}},
+			CommandCtx:   cctx}
 		if err := Select.Run(ctx, []string{"foo.adi"}); err != nil {
 			t.Errorf("Select.Run(ctx, foo.adi) got error %v", err)
 		} else {

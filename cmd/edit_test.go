@@ -26,19 +26,16 @@ import (
 
 func TestEditEmpty(t *testing.T) {
 	adi := adif.NewADIIO()
-	adi.HeaderCommentFn = func(*adif.Logfile) string { return "My Comment" }
 	csv := adif.NewCSVIO()
 	out := &bytes.Buffer{}
 	file1 := "FOO,BAR\n"
 	ctx := &Context{
-		ProgramName:    "edit test",
-		ProgramVersion: "1.2.3",
-		ADIFVersion:    "3.1.4",
-		OutputFormat:   adif.FormatADI,
-		Readers:        readers(adi, csv),
-		Writers:        writers(adi, csv),
-		Out:            out,
-		fs:             fakeFilesystem{map[string]string{"foo.csv": file1}},
+		OutputFormat: adif.FormatADI,
+		Readers:      readers(adi, csv),
+		Writers:      writers(adi, csv),
+		Out:          out,
+		Prepare:      testPrepare("My Comment", "3.1.4", "edit test", "1.2.3"),
+		fs:           fakeFilesystem{map[string]string{"foo.csv": file1}},
 		CommandCtx: &EditContext{
 			Add:    FieldAssignments{values: []adif.Field{{Name: "BAZ", Value: "Baz value"}}, validate: ValidateAlphanumName},
 			Set:    FieldAssignments{values: []adif.Field{{Name: "FOO", Value: "Foo value"}}, validate: ValidateAlphanumName},
@@ -57,21 +54,18 @@ func TestEditEmpty(t *testing.T) {
 
 func TestEditAddSetRemove(t *testing.T) {
 	adi := adif.NewADIIO()
-	adi.HeaderCommentFn = func(*adif.Logfile) string { return "My Comment" }
 	out := &bytes.Buffer{}
 	file1 := `<FOO:7>old foo <BAR:7>old bar <CALL:4>W1AW <EOR>
 <BAZ:7>old baz <CALL:3>N0P <APP_MONOLOG_FOO:7>monofoo <EOR>
 <foo:4>foo2 <bar:4>bar2 <baz:4>baz2 <app_monolog_bar:7>monobar <eor>
 `
 	ctx := &Context{
-		ProgramName:    "edit test",
-		ProgramVersion: "1.2.3",
-		ADIFVersion:    "3.1.4",
-		OutputFormat:   adif.FormatADI,
-		Readers:        readers(adi),
-		Writers:        writers(adi),
-		Out:            out,
-		fs:             fakeFilesystem{map[string]string{"foo.adi": file1}},
+		OutputFormat: adif.FormatADI,
+		Readers:      readers(adi),
+		Writers:      writers(adi),
+		Out:          out,
+		Prepare:      testPrepare("My Comment", "3.1.4", "edit test", "1.2.3"),
+		fs:           fakeFilesystem{map[string]string{"foo.adi": file1}},
 		CommandCtx: &EditContext{
 			Add:    FieldAssignments{values: []adif.Field{{Name: "BAZ", Value: "Baz value"}}, validate: ValidateAlphanumName},
 			Set:    FieldAssignments{values: []adif.Field{{Name: "FOO", Value: "Foo value"}}, validate: ValidateAlphanumName},
@@ -95,7 +89,6 @@ func TestEditAddSetRemove(t *testing.T) {
 
 func TestEditRemoveEmpty(t *testing.T) {
 	adi := adif.NewADIIO()
-	adi.HeaderCommentFn = func(*adif.Logfile) string { return "My Comment" }
 	csv := adif.NewCSVIO()
 	out := &bytes.Buffer{}
 	file1 := `FOO,BAR,BAZ
@@ -106,15 +99,13 @@ foo3,bar3,
 ,,
 `
 	ctx := &Context{
-		ProgramName:    "edit test",
-		ProgramVersion: "1.2.3",
-		ADIFVersion:    "3.1.4",
-		OutputFormat:   adif.FormatADI,
-		Readers:        readers(adi, csv),
-		Writers:        writers(adi, csv),
-		Out:            out,
-		fs:             fakeFilesystem{map[string]string{"foo.csv": file1}},
-		CommandCtx:     &EditContext{RemoveBlank: true}}
+		OutputFormat: adif.FormatADI,
+		Readers:      readers(adi, csv),
+		Writers:      writers(adi, csv),
+		Out:          out,
+		Prepare:      testPrepare("My Comment", "3.1.4", "edit test", "1.2.3"),
+		fs:           fakeFilesystem{map[string]string{"foo.csv": file1}},
+		CommandCtx:   &EditContext{RemoveBlank: true}}
 	if err := Edit.Run(ctx, []string{"foo.csv"}); err != nil {
 		t.Errorf("Edit.Run(ctx, foo.csv) got error %v", err)
 	} else {
@@ -186,15 +177,12 @@ func TestAdjustTimeZone(t *testing.T) {
 		out := &bytes.Buffer{}
 		file1 := fmt.Sprintf("%s\n%s\n", header, toCsv(tc.start))
 		ctx := &Context{
-			ProgramName:    "edit test",
-			ProgramVersion: "1.2.3",
-			ADIFVersion:    "3.1.4",
-			OutputFormat:   adif.FormatCSV,
-			Readers:        readers(csv),
-			Writers:        writers(csv),
-			Out:            out,
-			fs:             fakeFilesystem{map[string]string{"foo.csv": file1}},
-			CommandCtx:     &EditContext{FromZone: TimeZone{tz: tc.from}, ToZone: TimeZone{tz: tc.to}}}
+			OutputFormat: adif.FormatCSV,
+			Readers:      readers(csv),
+			Writers:      writers(csv),
+			Out:          out,
+			fs:           fakeFilesystem{map[string]string{"foo.csv": file1}},
+			CommandCtx:   &EditContext{FromZone: TimeZone{tz: tc.from}, ToZone: TimeZone{tz: tc.to}}}
 		if tc.wantErr {
 			if err := Edit.Run(ctx, []string{"foo.csv"}); err == nil {
 				got := out.String()

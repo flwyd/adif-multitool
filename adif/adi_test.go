@@ -41,10 +41,10 @@ func TestReadADI(t *testing.T) {
 <NAME:18>Hiram Percey Maxim <EOR>
 
 <qso_datE:8:D>20221224
-<time_ON:6:T>095846
+Field comment #1 <time_ON:6:T>095846
 <band:6:E>1.25cm
 <callsign:3:S>N0P
-<name:11:S>Santa Claus
+Field comment #2 <name:11:S>Santa Claus
 <eor>
 <QSO_date:8>19190219
 <RIG:82:M>100 watt C.W.
@@ -54,6 +54,7 @@ Inverted L antenna, 70' above ground
 <CaLlSiGn:3:S>1AY
 This is a random comment
 <name:12:s>"C.G." Tuska<eOr>
+Comment at &lt;end&gt; of file.
 `
 	wantFields := [][]Field{
 		{
@@ -81,6 +82,11 @@ Inverted L antenna, 70' above ground
 			{Name: "NAME", Value: `"C.G." Tuska`, Type: String},
 		},
 	}
+	wantComments := []string{
+		"",
+		"Field comment #1\nField comment #2",
+		"This is a random comment",
+	}
 	adi := NewADIIO()
 	if parsed, err := adi.Read(strings.NewReader(input)); err != nil {
 		t.Errorf("Read(%q) got error %v", input, err)
@@ -90,15 +96,22 @@ Inverted L antenna, 70' above ground
 			if diff := cmp.Diff(wantFields[i], fields); diff != "" {
 				t.Errorf("Read(%q) record %d did not match expected, diff:\n%s", input, i, diff)
 			}
+			if got := r.GetComment(); got != wantComments[i] {
+				t.Errorf("Read(%q) record %d got comment %q want %q", input, i, got, wantComments[i])
+			}
 		}
 		if gotlen := len(parsed.Records); gotlen != len(wantFields) {
 			t.Errorf("Read(%q) got %d records:\n%v\nwant %d\n%v", input, gotlen, parsed.Records[len(wantFields):], len(wantFields), wantFields)
+		}
+		if want := "Comment at &lt;end&gt; of file."; parsed.Comment != want {
+			t.Errorf("Read(%q) got logfile comment %q, want %q", input, parsed.Comment, want)
 		}
 	}
 }
 
 func TestWriteADI(t *testing.T) {
 	l := NewLogfile()
+	l.Comment = "The <last> word."
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "19901031", Type: Date},
 		Field{Name: "TIME_ON", Value: "1234", Type: Time},
@@ -113,6 +126,7 @@ func TestWriteADI(t *testing.T) {
 		Field{Name: "CALLSIGN", Value: "N0P", Type: String},
 		Field{Name: "NAME", Value: "Santa Claus"},
 	))
+	l.Records[len(l.Records)-1].SetComment("Record comment")
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "19190219", Type: Date},
 		Field{Name: "RIG", Value: `100 watt C.W.
@@ -127,19 +141,19 @@ Inverted L antenna, 70' above ground
 	l.Header.Set(Field{Name: "PROGRAMID", Value: "adi_test"})
 	l.Header.Set(Field{Name: "PROGRAMVERSION", Value: "1.2.3"})
 	l.Header.Set(Field{Name: "CREATED_TIMESTAMP", Value: "20220102 153456"})
-	want := `ADI comment at the top of the file
+	want := `ADI format, see https://adif.org.uk/
 <ADIF_VER:5>3.1.4 <PROGRAMID:8>adi_test <PROGRAMVERSION:5>1.2.3 <CREATED_TIMESTAMP:15>20220102 153456 <EOH>
 <QSO_DATE:8:D>19901031 <TIME_ON:4:T>1234 <BAND:3>40M <CALLSIGN:4>W1AW <NAME:18:S>Hiram Percey Maxim <EOR>
-<QSO_DATE:8>20221224 <TIME_ON:6>095846 <BAND:6:E>1.25cm <CALLSIGN:3:S>N0P <NAME:11>Santa Claus <EOR>
+Record comment <QSO_DATE:8>20221224 <TIME_ON:6>095846 <BAND:6:E>1.25cm <CALLSIGN:3:S>N0P <NAME:11>Santa Claus <EOR>
 <QSO_DATE:8:D>19190219 <RIG:82:M>100 watt C.W.
 Armstrong regenerative circuit
 Inverted L antenna, 70' above ground
  <FREQ:5:N>7.654 <CALLSIGN:3:S>1AY <NAME:12:S>"C.G." Tuska <EOR>
+The &lt;last&gt; word.
 `
 	adi := NewADIIO()
 	adi.RecordSep = SeparatorNewline
 	adi.FieldSep = SeparatorSpace
-	adi.HeaderCommentFn = func(l *Logfile) string { return "ADI comment at the top of the file" }
 	out := &strings.Builder{}
 	if err := adi.Write(l, out); err != nil {
 		t.Errorf("Write(%v) got error %v", l, err)

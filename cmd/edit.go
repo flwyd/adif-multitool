@@ -59,13 +59,14 @@ func runEdit(ctx *Context, args []string) error {
 	toTz := cctx.ToZone.Get()
 	adjustTz := fromTz.String() != toTz.String()
 	out := adif.NewLogfile()
+	var comments commentCatcher
 	for _, f := range filesOrStdin(args) {
 		l, err := readFile(ctx, f)
 		if err != nil {
 			return err
 		}
 		updateFieldOrder(out, l.FieldOrder)
-		// TODO merge headers and comments
+		// TODO merge headers
 		for _, r := range l.Records {
 			seen := make(map[string]bool)
 			old := r.Fields()
@@ -105,7 +106,9 @@ func runEdit(ctx *Context, args []string) error {
 				out.Records = append(out.Records, rec)
 			}
 		}
+		comments.read(l, f)
 	}
+	comments.write(out)
 	return write(ctx, out)
 }
 

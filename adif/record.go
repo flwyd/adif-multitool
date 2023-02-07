@@ -20,8 +20,9 @@ import (
 )
 
 type Record struct {
-	fields []Field
-	named  map[string]int // map of field name to index in fields slice
+	fields  []Field
+	named   map[string]int // map of field name to index in fields slice
+	comment string
 }
 
 func NewRecord(fs ...Field) *Record {
@@ -61,6 +62,14 @@ func (r *Record) Set(f Field) error {
 	return nil
 }
 
+func (r *Record) GetComment() string {
+	return r.comment
+}
+
+func (r *Record) SetComment(c string) {
+	r.comment = c
+}
+
 func (r *Record) String() string {
 	return fmt.Sprint(r.fields)
 }
@@ -79,5 +88,10 @@ func (r *Record) Equal(o *Record) bool {
 			return false
 		}
 	}
+	// ignore comment
 	return true
+}
+
+func (r *Record) Empty() bool {
+	return len(r.fields) == 0
 }

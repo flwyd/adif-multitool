@@ -24,18 +24,15 @@ import (
 
 func TestCatEmpty(t *testing.T) {
 	io := adif.NewADIIO()
-	io.HeaderCommentFn = func(*adif.Logfile) string { return "My Comment" }
 	out := &bytes.Buffer{}
 	ctx := &Context{
-		ProgramName:    "cat test",
-		ProgramVersion: "1.2.3",
-		ADIFVersion:    "3.1.4",
-		InputFormat:    adif.FormatADI,
-		OutputFormat:   adif.FormatADI,
-		Readers:        readers(io),
-		Writers:        writers(io),
-		Out:            out,
-		fs:             fakeFilesystem{map[string]string{"-": ""}}}
+		InputFormat:  adif.FormatADI,
+		OutputFormat: adif.FormatADI,
+		Readers:      readers(io),
+		Writers:      writers(io),
+		Out:          out,
+		Prepare:      testPrepare("My Comment", "3.1.4", "cat test", "1.2.3"),
+		fs:           fakeFilesystem{map[string]string{"-": ""}}}
 	if err := Cat.Run(ctx, []string{}); err != nil {
 		t.Errorf("Cat.Run(ctx) got error %v", err)
 	} else {
@@ -64,14 +61,12 @@ func TestEditADIToCSV(t *testing.T) {
 <FIELD_2:5>India <BAR:7>Juliett <today:8:D>19870605 <now:4:t>1234 <EOR>
 `
 	ctx := &Context{
-		ProgramName:    "cat test",
-		ProgramVersion: "1.2.3",
-		ADIFVersion:    "3.1.4",
-		OutputFormat:   adif.FormatCSV,
-		Readers:        readers(adi, csv),
-		Writers:        writers(adi, csv),
-		Out:            out,
-		fs:             fakeFilesystem{map[string]string{"foo.adi": file1, "bar.adi": file2}}}
+		OutputFormat: adif.FormatCSV,
+		Readers:      readers(adi, csv),
+		Writers:      writers(adi, csv),
+		Out:          out,
+		Prepare:      testPrepare("My Comment", "3.1.4", "cat test", "1.2.3"),
+		fs:           fakeFilesystem{map[string]string{"foo.adi": file1, "bar.adi": file2}}}
 	if err := Cat.Run(ctx, []string{"foo.adi", "bar.adi"}); err != nil {
 		t.Errorf("Cat.Run(ctx) got error %v", err)
 	} else {
@@ -90,7 +85,6 @@ Fox Trot,,Hotel,Golf,,
 
 func TestCatCSVToADI(t *testing.T) {
 	adi := adif.NewADIIO()
-	adi.HeaderCommentFn = func(*adif.Logfile) string { return "My Comment" }
 	csv := adif.NewCSVIO()
 	out := &bytes.Buffer{}
 	file1 := `FIELD_1,FOO,FIELD_2
@@ -104,14 +98,12 @@ Fox Trot,Golf,Hotel,,
 ,Juliett,India,19870605,1234
 `
 	ctx := &Context{
-		ProgramName:    "cat test",
-		ProgramVersion: "1.2.3",
-		ADIFVersion:    "3.1.4",
-		OutputFormat:   adif.FormatADI,
-		Readers:        readers(adi, csv),
-		Writers:        writers(adi, csv),
-		Out:            out,
-		fs:             fakeFilesystem{map[string]string{"foo.csv": file1, "bar.csv": file2}}}
+		OutputFormat: adif.FormatADI,
+		Readers:      readers(adi, csv),
+		Writers:      writers(adi, csv),
+		Out:          out,
+		Prepare:      testPrepare("My Comment", "3.1.4", "cat test", "1.2.3"),
+		fs:           fakeFilesystem{map[string]string{"foo.csv": file1, "bar.csv": file2}}}
 	if err := Cat.Run(ctx, []string{"foo.csv", "bar.csv"}); err != nil {
 		t.Errorf("Cat.Run(ctx) got error %v", err)
 	} else {

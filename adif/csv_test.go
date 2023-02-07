@@ -72,6 +72,7 @@ func TestReadCSV(t *testing.T) {
 
 func TestWriteCSV(t *testing.T) {
 	l := NewLogfile()
+	l.Comment = "CSV ignores comments"
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "19901031", Type: Date},
 		Field{Name: "TIME_ON", Value: "1234", Type: Time},

@@ -44,24 +44,33 @@ func newAdxField(f Field) adxField {
 }
 
 type adxRecord struct {
-	Fields  []adxField `xml:",any"`
 	Comment string     `xml:",comment"`
+	Fields  []adxField `xml:",any"`
 }
 
 func (r adxRecord) Record() *Record {
-	fields := make([]Field, len(r.Fields))
-	for i, f := range r.Fields {
-		fields[i] = f.Field()
+	res := NewRecord()
+	fcs := make([]string, 0, len(r.Fields))
+	if r.Comment != "" {
+		fcs = append(fcs, r.Comment)
 	}
-	return NewRecord(fields...)
-	// TODO set comment
+	for _, f := range r.Fields {
+		res.Set(f.Field())
+		if f.Comment != "" {
+			fcs = append(fcs, f.Comment)
+		}
+	}
+	res.SetComment(strings.Join(fcs, "\n"))
+	return res
 }
 
 func newAdxRecord(r *Record) adxRecord {
 	res := adxRecord{}
-	// TODO set comment
 	for _, f := range r.Fields() {
 		res.Fields = append(res.Fields, newAdxField(f))
+	}
+	if c := r.GetComment(); c != "" {
+		res.Comment = r.GetComment()
 	}
 	return res
 }
@@ -70,6 +79,11 @@ type adxFile struct {
 	Header  adxRecord   `xml:"HEADER"`
 	Records []adxRecord `xml:"RECORDS>RECORD"`
 	Comment string      `xml:",comment"`
+	// The ADIF test QSO file has comments between <RECORD> tags (rather than
+	// inside the tag), but a xml:",comment" field just gets a concatenated
+	// string of comments with context to associate them back to a record.
+	// TODO A custom xml.Unmarshaler interface for a recordList wrapper struct
+	// might be able to handle this, if it's worth doing.
 }
 
 type ADXIO struct {
@@ -102,6 +116,9 @@ func (o *ADXIO) Write(l *Logfile, out io.Writer) error {
 	f.Header = newAdxRecord(l.Header)
 	for _, r := range l.Records {
 		f.Records = append(f.Records, newAdxRecord(r))
+	}
+	if l.Comment != "" {
+		f.Comment = l.Comment
 	}
 	if n, err := out.Write([]byte(xml.Header)); err != nil {
 		return fmt.Errorf("could not write XML header to %s: %w", out, err)

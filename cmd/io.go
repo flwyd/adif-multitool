@@ -19,13 +19,16 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/flwyd/adif-multitool/adif"
 )
 
 func write(ctx *Context, l *adif.Logfile) error {
-	ctx.SetHeaders(l)
+	if ctx.Prepare != nil {
+		ctx.Prepare(l)
+	}
 	format := ctx.OutputFormat
 	if !format.IsValid() {
 		format = adif.FormatADI
@@ -120,4 +123,31 @@ func updateFieldOrder(l *adif.Logfile, fields []string) {
 			seen[n] = true
 		}
 	}
+}
+
+type commentCatcher struct {
+	comments []string
+}
+
+func (k *commentCatcher) read(l *adif.Logfile, filename string) {
+	if c := l.Comment; c != "" {
+		prefix := "adif-multitool: original comment"
+		if !strings.HasPrefix(c, prefix) {
+			if filename != "" && filename != "-" && filename != os.Stdin.Name() {
+				prefix = fmt.Sprintf("%s (%s)", prefix, filepath.Base(filename))
+			}
+			c = prefix + "\n" + c
+		}
+		k.comments = append(k.comments, c)
+	}
+}
+
+func (k *commentCatcher) write(out *adif.Logfile) {
+	if len(k.comments) == 0 {
+		return
+	}
+	if out.Comment != "" {
+		out.Comment += "\n\n"
+	}
+	out.Comment += strings.Join(k.comments, "\n\n")
 }

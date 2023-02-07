@@ -31,6 +31,7 @@ var allNumeric = regexp.MustCompile("^[0-9]+$")
 func runFix(ctx *Context, args []string) error {
 	// TODO add any needed flags
 	out := adif.NewLogfile()
+	var comments commentCatcher
 	for _, f := range filesOrStdin(args) {
 		l, err := readFile(ctx, f)
 		if err != nil {
@@ -40,7 +41,9 @@ func runFix(ctx *Context, args []string) error {
 		for _, rec := range l.Records {
 			out.Records = append(out.Records, fixRecord(rec))
 		}
+		comments.read(l, f)
 	}
+	comments.write(out)
 	return write(ctx, out)
 }
 

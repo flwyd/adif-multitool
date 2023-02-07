@@ -141,6 +141,10 @@ structured as follows.  `HEADER` is optional.
 }
 ```
 
+Some (but not all) comments found in ADI and ADX files are preserved from input
+to output.  Details of comment handling are subject to change and should not be
+depended upon.
+
 ### Commands
 
 Name       | Description |
@@ -236,7 +240,8 @@ values in [the ADIF specification](https://adif.org.uk/adif).  Errors and
 warnings are printed to standard error.  If any field has an error, nothing is
 printed to standard output and exit status is `0`; if no errors are present (or
 only warnings), the input will be printed to standard output as in
-[`cat`](#cat) and exit status is `1`.
+[`cat`](#cat) and exit status is `1`.  If the output format is ADI or ADX,
+warnings will be included as record-level comments in the output.
 
 Validations include field type syntax like number and date formats;
 enumeration values like modes and bands, and number ranges.  The ADIF
@@ -269,7 +274,7 @@ might work.
 
 Features I plan to add:
 
-*   Validate more fields.  Include warnings in record comments.
+*   Validate more fields.
 *   Filter a log to only records matching some criteria, similar to a SQL
     `WHERE` clause.
 *   Infer missing fields based on the values of other fields. For example, the

@@ -17,6 +17,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/flwyd/adif-multitool/adif"
 	"github.com/flwyd/adif-multitool/adif/spec"
@@ -31,6 +32,7 @@ func runValidate(ctx *Context, args []string) error {
 	log := os.Stderr
 	var errors, warnings int
 	out := adif.NewLogfile()
+	var comments commentCatcher
 	for _, f := range filesOrStdin(args) {
 		l, err := readFile(ctx, f)
 		if err != nil {
@@ -39,8 +41,8 @@ func runValidate(ctx *Context, args []string) error {
 		updateFieldOrder(out, l.FieldOrder)
 		// TODO merge headers and comments
 		for i, r := range l.Records {
-			out.Records = append(out.Records, r)
 			vctx := spec.ValidationContext{}
+			var msgs []string
 			for _, f := range r.Fields() {
 				if f.Value == "" {
 					continue
@@ -54,15 +56,22 @@ func runValidate(ctx *Context, args []string) error {
 						case spec.InvalidWarning:
 							warnings++
 							fmt.Fprintf(log, "WARNING on %s record %d: %s\n", l, i, v)
+							msgs = append(msgs, fmt.Sprintf("%s: %s", f.Name, v.Message))
 						}
 					}
 				}
+				if len(msgs) > 0 {
+					r.SetComment("adif-multitool: validate warnings: " + strings.Join(msgs, "; "))
+				}
 			}
+			out.Records = append(out.Records, r)
 		}
+		comments.read(l, f)
 	}
 	if errors > 0 {
 		return fmt.Errorf("validate got %d errors and %d warnings", errors, warnings)
 	}
+	comments.write(out)
 	err := write(ctx, out)
 	if warnings > 0 {
 		fmt.Fprintf(log, "validate got %d warnings\n", warnings)

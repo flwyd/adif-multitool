@@ -18,23 +18,25 @@ import (
 	"io"
 
 	"github.com/flwyd/adif-multitool/adif"
+	"github.com/flwyd/adif-multitool/adif/spec"
 )
 
 type Context struct {
-	ProgramName    string
-	ProgramVersion string
-	ADIFVersion    string
-	InputFormat    adif.Format
-	OutputFormat   adif.Format
-	Readers        map[adif.Format]adif.Reader
-	Writers        map[adif.Format]adif.Writer
-	Out            io.Writer
-	CommandCtx     any
-	fs             filesystem
+	InputFormat  adif.Format
+	OutputFormat adif.Format
+	Readers      map[adif.Format]adif.Reader
+	Writers      map[adif.Format]adif.Writer
+	Out          io.Writer
+	CommandCtx   any
+	Prepare      func(*adif.Logfile)
+	fs           filesystem
 }
 
-func (c *Context) SetHeaders(l *adif.Logfile) {
-	l.Header.Set(adif.Field{Name: "ADIF_VER", Value: c.ADIFVersion})
-	l.Header.Set(adif.Field{Name: "PROGRAMID", Value: c.ProgramName})
-	l.Header.Set(adif.Field{Name: "PROGRAMVERSION", Value: c.ProgramVersion})
+func testPrepare(comment, adifVer, progName, progVer string) func(l *adif.Logfile) {
+	return func(l *adif.Logfile) {
+		l.Header.SetComment(comment)
+		l.Header.Set(adif.Field{Name: spec.AdifVerField.Name, Value: adifVer})
+		l.Header.Set(adif.Field{Name: spec.ProgramidField.Name, Value: progName})
+		l.Header.Set(adif.Field{Name: spec.ProgramversionField.Name, Value: progVer})
+	}
 }
