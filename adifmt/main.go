@@ -36,6 +36,20 @@ const (
 	helpUrl = "https://github.com/flwyd/adif-multitool"
 )
 
+var (
+	packagePath = "github.com/flwyd/adif-multitool/adifmt"
+	programName = "adifmt"
+	version     = "v0.0.0"
+)
+
+func init() {
+	if build, ok := debug.ReadBuildInfo(); ok {
+		packagePath = (build.Path)
+		programName = filepath.Base(build.Path)
+		version = build.Main.Version
+	}
+}
+
 func main() {
 	ctx := &cmd.Context{}
 	if len(os.Args) < 2 {
@@ -51,13 +65,21 @@ func main() {
 	fs.SetOutput(os.Stderr)
 	fs.Usage = usage(fs, name)
 	configureContext(ctx, fs)
-	if strings.HasSuffix(name, "help") {
+
+	// special case commands, can also be specified as flags
+	switch strings.TrimLeft(name, "-") {
+	case "help", "h":
 		fs.Usage()
-		os.Exit(2)
+		os.Exit(0)
+	case "version":
+		fmt.Printf("%s version %s\n", packagePath, version)
+		os.Exit(0)
 	}
+
 	c, ok := commandNamed(name)
 	if !ok {
 		fmt.Fprintf(os.Stderr, "Unknown command %q\n", name)
+		fmt.Fprintf(os.Stderr, "Usage: %s command [flags] [file ...]\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "Commands are %s\n", strings.Join(commandNames(), ", "))
 		fmt.Fprintf(os.Stderr, "Run %s -help for more details\n", os.Args[0])
 		os.Exit(2)
@@ -117,14 +139,8 @@ func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
 		l.Header.SetComment(fmt.Sprintf("Generated at %s with %d records by %s", t.Format(time.RFC1123Z), len(l.Records), helpUrl))
 		l.Header.Set(adif.Field{Name: spec.AdifVerField.Name, Value: spec.ADIFVersion})
 		l.Header.Set(adif.Field{Name: spec.CreatedTimestampField.Name, Value: t.Format("20060102 150405")})
-		name := "adifmt"
-		ver := "v0.0.0"
-		if build, ok := debug.ReadBuildInfo(); ok {
-			name = filepath.Base(build.Path)
-			ver = build.Main.Version
-		}
-		l.Header.Set(adif.Field{Name: spec.ProgramidField.Name, Value: name})
-		l.Header.Set(adif.Field{Name: spec.ProgramversionField.Name, Value: ver})
+		l.Header.Set(adif.Field{Name: spec.ProgramidField.Name, Value: programName})
+		l.Header.Set(adif.Field{Name: spec.ProgramversionField.Name, Value: version})
 	}
 
 	// General flags
