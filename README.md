@@ -13,9 +13,9 @@ fields are properly formatted, and save a log file containing only SSB voice
 contacts, a pipeline might look like
 
 ```sh
-adifmt infer -field band my_original_log.adi \
-  | adifmt edit -add my_gridsquare=FN31pr \
-  | adifmt filter -field mode=SSB \
+adifmt infer --field band my_original_log.adi \
+  | adifmt edit --add my_gridsquare=FN31pr \
+  | adifmt filter --field mode=SSB \
   | adifmt validate
   | adifmt save my_ssb_log.adx
 ```
@@ -32,12 +32,12 @@ a Go compiler on your system (version at least 1.18).  To check, run
 `go install github.com/flwyd/adif-multitool/adifmt@latest` to make the `adifmt`
 command available.  (You may need to add the `$GOBIN` environment variable to
 your path.)  To see if it works, run `adifmt help`.  If the command is not
-found, try `go run github.com/flwyd/adif-multitool/adifmt -help`
+found, try `go run github.com/flwyd/adif-multitool/adifmt help`
 
 To do something useful with ADIF Multitool, the syntax is
 
 ```
-adifmt command [flags] files...
+adifmt command [options] files...
 ```
 
 For example, the `cat` command concatenates all input files and outputs ADIF
@@ -55,9 +55,9 @@ a UNIX newline between fields, two newlines between records, and use lower
 case for all field names:
 
 ```sh
-adifmt cat -adi-field-separator=newline \
-  -adi-record-separator=2newline \
-  -adi-lower-case \
+adifmt cat --adi-field-separator=newline \
+  --adi-record-separator=2newline \
+  --adi-lower-case \
   log1.adi
 ```
 
@@ -66,12 +66,12 @@ ADIF spec, CSV with field names matching the ADIF list, and JSON with a similar
 format to ADX).
 
 ```sh
-adifmt cat -input=adi -output=csv log1.adi > log1.csv
-adifmt cat -input=csv -output=adi log2.csv > log2.adi
+adifmt cat --input=adi --output=csv log1.adi > log1.csv
+adifmt cat --input=csv --output=adi log2.csv > log2.adi
 ```
 
-`-input` need not be specified if it’s implied by the file name or can be
-inferred from the structure of the data.  `-ouput=adi` is the default for
+`--input` need not be specified if it’s implied by the file name or can be
+inferred from the structure of the data.  `--ouput=adi` is the default for
 output format.  `adifmt save` infers the output format from the file’s
 extension  Input files can be in different formats:
 
@@ -82,7 +82,7 @@ adifmt cat log1.adi log2.adx log3.csv log4.json > combined.adi
 If no file names are given, input is read from standard input:
 
 ```
-gunzip --stdout mylog.csv.gz | adifmt cat -output=adx | gzip > mylog.adx.gz
+gunzip --stdout mylog.csv.gz | adifmt cat --output=adx | gzip > mylog.adx.gz
 ```
 
 This is useful in composing several `adifmt` invocations together.  Commands
@@ -93,7 +93,7 @@ The `select` command prints only a subset of fields.  The `save` command writes
 the input data to a file.  These can be combined:
 
 ```sh
-adifmt fix log1.adi | adifmt select -fields qso_date,time_on,call | adifmt save minimal.adi
+adifmt fix log1.adi | adifmt select --fields qso_date,time_on,call | adifmt save minimal.adi
 ```
 
 creates a file named `minimal.adi` with just the date, time, and callsign from
@@ -106,15 +106,15 @@ each record in the input file `log1.adi`.
 `adifmt` can read from and write to the following formats.  ADI (tag-based) and
 ADX (XML-based) formats are [specified by ADIF](https://adif.org.uk/adiif).
 Others use standard formats for arbitrary key-value data.  Format-specific
-options are configured with flags.  Formats are inferred from file names or can
-be set explicitly via `-input` and `-output` flags.
+options are configured with option flags.  Formats are inferred from file names
+or can be set explicitly via `--input` and `--output` options.
 
 Name  | Extension | Notes
 ---- -| --------- | -----
 ADI   | `.adi`    | Outputs `IntlString` (Unicode fields) in UTF-8
 ADX   | `.adx`    |
-CSV   | `.csv`    | Comma-separated values; other delimiters like tab supported via the `-csv-field-separator` flag
-JSON  | `.json`   | Can parse number and boolean typed data, to write the set the `-json-typed-output` flag
+CSV   | `.csv`    | Comma-separated values; other delimiters like tab supported via the `--csv-field-separator` option
+JSON  | `.json`   | Can parse number and boolean typed data, to write the set the `--json-typed-output` option
 
 Input files can have fields with any names, even if they’re not part of the ADIF
 spec.  (Proper user-defined field metadata handling is still TODO.)  ADX XML
@@ -152,36 +152,46 @@ Name       | Description |
 `cat`      | Concatenate all input files to standard output |
 `edit`     | Add, change, remove, or adjust field values |
 `fix`      | Correct field formats to match the ADIF specification |
+`help`     | Print program or command usage information |
 `save`     | Save standard input to file with format inferred by extension |
 `select`   | Print only specific fields from the input; skip records with no matching fields |
 `validate` | Validate field values; non-zero exit and no stdout if invalid |
+`version`  | Print program version information |
+
+#### help
+
+`adifmt help` prints usage information and a list of available commands and
+options which apply to any command.  `adifmt help cmd` prints usage information
+about and options for command `cmd`.  There are a lot of options, so consider
+running `adifmt help | less`.
 
 #### cat
 
 `adifmt cat` reads all input records and prints them to standard output.  Given
 several input files (perhaps one per day, callsign, or location) `cat` will
 combine them into a single file.  `cat` can also be used to convert from one
-format to another, e.g. `adifmt cat -output=csv mylog.adi` to convert from ADI
-format to CSV.  (If `-input` is not specified the file type is inferred from the
-file name; if `-output` is not specified ADI is used.)
+format to another, e.g. `adifmt cat --output=csv mylog.adi` to convert from ADI
+format to CSV.  (If `--input` is not specified the file type is inferred from
+the file name; if `--output` is not specified ADI is used.)
 
 #### edit
 
 `adifmt edit` adds, changes, or removes fields in each input record.  Flags can
 be specified multiple times, e.g.
-`adifmt edit -add my_gridsquare=FN31pr -add "my_name=Hiram Percy Maxim" log.adi`
+`adifmt edit --add my_gridsquare=FN31pr --add "my_name=Hiram Percy Maxim" log.adi`
 
-The `-set` flag (`name=value`) changes the value of the given field on all
-records, adding it if it is not present.  The `-add` flag (`name=value`) only
-adds the field if it is not already present in the record.  The `-remove` flag
-(field names, optionally comma-separated) deletes the field from all records.
-The `-remove-blank` removes all blank fields (string representation is empty).
+The `--set` option (`name=value`) changes the value of the given field on all
+records, adding it if it is not present.  The `--add` option (`name=value`)
+only adds the field if it is not already present in the record.  The `--remove`
+option (field names, optionally comma-separated) deletes the field from all
+records.  The `--remove-blank` removes all blank fields (string representation
+is empty).
 
-The `-time-zone-from` and `-time-zone-to` flags will shift the `TIME_ON` and
+The `--time-zone-from` and `--time-zone-to` options will shift the `TIME_ON` and
 `TIME_OFF` fields (along with `QSO_DATE` and `QSO_DATE_OFF` if applicable) from
 one time zone to another, defaulting to UTC.  For example, if you have a CSV
 file with contact times in your local QTH in New South Wales you can convert it
-to UTC (Zulu time) with `adifmt edit -time-zone-from Australia/Sydney file.csv`.
+to UTC (Zulu time) with `adifmt edit --time-zone-from Australia/Sydney file.csv`.
 
 #### fix
 
@@ -193,31 +203,31 @@ be in year, month, day order.  In the future, other formats may be fixable,
 including varieties of the Boolean data types, decimal coordinates to
 degrees/minutes/seconds, forcing some string fields to upper case, and perhaps
 correcting some common variations on enum fields, e.g. `USA` →
-`UNITED STATES OF AMERICA`.  A future update will also provide flags like date
+`UNITED STATES OF AMERICA`.  A future update will also provide options like date
 formats so that day/month/year or month/day/year input data can be unambiguously
 fixed.
 
 #### save
 
 `adifmt save` writes ADIF records from standard input to a file.  The output
-format is inferred from the file name or can be given explicitly with `-output`.
-Existing files will not be overwritten unless the `-overwrite-existing` flag is
-given.  The output file will not be written (and will exit with a non-zero code)
-if there are no records in the input; this allows a chain like
-`adifmt fix log.adi | adifmt validate | adifmt save -overwrite-existing log.adi`
-which will attempt to fix any errors in `log.adi` and save back to the same file
-but which won’t touch it if validation still fails.  Writing a zero-record file
-can be forced with `-write-if-empty`.
+format is inferred from the file name or can be given explicitly with
+`--output`.  Existing files will not be overwritten unless the
+`--overwrite-existing` option is given.  The output file will not be written
+(and will exit with a non-zero code) if there are no records in the input; this
+allows a chain like `adifmt fix log.adi | adifmt validate | adifmt save
+--overwrite-existing log.adi` which will attempt to fix any errors in `log.adi`
+and save back to the same file but which won’t touch it if validation still
+fails.  Writing a zero-record file can be forced with `--write-if-empty`.
 
 #### select
 
 `adifmt select` outputs only the specified fields.  Currently each field must
 be specified by name, either in a comma-separated list or by specifying the
-`-field` flag multiple times.  The following uses are equivalent:
+`--field` option multiple times.  The following uses are equivalent:
 
 ```sh
-adifmt select -fields call,qso_date,time_on,time_off mylog.adi
-adifmt select -fields call -fields qso_date -fields time_on,time_off mylog.adi
+adifmt select --fields call,qso_date,time_on,time_off mylog.adi
+adifmt select --fields call --fields qso_date --fields time_on,time_off mylog.adi
 ```
 
 `select` can be effectively combined with other standard Unix utilities.  To
@@ -226,7 +236,7 @@ find duplicate QSOs by date, band, and mode, use
 [uniq](https://man7.org/linux/man-pages/man1/uniq.1.html):
 
 ```sh
-adifmt select -fields call,qso_date,band,mode -output csv mylog.adi \
+adifmt select --fields call,qso_date,band,mode --output csv mylog.adi \
   | sort | uniq -d
 ```
 
@@ -252,6 +262,11 @@ warnings will be printed to standard error with `adifmt validate` but will not
 block the logfile from being printed to standard output.
 
 Some but not all validation errors can be corrected with [`adifmt fix`](#fix).
+
+#### version
+
+`adifmt version` prints the version number of the installed program and a URL
+to learn more.
 
 ### Future features (under construction)
 
@@ -292,7 +307,7 @@ Features I plan to add:
     group, matching the expected POTA filename format.
 *   Count the total number of records or the number of distinct values of a
     field.  (The total number of records can currently be counted with
-    `-output=csv`, piping the output to `wc -l`, and subtracting 1 for the
+    `--output=csv`, piping the output to `wc -l`, and subtracting 1 for the
     header row.)  This could match the format of the “Report” comment in the
     test QSOs file produced with the ADIF spec.
 *   Proper handling for user-defined field metadata.
@@ -311,6 +326,24 @@ software will be needed.
     created, not for logging contacts as they happen over the air. There are
     many fine amateur radio logging programs, most of which can export ADIF
     files that `adifmt` can process.
+
+## Scripting and compatibility
+
+ADIF Multitool  is designed to be easy to include in scripts.  If you have a
+workflow for dealing with ham radio logs, such as converting from CSV, adding
+fields, and validating field syntax before uploading to the POTA or SOTA
+websites, consider automating that process with `adifmt`.
+
+ADIF Multitool is still “version zero” and the command line interface should be
+considered unstable.  If you use v0 `adifmt` in a script or other program, be
+prepared to update your code if commands or options change.  In particular, use
+GNU-style double dashes for options () rather than Go-style single
+dashes (`-input`); the program may change to a GNU/POSIX-style flag-parsing
+library which requires double dashes.
+
+The `adif` and `cmd` packages should be considered “less stable” than the CLI
+during the v0 phase and may undergo significant change.  Use of those packages
+in your own program should only be done with significant tolerance to churn.
 
 ## Contributions welcome
 

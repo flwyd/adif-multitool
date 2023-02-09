@@ -16,6 +16,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 
 	"github.com/flwyd/adif-multitool/cmd"
 )
@@ -26,8 +27,7 @@ type cmdConfig struct {
 }
 
 var (
-	catConf = cmdConfig{Command: cmd.Cat,
-		Configure: func(*cmd.Context, *flag.FlagSet) {}}
+	catConf = cmdConfig{Command: cmd.Cat}
 
 	editConf = cmdConfig{Command: cmd.Edit,
 		Configure: func(ctx *cmd.Context, fs *flag.FlagSet) {
@@ -44,8 +44,14 @@ var (
 			ctx.CommandCtx = &cctx
 		}}
 
-	fixConf = cmdConfig{Command: cmd.Fix,
-		Configure: func(*cmd.Context, *flag.FlagSet) {}}
+	fixConf = cmdConfig{Command: cmd.Fix}
+
+	helpConf = cmdConfig{Command: cmd.Command{
+		Name: "help", Description: "Print program or command usage information",
+		Run: func(*cmd.Context, []string) error {
+			// handled specially by main
+			return nil
+		}}}
 
 	saveConf = cmdConfig{Command: cmd.Save,
 		Configure: func(ctx *cmd.Context, fs *flag.FlagSet) {
@@ -62,10 +68,17 @@ var (
 			ctx.CommandCtx = &cctx
 		}}
 
-	validateConf = cmdConfig{Command: cmd.Validate,
-		Configure: func(*cmd.Context, *flag.FlagSet) {}}
+	validateConf = cmdConfig{Command: cmd.Validate}
 
-	cmds = []cmdConfig{catConf, editConf, fixConf, saveConf, selectConf, validateConf}
+	versionConf = cmdConfig{Command: cmd.Command{
+		Name: "version", Description: "Print program version information",
+		Run: func(*cmd.Context, []string) error {
+			fmt.Printf("%s version %s\n", programName, version)
+			fmt.Printf("See %s for details\n", helpUrl)
+			return nil
+		}}}
+
+	cmds = []cmdConfig{catConf, editConf, fixConf, helpConf, saveConf, selectConf, validateConf, versionConf}
 )
 
 func commandNamed(name string) (cmdConfig, bool) {

@@ -37,14 +37,12 @@ const (
 )
 
 var (
-	packagePath = "github.com/flwyd/adif-multitool/adifmt"
 	programName = "adifmt"
 	version     = "v0.0.0"
 )
 
 func init() {
 	if build, ok := debug.ReadBuildInfo(); ok {
-		packagePath = (build.Path)
 		programName = filepath.Base(build.Path)
 		version = build.Main.Version
 	}
@@ -52,39 +50,46 @@ func init() {
 
 func main() {
 	ctx := &cmd.Context{}
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.SetOutput(os.Stderr)
+	configureContext(ctx, fs)
 	if len(os.Args) < 2 {
-		fs := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 		fs.Usage = usage(fs, "")
-		configureContext(ctx, fs)
 		fs.Usage()
 		os.Exit(2)
 	}
-
 	name := os.Args[1]
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	fs.SetOutput(os.Stderr)
 	fs.Usage = usage(fs, name)
-	configureContext(ctx, fs)
 
 	// special case commands, can also be specified as flags
 	switch strings.TrimLeft(name, "-") {
 	case "help", "h":
+		name = ""
+		if len(os.Args) > 2 {
+			if _, ok := commandNamed(os.Args[2]); ok {
+				name = os.Args[2]
+			}
+		}
+		fs.Usage = usage(fs, name)
+		// help explicitly requested, so print to stdout and exit without error
+		fs.SetOutput(os.Stdout)
 		fs.Usage()
 		os.Exit(0)
 	case "version":
-		fmt.Printf("%s version %s\n", packagePath, version)
-		os.Exit(0)
+		name = "version"
 	}
 
 	c, ok := commandNamed(name)
 	if !ok {
 		fmt.Fprintf(os.Stderr, "Unknown command %q\n", name)
-		fmt.Fprintf(os.Stderr, "Usage: %s command [flags] [file ...]\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s command [options] [file ...]\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "Commands are %s\n", strings.Join(commandNames(), ", "))
-		fmt.Fprintf(os.Stderr, "Run %s -help for more details\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Run %s help for more details\n", os.Args[0])
 		os.Exit(2)
 	}
-	c.Configure(ctx, fs)
+	if c.Configure != nil {
+		c.Configure(ctx, fs)
+	}
 	fs.Parse(os.Args[2:])
 	err := c.Run(ctx, fs.Args())
 	if err != nil {
@@ -181,11 +186,13 @@ func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
 func usage(fs *flag.FlagSet, command string) func() {
 	return func() {
 		out := fs.Output()
-		fmt.Fprintln(out, "ADIF Multitool: read and transform ADIF radio logs, output to stdout")
+		fmt.Fprintln(out, "ADIF Multitool: read and transform ADIF amateur radio logs")
 		fmt.Fprintln(out, "See examples at https://github.com/flwyd/adif-multitool")
 		fmt.Fprintln(out)
-		fmt.Fprintf(out, "Usage: %s command [flags] files...\n", fs.Name())
-		fmt.Fprintln(out, "Global flags:")
+		fmt.Fprintf(out, "Usage: %s command [options] [file ...]\n", fs.Name())
+		fmt.Fprintln(out, "Process ADIF files (or - for standard input), write ADIF to standard output.")
+		fmt.Fprintln(out)
+		fmt.Fprintln(out, "Global options:")
 		fs.PrintDefaults()
 		fmt.Fprintln(out)
 		if c, ok := commandNamed(command); ok {
@@ -199,7 +206,7 @@ func usage(fs *flag.FlagSet, command string) func() {
 			for _, c := range cmds {
 				fmt.Fprintf(out, "  %s: %s\n", c.Name, c.Description)
 			}
-			fmt.Fprintf(out, "To see flags specific to a particular command, run\n%s command -help\n", fs.Name())
+			fmt.Fprintf(out, "To see options specific to a particular command, run\n%s help command\n", fs.Name())
 		}
 	}
 }

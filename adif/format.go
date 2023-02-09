@@ -74,5 +74,5 @@ func GuessFormatFromContent(r *bufio.Reader) (Format, error) {
 	if csvHeaderPat.Find(start) != nil {
 		return FormatCSV, nil
 	}
-	return Format(""), fmt.Errorf("could not determine data format, use -input flag")
+	return Format(""), fmt.Errorf("could not determine data format, use the -input option")
 }
