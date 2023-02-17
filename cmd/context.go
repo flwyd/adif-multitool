@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package cmd defines commands which generally read, transform, and write ADIF
+// logfiles.  Commands are invoked by a main program like adifmt, which
+// configures a Context value.  Most commands read ADIF files by name and print
+// an ADIF logfile to standard output, but some have different input and output
+// behavior.
 package cmd
 
 import (

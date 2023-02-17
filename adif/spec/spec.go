@@ -14,7 +14,7 @@
 
 // Package spec contains data types, field definitions, and enumerations defined
 // by the ADIF specification from https://adif.org.uk/
-// Most code in this package is automatically generated.
+// Most structures in this package are automatically generated.
 package spec
 
 //go:generate go run ./mkspec https://adif.org.uk/314/ADIF_314_released_exports_2022_12_06.zip

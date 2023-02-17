@@ -12,6 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package adif defines basic types (Field, Record, Logfile) for working with
+// amateur radio logs in ADIF format.  It also defines I/O types which can read
+// and write ADIF data in several formats, including the ADIF-specified ADI and
+// ADX formats as well as CSV and JSON.  The adif package does not have any
+// code dealing with specific fields or enumerations defined by specification;
+// see the adif/spec package for such code.
 package adif
 
 import (
