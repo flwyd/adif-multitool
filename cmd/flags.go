@@ -72,17 +72,17 @@ func (f *UserdefFieldList) Set(s string) error {
 	u.Type = ut
 	if pieces[3] != "" {
 		if strings.IndexRune(pieces[3], ':') > 0 {
-			if pieces[2] != "" && u.Type != adif.Number {
+			if pieces[2] != "" && u.Type != adif.TypeNumber {
 				return fmt.Errorf("userdef %q has range but is of type %s", s, u.Type)
 			}
-			u.Type = adif.Number
+			u.Type = adif.TypeNumber
 			if n, err := fmt.Sscanf(pieces[3], ",{%f:%f}", &u.Min, &u.Max); err != nil || n != 2 {
 				return fmt.Errorf("userdef %q number range does not match \"{X:Y}\"", s)
 			}
 		} else {
 			if pieces[2] == "" {
-				u.Type = adif.Enumeration
-			} else if u.Type != adif.Enumeration && u.Type != adif.String {
+				u.Type = adif.TypeEnumeration
+			} else if u.Type != adif.TypeEnumeration && u.Type != adif.TypeString {
 				return fmt.Errorf("userdef %q has enumeration but is of type %s", s, u.Type)
 			}
 			v := strings.TrimSuffix(strings.TrimPrefix(pieces[3], ",{"), "}")

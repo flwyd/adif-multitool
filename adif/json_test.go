@@ -77,22 +77,22 @@ func TestReadJSON(t *testing.T) {
 			Field{Name: "CALLSIGN", Value: "W1AW"},
 			Field{Name: "NAME", Value: "Hiram Percy Maxim"},
 		),
-		NewRecord(Field{Name: "QSO_DATE", Value: "20221224", Type: Number},
+		NewRecord(Field{Name: "QSO_DATE", Value: "20221224", Type: TypeNumber},
 			Field{Name: "TIME_ON", Value: "095846"},
 			Field{Name: "BAND", Value: "1.25cm"},
 			Field{Name: "CALLSIGN", Value: "N0P"},
 			Field{Name: "NAME", Value: "Santa Claus"},
-			Field{Name: "QSO_RANDOM", Value: "N", Type: Boolean},
+			Field{Name: "QSO_RANDOM", Value: "N", Type: TypeBoolean},
 		),
 		NewRecord(Field{Name: "QSO_DATE", Value: "19190219"},
 			Field{Name: "RIG", Value: `100 watt C.W.
 Armstrong regenerative circuit
 Inverted L antenna, 70' above ground
 `},
-			Field{Name: "FREQ", Value: "7.654", Type: Number},
+			Field{Name: "FREQ", Value: "7.654", Type: TypeNumber},
 			Field{Name: "CALLSIGN", Value: "1AY"},
 			Field{Name: "NAME", Value: `"C.G." Tuska`},
-			Field{Name: "SILENT_KEY", Value: "Y", Type: Boolean},
+			Field{Name: "SILENT_KEY", Value: "Y", Type: TypeBoolean},
 		),
 	}
 	json := NewJSONIO()
@@ -109,30 +109,30 @@ func TestWriteJSON(t *testing.T) {
 	l := NewLogfile()
 	l.Comment = "JSON ignores comments"
 	l.Records = append(l.Records, NewRecord(
-		Field{Name: "QSO_DATE", Value: "19901031", Type: Date},
-		Field{Name: "TIME_ON", Value: "1234", Type: Time},
+		Field{Name: "QSO_DATE", Value: "19901031", Type: TypeDate},
+		Field{Name: "TIME_ON", Value: "1234", Type: TypeTime},
 		Field{Name: "BAND", Value: "40M"},
 		Field{Name: "CALLSIGN", Value: "W1AW"},
-		Field{Name: "NAME", Value: "Hiram Percy Maxim", Type: String},
+		Field{Name: "NAME", Value: "Hiram Percy Maxim", Type: TypeString},
 	))
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "20221224"},
 		Field{Name: "TIME_ON", Value: "095846"},
-		Field{Name: "BAND", Value: "1.25cm", Type: Enumeration},
-		Field{Name: "QSO_RANDOM", Value: "N", Type: Boolean},
-		Field{Name: "CALLSIGN", Value: "N0P", Type: String},
+		Field{Name: "BAND", Value: "1.25cm", Type: TypeEnumeration},
+		Field{Name: "QSO_RANDOM", Value: "N", Type: TypeBoolean},
+		Field{Name: "CALLSIGN", Value: "N0P", Type: TypeString},
 		Field{Name: "NAME", Value: "Santa Claus"},
 	))
 	l.Records = append(l.Records, NewRecord(
-		Field{Name: "QsO_dAtE", Value: "19190219", Type: Date},
+		Field{Name: "QsO_dAtE", Value: "19190219", Type: TypeDate},
 		Field{Name: "RIG", Value: `100 watt C.W.
 Armstrong regenerative circuit
 Inverted L antenna, < 70' above ground
-`, Type: MultilineString},
-		Field{Name: "FREQ", Value: "7.654", Type: Number},
-		Field{Name: "silent_key", Value: "Y", Type: Boolean},
-		Field{Name: "callsign", Value: "1AY", Type: String},
-		Field{Name: "NAME", Value: `"C.G." Tuska`, Type: String},
+`, Type: TypeMultilineString},
+		Field{Name: "FREQ", Value: "7.654", Type: TypeNumber},
+		Field{Name: "silent_key", Value: "Y", Type: TypeBoolean},
+		Field{Name: "callsign", Value: "1AY", Type: TypeString},
+		Field{Name: "NAME", Value: `"C.G." Tuska`, Type: TypeString},
 	))
 	l.Header.Set(Field{Name: "adif_ver", Value: "3.1.4"})
 	l.Header.Set(Field{Name: "PROGRAMID", Value: "adx_test"})

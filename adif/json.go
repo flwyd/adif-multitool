@@ -32,7 +32,7 @@ func newJsonRecord(r *Record, typed bool) jsonRecord {
 			default:
 				// TODO look up field type in spec
 				j[f.Name] = f.Value
-			case Boolean:
+			case TypeBoolean:
 				if f.Value == "Y" || f.Value == "y" {
 					j[f.Name] = true
 				} else if f.Value == "N" || f.Value == "n" {
@@ -40,7 +40,7 @@ func newJsonRecord(r *Record, typed bool) jsonRecord {
 				} else {
 					j[f.Name] = f.Value
 				}
-			case Number:
+			case TypeNumber:
 				if v, err := strconv.ParseFloat(f.Value, 64); err != nil {
 					j[f.Name] = f.Value
 				} else {
@@ -65,12 +65,12 @@ func (j jsonRecord) toRecord() (*Record, error) {
 			r.Set(Field{Name: k, Value: vv})
 		case bool:
 			if vv {
-				r.Set(Field{Name: k, Value: "Y", Type: Boolean})
+				r.Set(Field{Name: k, Value: "Y", Type: TypeBoolean})
 			} else {
-				r.Set(Field{Name: k, Value: "N", Type: Boolean})
+				r.Set(Field{Name: k, Value: "N", Type: TypeBoolean})
 			}
 		case json.Number:
-			r.Set(Field{Name: k, Value: vv.String(), Type: Number})
+			r.Set(Field{Name: k, Value: vv.String(), Type: TypeNumber})
 		case nil:
 			r.Set(Field{Name: k, Value: ""})
 		}

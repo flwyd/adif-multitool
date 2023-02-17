@@ -105,17 +105,17 @@ func TestValidateErrors(t *testing.T) {
 		{
 			name:    "userdef invalid number",
 			record:  []adif.Field{{Name: "LUGGAGE_CODE", Value: "IZEA"}},
-			userdef: []adif.UserdefField{{Name: "LUGGAGE_CODE", Type: adif.Number}},
+			userdef: []adif.UserdefField{{Name: "LUGGAGE_CODE", Type: adif.TypeNumber}},
 		},
 		{
 			name:    "userdef number out of range",
 			record:  []adif.Field{{Name: "YAGI_AZIMUTH_RADIANS", Value: "6.5"}},
-			userdef: []adif.UserdefField{{Name: "YAGI_AZIMUTH_RADIANS", Type: adif.Number, Min: 0, Max: 6.283}},
+			userdef: []adif.UserdefField{{Name: "YAGI_AZIMUTH_RADIANS", Type: adif.TypeNumber, Min: 0, Max: 6.283}},
 		},
 		{
 			name:    "userdef non-matching enum",
 			record:  []adif.Field{{Name: "ADJECTIVE", Value: "PRETTY"}},
-			userdef: []adif.UserdefField{{Name: "ADJECTIVE", Type: adif.Number, EnumValues: []string{"GOOD", "BAD", "UGLY"}}},
+			userdef: []adif.UserdefField{{Name: "ADJECTIVE", Type: adif.TypeNumber, EnumValues: []string{"GOOD", "BAD", "UGLY"}}},
 		},
 	}
 

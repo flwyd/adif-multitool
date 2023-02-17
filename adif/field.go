@@ -19,63 +19,68 @@ import (
 	"strings"
 )
 
-// CONSIDER an enum prefix or a subpackage
 type DataType int
 
 const (
-	Unspecified DataType = iota
-	MultilineString
-	IntlMultilineString
-	String
-	IntlString
-	Enumeration
-	Boolean
-	Number
-	Date
-	Time
-	Location
+	TypeUnspecified DataType = iota
+	TypeMultilineString
+	TypeIntlMultilineString
+	TypeString
+	TypeIntlString
+	TypeEnumeration
+	TypeBoolean
+	TypeNumber
+	TypeDate
+	TypeTime
+	TypeLocation
 	// TODO add types without data type indicators? e.g. Character, Digit, GridSquare
 )
 
 var typeIndicators = map[string]DataType{
-	"":  Unspecified,
-	"M": MultilineString, "G": IntlMultilineString,
-	"S": String, "I": IntlString,
-	"E": Enumeration, "B": Boolean, "N": Number,
-	"D": Date, "T": Time,
-	"L": Location}
+	"":  TypeUnspecified,
+	"M": TypeMultilineString,
+	"G": TypeIntlMultilineString,
+	"S": TypeString,
+	"I": TypeIntlString,
+	"E": TypeEnumeration,
+	"B": TypeBoolean,
+	"N": TypeNumber,
+	"D": TypeDate,
+	"T": TypeTime,
+	"L": TypeLocation,
+}
 
 func DataTypeFromIndicator(id string) (DataType, error) {
 	t, ok := typeIndicators[strings.ToUpper(id)]
 	if !ok {
-		return Unspecified, fmt.Errorf("unknown data type indicator %s", id)
+		return TypeUnspecified, fmt.Errorf("unknown data type indicator %s", id)
 	}
 	return t, nil
 }
 
 func (t DataType) Indicator() string {
 	switch t {
-	case Unspecified:
+	case TypeUnspecified:
 		return ""
-	case MultilineString:
+	case TypeMultilineString:
 		return "M"
-	case IntlMultilineString:
+	case TypeIntlMultilineString:
 		return "G"
-	case String:
+	case TypeString:
 		return "S"
-	case IntlString:
+	case TypeIntlString:
 		return "I"
-	case Enumeration:
+	case TypeEnumeration:
 		return "E"
-	case Boolean:
+	case TypeBoolean:
 		return "B"
-	case Number:
+	case TypeNumber:
 		return "N"
-	case Date:
+	case TypeDate:
 		return "D"
-	case Time:
+	case TypeTime:
 		return "T"
-	case Location:
+	case TypeLocation:
 		return "L"
 	default:
 		panic(fmt.Sprintf("unknown DataType %d", t))
@@ -93,7 +98,7 @@ type Field struct {
 }
 
 func (f Field) String() string {
-	if f.Type == Unspecified {
+	if f.Type == TypeUnspecified {
 		return fmt.Sprintf("%s=%s", strings.ToUpper(f.Name), f.Value)
 	}
 	return fmt.Sprintf("%s:%s=%s", strings.ToUpper(f.Name), f.Type.Indicator(), f.Value)

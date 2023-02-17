@@ -51,7 +51,7 @@ func (f *Logfile) String() string {
 func (f *Logfile) AddUserdef(u UserdefField) error {
 	for _, x := range f.Userdef {
 		if strings.EqualFold(u.Name, x.Name) {
-			if u.Type != x.Type && (u.Type != Unspecified || x.Type != Unspecified) {
+			if u.Type != x.Type && (u.Type != TypeUnspecified || x.Type != TypeUnspecified) {
 				return fmt.Errorf("userdef field %s type conflicts with existing %s", u, x)
 			}
 			if len(u.EnumValues) > 0 || len(x.EnumValues) > 0 {
@@ -85,7 +85,7 @@ func (f *Logfile) AddUserdef(u UserdefField) error {
 			}
 			x.Min = minFloat(x.Min, u.Min)
 			x.Max = maxFloat(x.Max, u.Max)
-			if x.Type == Unspecified {
+			if x.Type == TypeUnspecified {
 				x.Type = u.Type
 			}
 			return nil

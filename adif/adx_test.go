@@ -89,11 +89,11 @@ Inverted L antenna, 70' above ground
 			{Name: "NAME", Value: "Hiram Percy Maxim"},
 		},
 		{
-			{Name: "QSO_DATE", Value: "20221224", Type: Date},
-			{Name: "TIME_ON", Value: "095846", Type: Time},
-			{Name: "BAND", Value: "1.25cm", Type: Enumeration},
-			{Name: "CALLSIGN", Value: "N0P", Type: String},
-			{Name: "NAME", Value: "Santa Claus", Type: String},
+			{Name: "QSO_DATE", Value: "20221224", Type: TypeDate},
+			{Name: "TIME_ON", Value: "095846", Type: TypeTime},
+			{Name: "BAND", Value: "1.25cm", Type: TypeEnumeration},
+			{Name: "CALLSIGN", Value: "N0P", Type: TypeString},
+			{Name: "NAME", Value: "Santa Claus", Type: TypeString},
 			{Name: "MY FIELD", Value: "{!@#}, ($%^)"},
 		},
 		{
@@ -101,10 +101,10 @@ Inverted L antenna, 70' above ground
 			{Name: "RIG", Value: `100 watt C.W.
 Armstrong regenerative circuit
 Inverted L antenna, 70' above ground
-`, Type: MultilineString},
-			{Name: "FREQ", Value: "7.654", Type: Number},
-			{Name: "CALLSIGN", Value: "1AY", Type: String},
-			{Name: "NAME", Value: `"C.G." Tuska`, Type: String},
+`, Type: TypeMultilineString},
+			{Name: "FREQ", Value: "7.654", Type: TypeNumber},
+			{Name: "CALLSIGN", Value: "1AY", Type: TypeString},
+			{Name: "NAME", Value: `"C.G." Tuska`, Type: TypeString},
 			{Name: "SWEATERSIZE", Value: "L"},
 			{Name: "SHOESIZE", Value: "12"},
 		},
@@ -115,9 +115,9 @@ Inverted L antenna, 70' above ground
 		" This is a random comment ",
 	}
 	wantUserdef := []UserdefField{
-		{Name: "MY FIELD", Type: String},
-		{Name: "SWEATERSIZE", Type: Enumeration, EnumValues: []string{"S", "M", "L"}},
-		{Name: "SHOESIZE", Type: Number, Min: 5, Max: 20},
+		{Name: "MY FIELD", Type: TypeString},
+		{Name: "SWEATERSIZE", Type: TypeEnumeration, EnumValues: []string{"S", "M", "L"}},
+		{Name: "SHOESIZE", Type: TypeNumber, Min: 5, Max: 20},
 	}
 	adi := NewADXIO()
 	if parsed, err := adi.Read(strings.NewReader(input)); err != nil {
@@ -148,30 +148,30 @@ func TestWriteADX(t *testing.T) {
 	l := NewLogfile()
 	l.Comment = "The <last> word."
 	l.Records = append(l.Records, NewRecord(
-		Field{Name: "QSO_DATE", Value: "19901031", Type: Date},
-		Field{Name: "TIME_ON", Value: "1234", Type: Time},
+		Field{Name: "QSO_DATE", Value: "19901031", Type: TypeDate},
+		Field{Name: "TIME_ON", Value: "1234", Type: TypeTime},
 		Field{Name: "BAND", Value: "40M"},
 		Field{Name: "CALLSIGN", Value: "W1AW"},
-		Field{Name: "NAME", Value: "Hiram Percy Maxim", Type: String},
+		Field{Name: "NAME", Value: "Hiram Percy Maxim", Type: TypeString},
 	))
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "20221224"},
 		Field{Name: "TIME_ON", Value: "095846"},
-		Field{Name: "BAND", Value: "1.25cm", Type: Enumeration},
-		Field{Name: "CALLSIGN", Value: "N0P", Type: String},
+		Field{Name: "BAND", Value: "1.25cm", Type: TypeEnumeration},
+		Field{Name: "CALLSIGN", Value: "N0P", Type: TypeString},
 		Field{Name: "NAME", Value: "Santa Claus"},
 		Field{Name: "My Field", Value: "{!@#}, ($%^)"},
 	))
 	l.Records[len(l.Records)-1].SetComment("Record comment")
 	l.Records = append(l.Records, NewRecord(
-		Field{Name: "QSO_DATE", Value: "19190219", Type: Date},
+		Field{Name: "QSO_DATE", Value: "19190219", Type: TypeDate},
 		Field{Name: "RIG", Value: `100 watt C.W.
 Armstrong regenerative circuit
 Inverted L antenna, 70' above ground
-`, Type: MultilineString},
-		Field{Name: "FREQ", Value: "7.654", Type: Number},
-		Field{Name: "CALLSIGN", Value: "1AY", Type: String},
-		Field{Name: "NAME", Value: `"C.G." Tuska`, Type: String},
+`, Type: TypeMultilineString},
+		Field{Name: "FREQ", Value: "7.654", Type: TypeNumber},
+		Field{Name: "CALLSIGN", Value: "1AY", Type: TypeString},
+		Field{Name: "NAME", Value: `"C.G." Tuska`, Type: TypeString},
 		Field{Name: "SweaterSize", Value: "L"},
 		Field{Name: "SHOESIZE", Value: "12"},
 	))
@@ -181,9 +181,9 @@ Inverted L antenna, 70' above ground
 	l.Header.Set(Field{Name: "CREATED_TIMESTAMP", Value: "20220102 153456"})
 	l.Header.SetComment("Header comment")
 	l.Userdef = []UserdefField{
-		{Name: "MY FIELD", Type: String},
-		{Name: "sweatersize", Type: Enumeration, EnumValues: []string{"S", "M", "L"}},
-		{Name: "ShoeSize", Type: Number, Min: 5, Max: 20},
+		{Name: "MY FIELD", Type: TypeString},
+		{Name: "sweatersize", Type: TypeEnumeration, EnumValues: []string{"S", "M", "L"}},
+		{Name: "ShoeSize", Type: TypeNumber, Min: 5, Max: 20},
 	}
 	want := xml.Header + `<ADX>
   <HEADER>

@@ -113,7 +113,7 @@ func (o *ADIIO) Read(in io.Reader) (*Logfile, error) {
 					return nil, fmt.Errorf("%v from <%s", err, s)
 				}
 				if len(udparts) == 2 {
-					if u.Type == Number {
+					if u.Type == TypeNumber {
 						if n, err := fmt.Sscanf(udparts[1], "{%f:%f}", &u.Min, &u.Max); err != nil || n != 2 {
 							return nil, fmt.Errorf("invalid %s range %q", tag[0], udparts[1])
 						}
@@ -238,7 +238,7 @@ func (o *ADIIO) Write(l *Logfile, out io.Writer) error {
 func (o *ADIIO) writeField(f Field, b *bufio.Writer) error {
 	var tag string
 	// TODO error if IntlString/non-ASCII, unless a flag allows
-	if f.Type == Unspecified {
+	if f.Type == TypeUnspecified {
 		tag = fmt.Sprintf("<%s:%d>", o.fixCase(f.Name), len(f.Value))
 	} else {
 		tag = fmt.Sprintf("<%s:%d:%s>", o.fixCase(f.Name), len(f.Value), o.fixCase(f.Type.Indicator()))

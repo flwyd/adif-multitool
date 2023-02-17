@@ -27,17 +27,17 @@ func TestNew(t *testing.T) {
 			want:   []Field{},
 		},
 		{
-			fields: []Field{{Name: "FOO", Value: "123", Type: Number}},
-			want:   []Field{{Name: "FOO", Value: "123", Type: Number}},
+			fields: []Field{{Name: "FOO", Value: "123", Type: TypeNumber}},
+			want:   []Field{{Name: "FOO", Value: "123", Type: TypeNumber}},
 		},
 		{
 			fields: []Field{
-				{Name: "freq", Value: "14.250", Type: Number},
-				{Name: "QsO_dAtE", Value: "20151124", Type: Date},
+				{Name: "freq", Value: "14.250", Type: TypeNumber},
+				{Name: "QsO_dAtE", Value: "20151124", Type: TypeDate},
 				{Name: "not an ADIF field", Value: "'sup?"}},
 			want: []Field{
-				{Name: "FREQ", Value: "14.250", Type: Number},
-				{Name: "QSO_DATE", Value: "20151124", Type: Date},
+				{Name: "FREQ", Value: "14.250", Type: TypeNumber},
+				{Name: "QSO_DATE", Value: "20151124", Type: TypeDate},
 				{Name: "NOT AN ADIF FIELD", Value: "'sup?"}},
 		},
 	}
@@ -64,7 +64,7 @@ func TestSet(t *testing.T) {
 	if got, ok := r.Get("FOO"); !ok || got != want {
 		t.Errorf("Get(%q) got %v, want %v", "FOO", got, want)
 	}
-	want = Field{Name: "A_FIELD", Value: "123", Type: Number}
+	want = Field{Name: "A_FIELD", Value: "123", Type: TypeNumber}
 	r.Set(want)
 	if got, ok := r.Get("A_FIELD"); !ok || got != want {
 		t.Errorf("Get(%q) got %v, want %v", "A_FIELD", got, want)
@@ -72,8 +72,8 @@ func TestSet(t *testing.T) {
 	if got, ok := r.Get("a_FielD"); !ok || got != want {
 		t.Errorf("Get(%q) got %v, want %v", "a_FielD", got, want)
 	}
-	r.Set(Field{Name: "foo", Value: "1234", Type: Time})
-	want = Field{Name: "FOO", Value: "1234", Type: Time}
+	r.Set(Field{Name: "foo", Value: "1234", Type: TypeTime})
+	want = Field{Name: "FOO", Value: "1234", Type: TypeTime}
 	if got, ok := r.Get("FOO"); !ok || got != want {
 		t.Errorf("Get(%q) got %v, want %v", "FOO", got, want)
 	}

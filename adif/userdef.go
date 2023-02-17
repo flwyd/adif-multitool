@@ -32,7 +32,7 @@ type UserdefField struct {
 func (u UserdefField) String() string {
 	var sb strings.Builder
 	sb.WriteString(strings.ToUpper(u.Name))
-	if u.Type != Unspecified {
+	if u.Type != TypeUnspecified {
 		sb.WriteRune(':')
 		sb.WriteString(u.Type.Indicator())
 	}
@@ -85,7 +85,7 @@ func (u UserdefField) ValidateSelf() error {
 }
 
 func (u UserdefField) Validate(f Field) error {
-	if u.Type == Number && (u.Min != 0.0 || u.Max != 0.0) {
+	if u.Type == TypeNumber && (u.Min != 0.0 || u.Max != 0.0) {
 		v, err := strconv.ParseFloat(f.Value, 64)
 		if err != nil {
 			return fmt.Errorf("%s: number parse error: %w", u.Name, err)
