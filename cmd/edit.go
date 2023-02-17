@@ -59,9 +59,9 @@ func runEdit(ctx *Context, args []string) error {
 	toTz := cctx.ToZone.Get()
 	adjustTz := fromTz.String() != toTz.String()
 	out := adif.NewLogfile()
-	var comments commentCatcher
+	acc := accumulator{Out: out, Ctx: ctx}
 	for _, f := range filesOrStdin(args) {
-		l, err := readFile(ctx, f)
+		l, err := acc.read(f)
 		if err != nil {
 			return err
 		}
@@ -106,9 +106,10 @@ func runEdit(ctx *Context, args []string) error {
 				out.Records = append(out.Records, rec)
 			}
 		}
-		comments.read(l, f)
 	}
-	comments.write(out)
+	if err := acc.prepare(); err != nil {
+		return err
+	}
 	return write(ctx, out)
 }
 

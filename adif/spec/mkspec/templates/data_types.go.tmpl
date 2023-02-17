@@ -19,20 +19,22 @@
 package spec
 
 var (
-{{- range .DataTypes.Records}}
-	// {{.Value "Data Type Name"}}DataType is {{.Value "Description"}}. {{.Value "Comments"}}
-	{{with $name := .Value "Data Type Name"}}{{$name}}DataType = DataType{
-		Name: {{$name | printf "%q"}},{{end}}
-		{{with $indic := .Value "Data Type Indicator"}}{{if $indic}}Indicator: "{{$indic}}",{{"\n"}}{{end}}{{end}}
-		{{- with $min := .Value "Minimum Value"}}{{if $min}}Minimum: {{$min | printf "%q"}},{{"\n"}}{{end}}{{end}}
-		{{- with $max := .Value "Maximum Value"}}{{if $max}}Maximum: {{$max | printf "%q"}},{{"\n"}}{{end}}{{end}}
-		{{- with $imp := .Value "Import-only"}}{{if eq "true" $imp}}ImportOnly: true,{{"\n"}}{{end}}{{end}}
+{{- range .DataTypes.Records}}{{with .ValueMap}}
+	// {{.DataTypeName}}DataType is {{.Description}}. {{with .Comments}}{{.}}{{end}}
+	{{.DataTypeName}}DataType = DataType{
+		Name: {{.DataTypeName | printf "%q"}},{{"\n"}}
+		{{- with .DataTypeIndicator}}Indicator: "{{.}}",{{"\n"}}{{end}}
+		{{- with .MinimumValue}}Minimum: "{{.}}",{{"\n"}}{{end}}
+		{{- with .MaximumValue}}Maximum: "{{.}}",{{"\n"}}{{end}}
+		{{- with .ImportOnly}}{{if eq "true" .}}ImportOnly: true,{{"\n"}}{{end}}{{end}}
 	}
-{{- end}}
+{{- end}}{{- end}}
 )
 
 func init() {
-{{- range .DataTypes.Records}}
-	{{with $name := .Value "Data Type Name"}}DataTypes[{{printf "%q" $name}}] = {{$name}}DataType{{end}}
+{{- range .DataTypes.Records}}{{- with .ValueMap}}
+	{{- if .DataTypeIndicator}}
+	DataTypes[{{printf "%q" .DataTypeIndicator}}] = {{.DataTypeName}}DataType{{end}}
+	DataTypes[{{printf "%q" .DataTypeName}}] = {{.DataTypeName}}DataType{{end}}
 {{- end}}
 }

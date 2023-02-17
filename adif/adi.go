@@ -102,16 +102,43 @@ func (o *ADIIO) Read(in io.Reader) (*Logfile, error) {
 			if _, err = io.ReadFull(r, v); err != nil {
 				return nil, fmt.Errorf("error reading ADI field value <%s got %q: %w", s, v, err)
 			}
-			// spec says everything is ASCII, but this accepts UTF-8
-			// as long as the tag length is accurate in bytes
-			f := Field{Name: tag[0], Value: string(v)}
-			if len(tag) == 3 {
-				f.Type, err = DataTypeFromIdentifier(tag[2])
+			if strings.HasPrefix(strings.ToUpper(tag[0]), "USERDEF") {
+				if len(tag) != 3 {
+					return nil, fmt.Errorf("missing type for %s field %q", tag[0], v)
+				}
+				udparts := strings.SplitN(string(v), ",", 2)
+				u := UserdefField{Name: udparts[0]}
+				u.Type, err = DataTypeFromIdentifier(tag[2])
 				if err != nil {
 					return nil, fmt.Errorf("%v from <%s", err, s)
 				}
+				if len(udparts) == 2 {
+					if u.Type == Number {
+						if n, err := fmt.Sscanf(udparts[1], "{%f:%f}", &u.Min, &u.Max); err != nil || n != 2 {
+							return nil, fmt.Errorf("invalid %s range %q", tag[0], udparts[1])
+						}
+					} else {
+						ev := udparts[1]
+						if !strings.HasPrefix(ev, "{") || !strings.HasSuffix(ev, "}") {
+							return nil, fmt.Errorf("invalid %s enumeration list %q", tag[0], ev)
+						}
+						ev = ev[1 : len(ev)-1]
+						u.EnumValues = strings.Split(ev, ",")
+					}
+				}
+				l.AddUserdef(u)
+			} else {
+				// spec says everything is ASCII, but this accepts UTF-8
+				// as long as the tag length is accurate in bytes
+				f := Field{Name: tag[0], Value: string(v)}
+				if len(tag) == 3 {
+					f.Type, err = DataTypeFromIdentifier(tag[2])
+					if err != nil {
+						return nil, fmt.Errorf("%v from <%s", err, s)
+					}
+				}
+				cur.Set(f)
 			}
-			cur.Set(f)
 		default:
 			return nil, fmt.Errorf("invalid ADI tag format <%s", s)
 		}
@@ -136,13 +163,16 @@ func (o *ADIIO) Read(in io.Reader) (*Logfile, error) {
 	}
 }
 
+const defaultAdiComment = "ADI format, see https://adif.org.uk/"
+
 func (o *ADIIO) Write(l *Logfile, out io.Writer) error {
 	b := bufio.NewWriter(out)
 	defer b.Flush()
+
 	if !l.Header.Empty() {
 		c := l.Header.GetComment()
 		if c == "" {
-			c = "ADI format, see https://adif.org.uk/"
+			c = defaultAdiComment
 		}
 		if err := o.writeComment(b, c, o.RecordSep.Val()); err != nil {
 			return fmt.Errorf("error writing ADI header: %w", err)
@@ -152,10 +182,24 @@ func (o *ADIIO) Write(l *Logfile, out io.Writer) error {
 				return fmt.Errorf("error writing ADI header: %w", err)
 			}
 		}
+		if err := o.writeUserdef(l.Userdef, b); err != nil {
+			return fmt.Errorf("error writing ADI header: %w", err)
+		}
+		if _, err := b.WriteString(fmt.Sprintf("<%s>%s", o.fixCase("EOH"), o.RecordSep.Val())); err != nil {
+			return fmt.Errorf("error writing ADI header: %w", err)
+		}
+	} else if len(l.Userdef) > 0 { // add a header for the userdef fields
+		if err := o.writeComment(b, defaultAdiComment, o.RecordSep.Val()); err != nil {
+			return fmt.Errorf("error writing ADI header: %w", err)
+		}
+		if err := o.writeUserdef(l.Userdef, b); err != nil {
+			return fmt.Errorf("error writing ADI header: %w", err)
+		}
 		if _, err := b.WriteString(fmt.Sprintf("<%s>%s", o.fixCase("EOH"), o.RecordSep.Val())); err != nil {
 			return fmt.Errorf("error writing ADI header: %w", err)
 		}
 	}
+
 	for i, r := range l.Records {
 		if c := r.GetComment(); c != "" {
 			if err := o.writeComment(b, c, o.FieldSep.Val()); err != nil {
@@ -182,6 +226,7 @@ func (o *ADIIO) Write(l *Logfile, out io.Writer) error {
 			return fmt.Errorf("error writing ADI record #%d: %w", i, err)
 		}
 	}
+
 	if l.Comment != "" {
 		if err := o.writeComment(b, l.Comment, "\n"); err != nil {
 			return fmt.Errorf("error writing ADI comment: %w", err)
@@ -200,6 +245,26 @@ func (o *ADIIO) writeField(f Field, b *bufio.Writer) error {
 	}
 	if _, err := b.WriteString(fmt.Sprintf("%s%s%s", tag, f.Value, o.FieldSep.Val())); err != nil {
 		return fmt.Errorf("error writing %s: %w", f, err)
+	}
+	return nil
+}
+
+func (o *ADIIO) writeUserdef(us []UserdefField, b *bufio.Writer) error {
+	for i, u := range us {
+		if err := u.ValidateSelf(); err != nil {
+			return err
+		}
+		f := Field{Name: fmt.Sprintf("USERDEF%d", i+1), Type: u.Type}
+		if len(u.EnumValues) > 0 {
+			f.Value = fmt.Sprintf("%s,{%s}", u.Name, strings.Join(u.EnumValues, ","))
+		} else if u.Min != 0.0 || u.Max != 0.0 {
+			f.Value = fmt.Sprintf("%s,%s", u.Name, formatRange(u))
+		} else {
+			f.Value = u.Name
+		}
+		if err := o.writeField(f, b); err != nil {
+			return err
+		}
 	}
 	return nil
 }

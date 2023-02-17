@@ -22,4 +22,5 @@ type DataType struct {
 	ImportOnly bool
 }
 
+// DataTypes allows lookups by DataType.Name and DataType.Indicator.
 var DataTypes = make(map[string]DataType)

@@ -18,6 +18,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 )
 
@@ -33,14 +34,79 @@ type adxField struct {
 	Comment   string `xml:",comment"`
 }
 
+func (f adxField) IsUserdef() bool {
+	return f.XMLName.Local == "USERDEF"
+}
+
 func (f adxField) Field() Field {
-	// TODO figure out user defined and app-specific fields
+	// TODO figure out app-specific fields
+	if f.IsUserdef() {
+		return Field{Name: f.FieldName, Value: f.Value, Type: typeIdentifiers[f.Type]}
+	}
 	return Field{Name: f.XMLName.Local, Value: f.Value, Type: typeIdentifiers[f.Type]}
 }
 
+func (f adxField) UserdefField() (UserdefField, error) {
+	u := UserdefField{}
+	if f.XMLName.Local != "USERDEF" {
+		return u, fmt.Errorf("not a USERDEF field: %+v", f)
+	}
+	if f.Value == "" {
+		return u, fmt.Errorf("USERDEF field without a name: %+v", f)
+	}
+	u.Name = f.Value
+	if f.Type != "" {
+		t, err := DataTypeFromIdentifier(f.Type)
+		if err != nil {
+			return u, fmt.Errorf("%s: unknown type identifier %s: %w", f.FieldName, f.Type, err)
+		}
+		u.Type = t
+	}
+	if f.Range != "" {
+		if n, err := fmt.Sscanf(f.Range, "{%f:%f}", &u.Min, &u.Max); n != 2 || err != nil {
+			return u, fmt.Errorf("%s: invalid range %q", f.FieldName, f.Range)
+		}
+	}
+	if f.Enum != "" {
+		if !strings.HasPrefix(f.Enum, "{") || !strings.HasSuffix(f.Enum, "}") {
+			return u, fmt.Errorf("%s: invalid enumeration %q", f.FieldName, f.Enum)
+		}
+		u.EnumValues = strings.Split(f.Enum[1:len(f.Enum)-1], ",")
+	}
+	return u, nil
+}
+
 func newAdxField(f Field) adxField {
-	// TODO figure out user defined and app-specific fields
-	return adxField{XMLName: xml.Name{Local: f.Name}, Value: f.Value, Type: f.Type.Identifier()}
+	// TODO figure out app-specific fields
+	return adxField{
+		XMLName: xml.Name{Local: f.Name},
+		Value:   f.Value,
+		Type:    f.Type.Identifier(),
+	}
+}
+
+func newAdxUserdefField(f Field) adxField { // for use in records
+	// TODO figure out app-specific fields
+	return adxField{
+		XMLName:   xml.Name{Local: "USERDEF"},
+		FieldName: f.Name,
+		Value:     f.Value,
+		Type:      f.Type.Identifier()}
+}
+
+func newAdxUserdef(u UserdefField, id int) adxField { // for use in header
+	f := adxField{
+		XMLName: xml.Name{Local: "USERDEF"},
+		FieldID: strconv.FormatInt(int64(id), 10),
+		Value:   strings.ToUpper(u.Name),
+		Type:    u.Type.Identifier()}
+	if u.Min != 0.0 || u.Max != 0.0 {
+		f.Range = formatRange(u)
+	}
+	if len(u.EnumValues) > 0 {
+		f.Enum = fmt.Sprintf("{%s}", strings.Join(u.EnumValues, ","))
+	}
+	return f
 }
 
 type adxRecord struct {
@@ -48,13 +114,16 @@ type adxRecord struct {
 	Fields  []adxField `xml:",any"`
 }
 
-func (r adxRecord) Record() *Record {
+func (r adxRecord) Record(header bool) *Record {
 	res := NewRecord()
 	fcs := make([]string, 0, len(r.Fields))
 	if r.Comment != "" {
 		fcs = append(fcs, r.Comment)
 	}
 	for _, f := range r.Fields {
+		if header && f.IsUserdef() {
+			continue
+		}
 		res.Set(f.Field())
 		if f.Comment != "" {
 			fcs = append(fcs, f.Comment)
@@ -64,10 +133,30 @@ func (r adxRecord) Record() *Record {
 	return res
 }
 
-func newAdxRecord(r *Record) adxRecord {
+func (r adxRecord) UserdefFields() ([]UserdefField, error) {
+	var res []UserdefField
+	for _, f := range r.Fields {
+		if f.IsUserdef() {
+			u, err := f.UserdefField()
+			if err != nil {
+				return nil, err
+			}
+			res = append(res, u)
+		}
+	}
+	return res, nil
+}
+
+func newAdxRecord(r *Record, l *Logfile) adxRecord {
 	res := adxRecord{}
 	for _, f := range r.Fields() {
-		res.Fields = append(res.Fields, newAdxField(f))
+		var x adxField
+		if _, ok := l.GetUserdef(f.Name); ok {
+			x = newAdxUserdefField(f)
+		} else {
+			x = newAdxField(f)
+		}
+		res.Fields = append(res.Fields, x)
 	}
 	if c := r.GetComment(); c != "" {
 		res.Comment = r.GetComment()
@@ -104,18 +193,31 @@ func (o *ADXIO) Read(in io.Reader) (*Logfile, error) {
 		return nil, fmt.Errorf("could not decode ADX file: %w", err)
 	}
 	l.Comment = f.Comment
-	l.Header = f.Header.Record()
+	l.Header = f.Header.Record(true)
+	us, err := f.Header.UserdefFields()
+	if err != nil {
+		return nil, err
+	}
+	for _, u := range us {
+		l.AddUserdef(u)
+	}
 	for _, r := range f.Records {
-		l.Records = append(l.Records, r.Record())
+		l.Records = append(l.Records, r.Record(false))
 	}
 	return l, nil
 }
 
 func (o *ADXIO) Write(l *Logfile, out io.Writer) error {
 	f := adxFile{}
-	f.Header = newAdxRecord(l.Header)
+	f.Header = newAdxRecord(l.Header, l)
+	for i, u := range l.Userdef {
+		if err := u.ValidateSelf(); err != nil {
+			return err
+		}
+		f.Header.Fields = append(f.Header.Fields, newAdxUserdef(u, i+1))
+	}
 	for _, r := range l.Records {
-		f.Records = append(f.Records, newAdxRecord(r))
+		f.Records = append(f.Records, newAdxRecord(r, l))
 	}
 	if l.Comment != "" {
 		f.Comment = l.Comment

@@ -36,9 +36,9 @@ func runSelect(ctx *Context, args []string) error {
 	}
 	out := adif.NewLogfile()
 	out.FieldOrder = con.Fields
-	var comments commentCatcher
+	acc := accumulator{Out: out, Ctx: ctx}
 	for _, f := range filesOrStdin(args) {
-		l, err := readFile(ctx, f)
+		l, err := acc.read(f)
 		if err != nil {
 			return err
 		}
@@ -54,8 +54,9 @@ func runSelect(ctx *Context, args []string) error {
 				out.Records = append(out.Records, adif.NewRecord(fields...))
 			}
 		}
-		comments.read(l, f)
 	}
-	comments.write(out)
+	if err := acc.prepare(); err != nil {
+		return err
+	}
 	return write(ctx, out)
 }

@@ -56,6 +56,14 @@ func (r record) CamelCaseValue(name string) string {
 	return strcase.UpperCamelCase(r.Value(name))
 }
 
+func (r record) ValueMap() map[string]string {
+	res := make(map[string]string)
+	for _, v := range r.Values {
+		res[strcase.UpperCamelCase(v.Name)] = v.Val
+	}
+	return res
+}
+
 type specification struct {
 	Header  header   `xml:"header"`
 	Records []record `xml:"record"`
@@ -98,6 +106,15 @@ func (f field) EnumScope() string {
 	}
 	return strings.TrimSuffix(e[i+1:], "]")
 }
+
+func (f field) FieldName() string    { return f.Value("Field Name") }
+func (f field) DataType() string     { return f.Value("Data Type") }
+func (f field) Description() string  { return f.Value("Description") }
+func (f field) Comments() string     { return f.Value("Comments") }
+func (f field) MinimumValue() string { return f.Value("Minimum Value") }
+func (f field) MaximumValue() string { return f.Value("Maximum Value") }
+func (f field) ImportOnly() bool     { return f.Value("Import-only") == "true" }
+func (f field) HeaderField() bool    { return f.Value("Header Field") == "true" }
 
 type fieldSpec struct {
 	Header header  `xml:"header"`
@@ -157,6 +174,7 @@ type adifSpec struct {
 	Status       string          `xml:"status,attr"`
 	Created      string          `xml:"created,attr"`
 	Source       string
+	SpecUrl      string
 }
 
 func main() {
@@ -194,6 +212,8 @@ func main() {
 	if err := xml.Unmarshal(content, &spec); err != nil {
 		log.Fatalf("XML decoding error in %s: %v", filename, err)
 	}
+	shortVer := strings.ReplaceAll(spec.Version, ".", "")
+	spec.SpecUrl = fmt.Sprintf("https://adif.org/%s/ADIF_%s.htm", shortVer, shortVer)
 	log.Printf("Parsed ADIF version %s from %s", spec.Version, filename)
 	log.Printf("Version %s has %d data types, %d fields, %d enums", spec.Version,
 		len(spec.DataTypes.Records), len(spec.Fields.Fields), len(spec.Enumerations.Enums))

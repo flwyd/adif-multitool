@@ -19,3 +19,4 @@
 package spec
 
 var ADIFVersion = "3.1.4"
+var ADIFSpecURL = "https://adif.org/314/ADIF_314.htm"

@@ -154,6 +154,8 @@ func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
 		"input `format` when it cannot be inferred from file extension\n"+fmtopts)
 	fs.Var(&ctx.OutputFormat, "output",
 		"output `format` written to stdout\n"+fmtopts)
+	fs.Var(&ctx.UserdefFields, "userdef",
+		fmt.Sprintf("define a USERDEF `field` name and optional type, range, or enum (multi)\nfield formats: STRING_F:S NUMBER_F{0:360} ENUM_F:{A,B,C}\ntype indicators: %s#Data_Types", spec.ADIFSpecURL))
 
 	// ADI flags
 	fs.BoolVar(&adiio.LowerCase, "adi-lower-case", false,
@@ -198,7 +200,9 @@ func usage(fs *flag.FlagSet, command string) func() {
 		if c, ok := commandNamed(command); ok {
 			fmt.Fprintf(out, "%s: %s\n", c.Name, c.Description)
 			cfs := flag.NewFlagSet(command, flag.ContinueOnError)
-			c.Configure(&cmd.Context{}, cfs)
+			if c.Configure != nil {
+				c.Configure(&cmd.Context{}, cfs)
+			}
 			cfs.SetOutput(out)
 			cfs.PrintDefaults()
 		} else {

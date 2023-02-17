@@ -50,6 +50,9 @@ func TestReadADX(t *testing.T) {
 		<CREATED_TIMESTAMP>20220102 153456</CREATED_TIMESTAMP>
 		<PROGRAMID>adx_test</PROGRAMID>
 		<PROGRAMVERSION>1.2.3</PROGRAMVERSION>
+		<USERDEF FIELDID="1" TYPE="S">MY FIELD</USERDEF>
+		<USERDEF FIELDID="2" TYPE="E" ENUM="{S,M,L}">SWEATERSIZE</USERDEF>
+		<USERDEF FIELDID="3" TYPE="N" RANGE="{5:20}">SHOESIZE</USERDEF>
 		</HEADER>
 		<RECORDS>
 		<RECORD>
@@ -61,6 +64,7 @@ func TestReadADX(t *testing.T) {
 	<BAND TYPE="E">1.25cm</BAND>
 	<CALLSIGN TYPE="S">N0P</CALLSIGN>
 	<NAME TYPE="S"><!--Field comment #2-->Santa Claus</NAME>
+	<USERDEF FIELDNAME="My Field">{!@#}, ($%^)</USERDEF>
 </RECORD>
 <RECORD>
 <QSO_DATE>19190219</QSO_DATE>
@@ -70,7 +74,9 @@ Inverted L antenna, 70' above ground
 </RIG><FREQ TYPE="N">7.654</FREQ>
 <CALLSIGN TYPE="S">1AY</CALLSIGN>
 <!-- This is a random comment -->
-<NAME TYPE="S">"C.G." Tuska</NAME></RECORD>
+<NAME TYPE="S">"C.G." Tuska</NAME>
+<USERDEF FIELDNAME="SweaterSize">L</USERDEF>
+<USERDEF FIELDNAME="ShoeSize">12</USERDEF></RECORD>
 </RECORDS>
 </ADX>
 `
@@ -88,6 +94,7 @@ Inverted L antenna, 70' above ground
 			{Name: "BAND", Value: "1.25cm", Type: Enumeration},
 			{Name: "CALLSIGN", Value: "N0P", Type: String},
 			{Name: "NAME", Value: "Santa Claus", Type: String},
+			{Name: "MY FIELD", Value: "{!@#}, ($%^)"},
 		},
 		{
 			{Name: "QSO_DATE", Value: "19190219"},
@@ -98,12 +105,19 @@ Inverted L antenna, 70' above ground
 			{Name: "FREQ", Value: "7.654", Type: Number},
 			{Name: "CALLSIGN", Value: "1AY", Type: String},
 			{Name: "NAME", Value: `"C.G." Tuska`, Type: String},
+			{Name: "SWEATERSIZE", Value: "L"},
+			{Name: "SHOESIZE", Value: "12"},
 		},
 	}
 	wantComments := []string{
 		"",
 		"Field comment #1\nField comment #2",
 		" This is a random comment ",
+	}
+	wantUserdef := []UserdefField{
+		{Name: "MY FIELD", Type: String},
+		{Name: "SWEATERSIZE", Type: Enumeration, EnumValues: []string{"S", "M", "L"}},
+		{Name: "SHOESIZE", Type: Number, Min: 5, Max: 20},
 	}
 	adi := NewADXIO()
 	if parsed, err := adi.Read(strings.NewReader(input)); err != nil {
@@ -124,6 +138,9 @@ Inverted L antenna, 70' above ground
 		if want := "Logfile comment."; parsed.Comment != want {
 			t.Errorf("Read(%q) got logfile comment %q, want %q", input, parsed.Comment, want)
 		}
+		if diff := cmp.Diff(wantUserdef, parsed.Userdef); diff != "" {
+			t.Errorf("Read(%q) got userdef field diff\n%s", input, diff)
+		}
 	}
 }
 
@@ -143,6 +160,7 @@ func TestWriteADX(t *testing.T) {
 		Field{Name: "BAND", Value: "1.25cm", Type: Enumeration},
 		Field{Name: "CALLSIGN", Value: "N0P", Type: String},
 		Field{Name: "NAME", Value: "Santa Claus"},
+		Field{Name: "My Field", Value: "{!@#}, ($%^)"},
 	))
 	l.Records[len(l.Records)-1].SetComment("Record comment")
 	l.Records = append(l.Records, NewRecord(
@@ -154,12 +172,19 @@ Inverted L antenna, 70' above ground
 		Field{Name: "FREQ", Value: "7.654", Type: Number},
 		Field{Name: "CALLSIGN", Value: "1AY", Type: String},
 		Field{Name: "NAME", Value: `"C.G." Tuska`, Type: String},
+		Field{Name: "SweaterSize", Value: "L"},
+		Field{Name: "SHOESIZE", Value: "12"},
 	))
 	l.Header.Set(Field{Name: "ADIF_VER", Value: "3.1.4"})
 	l.Header.Set(Field{Name: "PROGRAMID", Value: "adx_test"})
 	l.Header.Set(Field{Name: "PROGRAMVERSION", Value: "1.2.3"})
 	l.Header.Set(Field{Name: "CREATED_TIMESTAMP", Value: "20220102 153456"})
 	l.Header.SetComment("Header comment")
+	l.Userdef = []UserdefField{
+		{Name: "MY FIELD", Type: String},
+		{Name: "sweatersize", Type: Enumeration, EnumValues: []string{"S", "M", "L"}},
+		{Name: "ShoeSize", Type: Number, Min: 5, Max: 20},
+	}
 	want := xml.Header + `<ADX>
   <HEADER>
     <!--Header comment-->
@@ -167,6 +192,9 @@ Inverted L antenna, 70' above ground
     <PROGRAMID>adx_test</PROGRAMID>
     <PROGRAMVERSION>1.2.3</PROGRAMVERSION>
     <CREATED_TIMESTAMP>20220102 153456</CREATED_TIMESTAMP>
+    <USERDEF TYPE="S" FIELDID="1">MY FIELD</USERDEF>
+    <USERDEF TYPE="E" FIELDID="2" ENUM="{S,M,L}">SWEATERSIZE</USERDEF>
+    <USERDEF TYPE="N" FIELDID="3" RANGE="{5:20}">SHOESIZE</USERDEF>
   </HEADER>
   <RECORDS>
     <RECORD>
@@ -183,6 +211,7 @@ Inverted L antenna, 70' above ground
       <BAND TYPE="E">1.25cm</BAND>
       <CALLSIGN TYPE="S">N0P</CALLSIGN>
       <NAME>Santa Claus</NAME>
+      <USERDEF FIELDNAME="MY FIELD">{!@#}, ($%^)</USERDEF>
     </RECORD>
     <RECORD>
       <QSO_DATE TYPE="D">19190219</QSO_DATE>
@@ -190,6 +219,8 @@ Inverted L antenna, 70' above ground
       <FREQ TYPE="N">7.654</FREQ>
       <CALLSIGN TYPE="S">1AY</CALLSIGN>
       <NAME TYPE="S">&#34;C.G.&#34; Tuska</NAME>
+      <USERDEF FIELDNAME="SWEATERSIZE">L</USERDEF>
+      <USERDEF FIELDNAME="SHOESIZE">12</USERDEF>
     </RECORD>
   </RECORDS>
   <!--The <last> word.-->

@@ -32,9 +32,9 @@ func runValidate(ctx *Context, args []string) error {
 	log := os.Stderr
 	var errors, warnings int
 	out := adif.NewLogfile()
-	var comments commentCatcher
+	acc := accumulator{Out: out, Ctx: ctx}
 	for _, f := range filesOrStdin(args) {
-		l, err := readFile(ctx, f)
+		l, err := acc.read(f)
 		if err != nil {
 			return err
 		}
@@ -47,9 +47,9 @@ func runValidate(ctx *Context, args []string) error {
 				if f.Value == "" {
 					continue
 				}
-				if fs, ok := spec.Fields[f.Name]; ok {
-					if dtv := spec.TypeValidators[fs.Type.Name]; dtv != nil {
-						switch v := dtv(f.Value, fs, vctx); v.Validity {
+				validateSpec := func(fv spec.FieldValidator, fs spec.Field) {
+					if fv != nil {
+						switch v := fv(f.Value, fs, vctx); v.Validity {
 						case spec.InvalidError:
 							errors++
 							fmt.Fprintf(log, "ERROR on %s record %d: %s\n", l, i, v)
@@ -60,18 +60,33 @@ func runValidate(ctx *Context, args []string) error {
 						}
 					}
 				}
+				if fs, ok := spec.Fields[f.Name]; ok {
+					validateSpec(spec.TypeValidators[fs.Type.Name], fs)
+				} else if u, ok := acc.Out.GetUserdef(f.Name); ok {
+					if len(u.EnumValues) > 0 || u.Min != 0.0 || u.Max != 0.0 {
+						if err := u.Validate(f); err != nil {
+							errors++
+							fmt.Fprintf(log, "ERROR on %s record %d: %s\n", l, i, err)
+						}
+					} else { // spec enum validator can't handle userdef enums
+						dt := spec.DataTypes[u.Type.Identifier()]
+						fs := spec.Field{Name: u.Name, Type: dt}
+						validateSpec(spec.TypeValidators[dt.Name], fs)
+					}
+				}
 				if len(msgs) > 0 {
 					r.SetComment("adif-multitool: validate warnings: " + strings.Join(msgs, "; "))
 				}
 			}
 			out.Records = append(out.Records, r)
 		}
-		comments.read(l, f)
 	}
 	if errors > 0 {
 		return fmt.Errorf("validate got %d errors and %d warnings", errors, warnings)
 	}
-	comments.write(out)
+	if err := acc.prepare(); err != nil {
+		return err
+	}
 	err := write(ctx, out)
 	if warnings > 0 {
 		fmt.Fprintf(log, "validate got %d warnings\n", warnings)

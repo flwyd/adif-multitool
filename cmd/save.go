@@ -60,6 +60,9 @@ func runSave(ctx *Context, args []string) error {
 		}
 		fmt.Fprintf(os.Stderr, "Warning: saving %s with no records", fname)
 	}
+	for _, u := range ctx.UserdefFields {
+		l.AddUserdef(u)
+	}
 	out, err := fs.Create(fname)
 	if err != nil {
 		return err

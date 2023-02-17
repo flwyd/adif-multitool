@@ -20,16 +20,16 @@ package spec
 
 var (
 {{- range .Fields.Fields}}
-	// {{.Identifier}} is a {{.Value "Data Type"}}, {{.Value "Description"}}. {{.Value "Comments"}}
+	// {{.Identifier}} is a {{.DataType}}, {{.Description}}. {{with .Comments}}{{.}}{{end}}
 	{{.Identifier}} = Field{
-		Name: {{.Value "Field Name" | printf "%q"}},
-		Type: {{with $type := .Value "Data Type"}}{{if eq $type "CreditList,AwardList"}}CreditList{{else}}{{$type}}{{end}}DataType{{end}},
-		{{with $enum := .EnumName}}{{if $enum}}EnumName: {{printf "%q" $enum}},{{"\n"}}{{end}}{{end}}
-		{{- with $scope := .EnumScope}}{{if $scope}}EnumScope: {{printf "%q" $scope}},{{"\n"}}{{end}}{{end}}
-		{{- with $head := .Value "Header Field"}}{{if eq "true" $head}}Header: true,{{"\n"}}{{end}}{{end}}
-		{{- with $min := .Value "Minimum Value"}}{{if $min}}Minimum: {{printf "%q" $min}},{{"\n"}}{{end}}{{end}}
-		{{- with $max := .Value "Maximum Value"}}{{if $max}}Maximum: {{printf "%q" $max}},{{"\n"}}{{end}}{{end}}
-		{{- with $imp := .Value "Import-only"}}{{if eq "true" $imp}}ImportOnly: true,{{"\n"}}{{end}}{{end}}
+		Name: {{.FieldName | printf "%q"}},
+		Type: {{with $type := .DataType}}{{if eq $type "CreditList,AwardList"}}CreditList{{else}}{{$type}}{{end}}DataType{{end}},
+		{{with .EnumName}}EnumName: {{printf "%q" .}},{{"\n"}}{{end}}
+		{{- with .EnumScope}}EnumScope: {{printf "%q" .}},{{"\n"}}{{end}}
+		{{- if .HeaderField}}Header: true,{{"\n"}}{{end}}
+		{{- with .MinimumValue}}Minimum: {{printf "%q" .}},{{"\n"}}{{end}}
+		{{- with .MaximumValue}}Maximum: {{printf "%q" .}},{{"\n"}}{{end}}
+		{{- if .ImportOnly}}ImportOnly: true,{{"\n"}}{{end}}
 	}
 {{- end}}
 )

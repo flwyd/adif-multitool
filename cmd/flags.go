@@ -43,6 +43,61 @@ func (f *FieldList) Set(s string) error {
 	return nil
 }
 
+type UserdefFieldList []adif.UserdefField
+
+func (f *UserdefFieldList) String() string {
+	var s []string
+	for _, u := range *f {
+		s = append(s, u.String())
+	}
+	return strings.Join(s, " ")
+}
+
+var userdefFlagFormat = regexp.MustCompile(`^(.+?)(:[[:alpha:]])?(,\{.*\})?$`)
+
+func (f *UserdefFieldList) Set(s string) error {
+	pieces := userdefFlagFormat.FindStringSubmatch(s)
+	if pieces == nil {
+		return fmt.Errorf("userdef field %q does not have format NAME or NAME:T or NAME,{A:B} or NAME,{X,Y,Z}", s)
+	}
+	u := adif.UserdefField{Name: pieces[1]}
+	t := ""
+	if pieces[2] != "" {
+		t = strings.TrimPrefix(pieces[2], ":")
+	}
+	ut, err := adif.DataTypeFromIdentifier(t)
+	if err != nil {
+		return err
+	}
+	u.Type = ut
+	if pieces[3] != "" {
+		if strings.IndexRune(pieces[3], ':') > 0 {
+			if pieces[2] != "" && u.Type != adif.Number {
+				return fmt.Errorf("userdef %q has range but is of type %s", s, u.Type)
+			}
+			u.Type = adif.Number
+			if n, err := fmt.Sscanf(pieces[3], ",{%f:%f}", &u.Min, &u.Max); err != nil || n != 2 {
+				return fmt.Errorf("userdef %q number range does not match \"{X:Y}\"", s)
+			}
+		} else {
+			if pieces[2] == "" {
+				u.Type = adif.Enumeration
+			} else if u.Type != adif.Enumeration && u.Type != adif.String {
+				return fmt.Errorf("userdef %q has enumeration but is of type %s", s, u.Type)
+			}
+			v := strings.TrimSuffix(strings.TrimPrefix(pieces[3], ",{"), "}")
+			u.EnumValues = strings.Split(v, ",")
+		}
+	}
+	if err := u.ValidateSelf(); err != nil {
+		return err
+	}
+	*f = append(*f, u)
+	return nil
+}
+
+func (f *UserdefFieldList) Get() UserdefFieldList { return *f }
+
 type FieldAssignments struct {
 	values   []adif.Field
 	validate func(k, v string) error

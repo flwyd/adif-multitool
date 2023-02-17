@@ -23,18 +23,18 @@ var Cat = Command{Name: "cat", Run: runCat,
 
 func runCat(ctx *Context, args []string) error {
 	// TODO add any needed flags
-	out := adif.NewLogfile()
-	var comments commentCatcher
+	acc := accumulator{Out: adif.NewLogfile(), Ctx: ctx}
 	for _, f := range filesOrStdin(args) {
-		l, err := readFile(ctx, f)
+		l, err := acc.read(f)
 		if err != nil {
 			return err
 		}
-		updateFieldOrder(out, l.FieldOrder)
+		updateFieldOrder(acc.Out, l.FieldOrder)
 		// TODO merge headers and comments
-		out.Records = append(out.Records, l.Records...)
-		comments.read(l, f)
+		acc.Out.Records = append(acc.Out.Records, l.Records...)
 	}
-	comments.write(out)
-	return write(ctx, out)
+	if err := acc.prepare(); err != nil {
+		return err
+	}
+	return write(ctx, acc.Out)
 }

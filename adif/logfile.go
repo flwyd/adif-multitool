@@ -14,9 +14,15 @@
 
 package adif
 
+import (
+	"fmt"
+	"strings"
+)
+
 type Logfile struct {
 	Records    []*Record
 	Header     *Record
+	Userdef    []UserdefField
 	Comment    string
 	Filename   string
 	FieldOrder []string
@@ -34,4 +40,75 @@ func (f *Logfile) String() string {
 		return "(standard input)"
 	}
 	return f.Filename
+}
+
+func (f *Logfile) AddUserdef(u UserdefField) error {
+	for _, x := range f.Userdef {
+		if strings.EqualFold(u.Name, x.Name) {
+			if u.Type != x.Type && (u.Type != Unspecified || x.Type != Unspecified) {
+				return fmt.Errorf("userdef field %s type conflicts with existing %s", u, x)
+			}
+			if len(u.EnumValues) > 0 || len(x.EnumValues) > 0 {
+				seenOld := make(map[string]bool)
+				seenNew := make(map[string]bool)
+				for _, v := range u.EnumValues {
+					seenNew[strings.ToUpper(v)] = true
+				}
+				for _, v := range x.EnumValues {
+					seenOld[strings.ToUpper(v)] = true
+				}
+				var missOld, missNew bool
+				for v := range seenOld {
+					if !seenNew[v] {
+						missOld = true
+					}
+				}
+				for v := range seenNew {
+					if !seenOld[v] {
+						missNew = true
+					}
+				}
+				if missOld && missNew { // neither is a subset of the other
+					return fmt.Errorf("userdef field %s enumeration conflicts with existing %s", u, x)
+				}
+				for _, v := range u.EnumValues {
+					if !seenOld[strings.ToUpper(v)] {
+						x.EnumValues = append(x.EnumValues, v)
+					}
+				}
+			}
+			x.Min = minFloat(x.Min, u.Min)
+			x.Max = maxFloat(x.Max, u.Max)
+			if x.Type == Unspecified {
+				x.Type = u.Type
+			}
+			return nil
+		}
+	}
+	// doesn't match an existing field
+	f.Userdef = append(f.Userdef, u)
+	return nil
+}
+
+func (f *Logfile) GetUserdef(name string) (UserdefField, bool) {
+	for _, u := range f.Userdef {
+		if strings.EqualFold(name, u.Name) {
+			return u, true
+		}
+	}
+	return UserdefField{}, false
+}
+
+func maxFloat(a, b float64) float64 {
+	if a < b {
+		return b
+	}
+	return a
+}
+
+func minFloat(a, b float64) float64 {
+	if a > b {
+		return b
+	}
+	return a
 }

@@ -125,11 +125,20 @@ func updateFieldOrder(l *adif.Logfile, fields []string) {
 	}
 }
 
-type commentCatcher struct {
+type accumulator struct {
+	Out      *adif.Logfile
+	Ctx      *Context
 	comments []string
 }
 
-func (k *commentCatcher) read(l *adif.Logfile, filename string) {
+func (a *accumulator) read(filename string) (*adif.Logfile, error) {
+	l, err := readFile(a.Ctx, filename)
+	if err != nil {
+		return l, err
+	}
+	for _, u := range l.Userdef {
+		a.Out.AddUserdef(u)
+	}
 	if c := l.Comment; c != "" {
 		prefix := "adif-multitool: original comment"
 		if !strings.HasPrefix(c, prefix) {
@@ -138,16 +147,22 @@ func (k *commentCatcher) read(l *adif.Logfile, filename string) {
 			}
 			c = prefix + "\n" + c
 		}
-		k.comments = append(k.comments, c)
+		a.comments = append(a.comments, c)
 	}
+	return l, err
 }
 
-func (k *commentCatcher) write(out *adif.Logfile) {
-	if len(k.comments) == 0 {
-		return
+func (a *accumulator) prepare() error {
+	for _, u := range a.Ctx.UserdefFields {
+		if err := a.Out.AddUserdef(u); err != nil {
+			return err
+		}
 	}
-	if out.Comment != "" {
-		out.Comment += "\n\n"
+	if len(a.comments) > 0 {
+		if a.Out.Comment != "" {
+			a.Out.Comment += "\n\n"
+		}
+		a.Out.Comment += strings.Join(a.comments, "\n\n")
 	}
-	out.Comment += strings.Join(k.comments, "\n\n")
+	return nil
 }

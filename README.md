@@ -51,14 +51,17 @@ prints all of the records in the two `logX.adi` files to the `combined.adi`
 file.
 
 Flags control input and output options.  For example, to print records with
-a UNIX newline between fields, two newlines between records, and use lower
-case for all field names:
+a UNIX newline between fields, two newlines between records, use lower case for
+all field names, and user defined fields `gain_db` (range ±100) and
+`radio_color` (values black, white, or gray):
 
 ```sh
 adifmt cat --adi-field-separator=newline \
   --adi-record-separator=2newline \
   --adi-lower-case \
-  log1.adi
+  --userdef='GAIN_DB,{-100:100}' \
+  --userdef='radio_color,{black,white,gray' \
+  log1.csv
 ```
 
 Multiple input and output formats are supported (currently ADI and ADX per the
@@ -93,10 +96,10 @@ The `select` command prints only a subset of fields.  The `save` command writes
 the input data to a file.  These can be combined:
 
 ```sh
-adifmt fix log1.adi | adifmt select --fields qso_date,time_on,call | adifmt save minimal.adi
+adifmt fix log1.adi | adifmt select --fields qso_date,time_on,call | adifmt save minimal.csv
 ```
 
-creates a file named `minimal.adi` with just the date, time, and callsign from
+creates a file named `minimal.csv` with just the date, time, and callsign from
 each record in the input file `log1.adi`.
 
 ## Features
@@ -114,13 +117,14 @@ Name  | Extension | Notes
 ADI   | `.adi`    | Outputs `IntlString` (Unicode fields) in UTF-8
 ADX   | `.adx`    |
 CSV   | `.csv`    | Comma-separated values; other delimiters like tab supported via the `--csv-field-separator` option
-JSON  | `.json`   | Can parse number and boolean typed data, to write the set the `--json-typed-output` option
+JSON  | `.json`   | Can parse number and boolean typed data, to write these set the `--json-typed-output` option
 
-Input files can have fields with any names, even if they’re not part of the ADIF
-spec.  (Proper user-defined field metadata handling is still TODO.)  ADX XML
+Input files can have fields with any names, even if they’re not part of the
+ADIF spec.  The `--userdef` option will add user-defined field metadata to ADI
+and ADX output specifing type, range, or valid enumeration values.  ADX XML
 tags must be upper case; other formats accept any case field names in input
-files and use `UPPER_SNAKE_CASE` for output.  JSON input files should be
-structured as follows.  `HEADER` is optional.
+files and use `UPPER_SNAKE_CASE` for output by default.  JSON input files should
+be structured as follows; `HEADER` is optional.
 
 ```json
 {
@@ -131,11 +135,11 @@ structured as follows.  `HEADER` is optional.
  "RECORDS": [
   {
    "CALL": "W1AW",
-   "more": "record fields"
+   "more_fields": "record fields"
   },
   {
    "CALL": "NA1SSS",
-   "more": "additional record fields"
+   "more_fields": "additional record fields"
   }
  ]
 }
@@ -176,8 +180,8 @@ the file name; if `--output` is not specified ADI is used.)
 
 #### edit
 
-`adifmt edit` adds, changes, or removes fields in each input record.  Flags can
-be specified multiple times, e.g.
+`adifmt edit` adds, changes, or removes fields in each input record.
+Options can be specified multiple times, e.g.
 `adifmt edit --add my_gridsquare=FN31pr --add "my_name=Hiram Percy Maxim" log.adi`
 
 The `--set` option (`name=value`) changes the value of the given field on all
@@ -216,7 +220,7 @@ format is inferred from the file name or can be given explicitly with
 (and will exit with a non-zero code) if there are no records in the input; this
 allows a chain like `adifmt fix log.adi | adifmt validate | adifmt save
 --overwrite-existing log.adi` which will attempt to fix any errors in `log.adi`
-and save back to the same file but which won’t touch it if validation still
+and save back to the same file, but which won’t clobber it if validation still
 fails.  Writing a zero-record file can be forced with `--write-if-empty`.
 
 #### select
@@ -253,10 +257,10 @@ only warnings), the input will be printed to standard output as in
 [`cat`](#cat) and exit status is `1`.  If the output format is ADI or ADX,
 warnings will be included as record-level comments in the output.
 
-Validations include field type syntax like number and date formats;
-enumeration values like modes and bands, and number ranges.  The ADIF
+Validations include field type syntax (e.g. number and date formats);
+enumeration values (e.g. modes and bands), and number ranges.  The ADIF
 specification allows some fields to have values which do not match the
-enumerated options, for example for `SUBMODE` it says “use enumeration values
+enumerated options, for example the `SUBMODE` field says “use enumeration values
 for interoperability” but the type is string, allowing any value.  These
 warnings will be printed to standard error with `adifmt validate` but will not
 block the logfile from being printed to standard output.
@@ -265,8 +269,8 @@ Some but not all validation errors can be corrected with [`adifmt fix`](#fix).
 
 #### version
 
-`adifmt version` prints the version number of the installed program and a URL
-to learn more.
+`adifmt version` prints the version number of the installed program, the ADIF
+specification version, and URLs to learn more.
 
 ### Future features (under construction)
 
@@ -275,7 +279,7 @@ ADIF Multitool was created because I was recording
 them into a spreadsheet. I needed a way to convert exported CSV files into ADIF
 format for upload to [the POTA website](https://pota.app/) while fixing
 incompatibilities between the spreadsheet data format and the expected ADIF
-structure. I decided to solve this problem with a “Swiss Army knife for ADIF
+structure.  I decided to solve this problem with a “Swiss Army knife for ADIF
 files” following the
 [Unix pipeline philosophy](https://en.wikipedia.org/wiki/Pipeline_\(Unix\)) of
 simple tools that do one thing and can be easily composed together to build more
@@ -310,8 +314,9 @@ Features I plan to add:
     `--output=csv`, piping the output to `wc -l`, and subtracting 1 for the
     header row.)  This could match the format of the “Report” comment in the
     test QSOs file produced with the ADIF spec.
-*   Proper handling for user-defined field metadata.
+*   Proper handling for application-defined fields.
 *   Maybe convert to and from Cabrillo format for contests?
+*   TSV as a file format (without support for multi-line strings)?
 
 ### Non-goals
 
@@ -325,7 +330,8 @@ software will be needed.
 *   Live logging. `adifmt` is meant for processing logs that have already been
     created, not for logging contacts as they happen over the air. There are
     many fine amateur radio logging programs, most of which can export ADIF
-    files that `adifmt` can process.
+    files that `adifmt` can process.  You could also keep logs in a text file,
+    massage it to a CSV, and then process it with `adifmt`.
 
 ## Scripting and compatibility
 
@@ -337,7 +343,7 @@ websites, consider automating that process with `adifmt`.
 ADIF Multitool is still “version zero” and the command line interface should be
 considered unstable.  If you use v0 `adifmt` in a script or other program, be
 prepared to update your code if commands or options change.  In particular, use
-GNU-style double dashes for options () rather than Go-style single
+GNU-style double dashes for options (`--input`) rather than Go-style single
 dashes (`-input`); the program may change to a GNU/POSIX-style flag-parsing
 library which requires double dashes.
 
@@ -345,10 +351,15 @@ The `adif` and `cmd` packages should be considered “less stable” than the CL
 during the v0 phase and may undergo significant change.  Use of those packages
 in your own program should only be done with significant tolerance to churn.
 
+The v1 and future releases will follow [Semantic Versioning](https:///semver.org/)
+and any breaking changes to the CLI or public Go APIs will need to wait for v2.
+ADIF spec updates and new features will lead to a new minor version and bug
+fixes will increment the patch number.
+
 ## Contributions welcome
 
-ADIF Multitool is open source, using the Apache 2.0 license. It is written in
-the [Go programming language](https://go.dev/). Bug fixes, new features, and
+ADIF Multitool is open source, using the Apache 2.0 license.  It is written in
+the [Go programming language](https://go.dev/).  Bug fixes, new features, and
 other contributions are welcome; please read the [contributing](CONTRIBUTING.md)
 and [code of conduct](CODE_OF_CONDUCT.md) pages.
 
@@ -360,8 +371,7 @@ notice.  If you find this useful as a library, please let me know.
 
 Every file containing source code must include copyright and license
 information.  Use the [`addlicense` tool](https://github.com/google/addlicense)
-to ensure it’s present when adding files:
-`addlicense -c “Google LLC” -l apache .`
+to ensure it’s present when adding files: `addlicense .`
 
 Apache header:
 
