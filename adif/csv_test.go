@@ -35,7 +35,7 @@ func TestEmptyCSV(t *testing.T) {
 
 func TestReadCSV(t *testing.T) {
 	input := `QSO_DATE,TIME_ON,BAND,CALLSIGN,NAME
-19901031,1234,40M,W1AW,Hiram Percey Maxim
+19901031,1234,40M,W1AW,Hiram Percy Maxim
 20221224,095846,1.25cm,N0P,Santa Claus
 `
 	wantFields := [][]Field{
@@ -44,7 +44,7 @@ func TestReadCSV(t *testing.T) {
 			{Name: "TIME_ON", Value: "1234"},
 			{Name: "BAND", Value: "40M"},
 			{Name: "CALLSIGN", Value: "W1AW"},
-			{Name: "NAME", Value: "Hiram Percey Maxim"},
+			{Name: "NAME", Value: "Hiram Percy Maxim"},
 		},
 		{
 			{Name: "QSO_DATE", Value: "20221224"},
@@ -78,7 +78,7 @@ func TestWriteCSV(t *testing.T) {
 		Field{Name: "TIME_ON", Value: "1234", Type: Time},
 		Field{Name: "BAND", Value: "40M"},
 		Field{Name: "CALLSIGN", Value: "W1AW"},
-		Field{Name: "NAME", Value: "Hiram Percey Maxim", Type: String},
+		Field{Name: "NAME", Value: "Hiram Percy Maxim", Type: String},
 	))
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "20221224"},
@@ -88,7 +88,7 @@ func TestWriteCSV(t *testing.T) {
 		Field{Name: "NAME", Value: "Santa Claus"},
 	))
 	want := `QSO_DATE,TIME_ON,BAND,CALLSIGN,NAME
-19901031,1234,40M,W1AW,Hiram Percey Maxim
+19901031,1234,40M,W1AW,Hiram Percy Maxim
 20221224,095846,1.25cm,N0P,Santa Claus
 `
 	csv := NewCSVIO()

@@ -51,7 +51,7 @@ func TestReadJSON(t *testing.T) {
 		"RECORDS": [
 		{
 "QSO_DATE": "19901031", "TIME_ON": "1234",  "BAND": "40M","CALLSIGN": "W1AW",
-"NAME": "Hiram Percey Maxim" },
+"NAME": "Hiram Percy Maxim" },
 {
 	"QSO_DATE": 20221224,
 	"TIME_ON": "095846",
@@ -75,7 +75,7 @@ func TestReadJSON(t *testing.T) {
 			Field{Name: "TIME_ON", Value: "1234"},
 			Field{Name: "BAND", Value: "40M"},
 			Field{Name: "CALLSIGN", Value: "W1AW"},
-			Field{Name: "NAME", Value: "Hiram Percey Maxim"},
+			Field{Name: "NAME", Value: "Hiram Percy Maxim"},
 		),
 		NewRecord(Field{Name: "QSO_DATE", Value: "20221224", Type: Number},
 			Field{Name: "TIME_ON", Value: "095846"},
@@ -113,7 +113,7 @@ func TestWriteJSON(t *testing.T) {
 		Field{Name: "TIME_ON", Value: "1234", Type: Time},
 		Field{Name: "BAND", Value: "40M"},
 		Field{Name: "CALLSIGN", Value: "W1AW"},
-		Field{Name: "NAME", Value: "Hiram Percey Maxim", Type: String},
+		Field{Name: "NAME", Value: "Hiram Percy Maxim", Type: String},
 	))
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "20221224"},
@@ -149,7 +149,7 @@ Inverted L antenna, < 70' above ground
   {
    "BAND": "40M",
    "CALLSIGN": "W1AW",
-   "NAME": "Hiram Percey Maxim",
+   "NAME": "Hiram Percy Maxim",
    "QSO_DATE": "19901031",
    "TIME_ON": "1234"
   },

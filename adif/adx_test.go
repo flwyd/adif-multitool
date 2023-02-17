@@ -57,7 +57,7 @@ func TestReadADX(t *testing.T) {
 		<RECORDS>
 		<RECORD>
 <QSO_DATE>19901031</QSO_DATE> <TIME_ON>1234</TIME_ON>  <BAND>40M</BAND><CALLSIGN>W1AW</CALLSIGN>
-<NAME>Hiram Percey Maxim</NAME> </RECORD>
+<NAME>Hiram Percy Maxim</NAME> </RECORD>
 <RECORD>
 	<QSO_DATE TYPE="D">20221224<!--Field comment #1--></QSO_DATE>
 	<TIME_ON TYPE="T">095846</TIME_ON>
@@ -86,7 +86,7 @@ Inverted L antenna, 70' above ground
 			{Name: "TIME_ON", Value: "1234"},
 			{Name: "BAND", Value: "40M"},
 			{Name: "CALLSIGN", Value: "W1AW"},
-			{Name: "NAME", Value: "Hiram Percey Maxim"},
+			{Name: "NAME", Value: "Hiram Percy Maxim"},
 		},
 		{
 			{Name: "QSO_DATE", Value: "20221224", Type: Date},
@@ -152,7 +152,7 @@ func TestWriteADX(t *testing.T) {
 		Field{Name: "TIME_ON", Value: "1234", Type: Time},
 		Field{Name: "BAND", Value: "40M"},
 		Field{Name: "CALLSIGN", Value: "W1AW"},
-		Field{Name: "NAME", Value: "Hiram Percey Maxim", Type: String},
+		Field{Name: "NAME", Value: "Hiram Percy Maxim", Type: String},
 	))
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "20221224"},
@@ -202,7 +202,7 @@ Inverted L antenna, 70' above ground
       <TIME_ON TYPE="T">1234</TIME_ON>
       <BAND>40M</BAND>
       <CALLSIGN>W1AW</CALLSIGN>
-      <NAME TYPE="S">Hiram Percey Maxim</NAME>
+      <NAME TYPE="S">Hiram Percy Maxim</NAME>
     </RECORD>
     <RECORD>
       <!--Record comment-->

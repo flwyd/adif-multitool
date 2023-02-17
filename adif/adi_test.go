@@ -39,7 +39,7 @@ func TestReadADI(t *testing.T) {
 	input := `Generated today <ADIF_VER:5>3.1.4 <CREATED_TIMESTAMP:15>20220102 153456 <PROGRAMID:11>adi_test <USERDEF1:8:S>My Field <PROGRAMVERSION:5>1.2.3
 <USERDEF2:19:E>SweaterSize,{S,M,L} <userdef3:15:N>shoesize,{5:20} <EOH>
 <QSO_DATE:8>19901031 <TIME_ON:4>1234  <BAND:3>40M<CALLSIGN:4>W1AW
-<NAME:18>Hiram Percey Maxim <EOR>
+<NAME:17>Hiram Percy Maxim <EOR>
 
 <qso_datE:8:D>20221224
 Field comment #1 <time_ON:6:T>095846
@@ -65,7 +65,7 @@ Comment at &lt;end&gt; of file.
 			{Name: "TIME_ON", Value: "1234"},
 			{Name: "BAND", Value: "40M"},
 			{Name: "CALLSIGN", Value: "W1AW"},
-			{Name: "NAME", Value: "Hiram Percey Maxim"},
+			{Name: "NAME", Value: "Hiram Percy Maxim"},
 		},
 		{
 			{Name: "QSO_DATE", Value: "20221224", Type: Date},
@@ -124,7 +124,7 @@ func TestWriteADI(t *testing.T) {
 		Field{Name: "TIME_ON", Value: "1234", Type: Time},
 		Field{Name: "BAND", Value: "40M"},
 		Field{Name: "CALLSIGN", Value: "W1AW"},
-		Field{Name: "NAME", Value: "Hiram Percey Maxim", Type: String},
+		Field{Name: "NAME", Value: "Hiram Percy Maxim", Type: String},
 	))
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "20221224"},
@@ -158,7 +158,7 @@ Inverted L antenna, 70' above ground
 	}
 	want := `ADI format, see https://adif.org.uk/
 <ADIF_VER:5>3.1.4 <PROGRAMID:8>adi_test <PROGRAMVERSION:5>1.2.3 <CREATED_TIMESTAMP:15>20220102 153456 <USERDEF1:8:S>MY FIELD <USERDEF2:19:E>sweatersize,{S,M,L} <USERDEF3:15:N>ShoeSize,{5:20} <EOH>
-<QSO_DATE:8:D>19901031 <TIME_ON:4:T>1234 <BAND:3>40M <CALLSIGN:4>W1AW <NAME:18:S>Hiram Percey Maxim <EOR>
+<QSO_DATE:8:D>19901031 <TIME_ON:4:T>1234 <BAND:3>40M <CALLSIGN:4>W1AW <NAME:17:S>Hiram Percy Maxim <EOR>
 Record comment <QSO_DATE:8>20221224 <TIME_ON:6>095846 <BAND:6:E>1.25cm <CALLSIGN:3:S>N0P <NAME:11>Santa Claus <MY FIELD:12>{!@#}, ($%^) <EOR>
 <QSO_DATE:8:D>19190219 <RIG:82:M>100 watt C.W.
 Armstrong regenerative circuit

@@ -22,7 +22,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-const adiFile = `<CALL:4>W1AW <QSO_DATE:8>19870605 <NAME:18>Hiram Maxim Percey <FOO:16>Talked about Foo <EMPTY_FIELD:0> <EOR>
+const adiFile = `<CALL:4>W1AW <QSO_DATE:8>19870605 <NAME:17>Hiram Maxim Percy <FOO:16>Talked about Foo <EMPTY_FIELD:0> <EOR>
 <CALL:3>N0P <QSO_DATE:8>20221224 <NAME:11>Santa Claus <EMPTY_FIELD:0> <BAND:3>80m <EOR>
 `
 
@@ -54,7 +54,7 @@ func TestSelectSingleFile(t *testing.T) {
 		{fields: []string{"band"}, want: "BAND\n80m\n"},
 		{fields: []string{"EMPTY_FIELD"}, want: "EMPTY_FIELD\n\n\n"},
 		{fields: []string{"NOT_PRESENT"}, want: "NOT_PRESENT\n"},
-		{fields: []string{"NAME", "CALL"}, want: "NAME,CALL\nHiram Maxim Percey,W1AW\nSanta Claus,N0P\n"},
+		{fields: []string{"NAME", "CALL"}, want: "NAME,CALL\nHiram Maxim Percy,W1AW\nSanta Claus,N0P\n"},
 		{fields: []string{"band", "qso_date"}, want: "BAND,QSO_DATE\n,19870605\n80m,20221224\n"},
 	}
 	adi := adif.NewADIIO()
