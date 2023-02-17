@@ -41,9 +41,9 @@ func (f adxField) IsUserdef() bool {
 func (f adxField) Field() Field {
 	// TODO figure out app-specific fields
 	if f.IsUserdef() {
-		return Field{Name: f.FieldName, Value: f.Value, Type: typeIdentifiers[f.Type]}
+		return Field{Name: f.FieldName, Value: f.Value, Type: typeIndicators[f.Type]}
 	}
-	return Field{Name: f.XMLName.Local, Value: f.Value, Type: typeIdentifiers[f.Type]}
+	return Field{Name: f.XMLName.Local, Value: f.Value, Type: typeIndicators[f.Type]}
 }
 
 func (f adxField) UserdefField() (UserdefField, error) {
@@ -56,7 +56,7 @@ func (f adxField) UserdefField() (UserdefField, error) {
 	}
 	u.Name = f.Value
 	if f.Type != "" {
-		t, err := DataTypeFromIdentifier(f.Type)
+		t, err := DataTypeFromIndicator(f.Type)
 		if err != nil {
 			return u, fmt.Errorf("%s: unknown type identifier %s: %w", f.FieldName, f.Type, err)
 		}
@@ -81,7 +81,7 @@ func newAdxField(f Field) adxField {
 	return adxField{
 		XMLName: xml.Name{Local: f.Name},
 		Value:   f.Value,
-		Type:    f.Type.Identifier(),
+		Type:    f.Type.Indicator(),
 	}
 }
 
@@ -91,7 +91,7 @@ func newAdxUserdefField(f Field) adxField { // for use in records
 		XMLName:   xml.Name{Local: "USERDEF"},
 		FieldName: f.Name,
 		Value:     f.Value,
-		Type:      f.Type.Identifier()}
+		Type:      f.Type.Indicator()}
 }
 
 func newAdxUserdef(u UserdefField, id int) adxField { // for use in header
@@ -99,7 +99,7 @@ func newAdxUserdef(u UserdefField, id int) adxField { // for use in header
 		XMLName: xml.Name{Local: "USERDEF"},
 		FieldID: strconv.FormatInt(int64(id), 10),
 		Value:   strings.ToUpper(u.Name),
-		Type:    u.Type.Identifier()}
+		Type:    u.Type.Indicator()}
 	if u.Min != 0.0 || u.Max != 0.0 {
 		f.Range = formatRange(u)
 	}

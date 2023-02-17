@@ -65,9 +65,9 @@ func fieldType(f adif.Field) spec.DataType {
 	if fs, ok := spec.Fields[strings.ToUpper(f.Name)]; ok {
 		return fs.Type
 	}
-	if f.Type.Identifier() != "" {
+	if f.Type.Indicator() != "" {
 		for _, dt := range spec.DataTypes {
-			if dt.Indicator == f.Type.Identifier() {
+			if dt.Indicator == f.Type.Indicator() {
 				return dt
 			}
 		}

@@ -65,7 +65,7 @@ func (f *UserdefFieldList) Set(s string) error {
 	if pieces[2] != "" {
 		t = strings.TrimPrefix(pieces[2], ":")
 	}
-	ut, err := adif.DataTypeFromIdentifier(t)
+	ut, err := adif.DataTypeFromIndicator(t)
 	if err != nil {
 		return err
 	}

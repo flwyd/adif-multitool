@@ -36,14 +36,14 @@ func TestDataTypeNames(t *testing.T) {
 
 func TestDataTypeIndicators(t *testing.T) {
 	for _, id := range []string{"S", "I", "M", "G", "E", "B", "N", "D", "T", "L"} {
-		want, err := adif.DataTypeFromIdentifier(id)
+		want, err := adif.DataTypeFromIndicator(id)
 		if err != nil {
 			t.Fatalf("%q is not an adif.DataType indicator", id)
 		}
 		if got, ok := DataTypes[id]; !ok {
 			t.Errorf("DataTypes[%q] missing", id)
-		} else if got.Indicator != want.Identifier() {
-			t.Errorf("DataTypes[%q].Indicator got %q, want %q", id, got.Indicator, want.Identifier())
+		} else if got.Indicator != want.Indicator() {
+			t.Errorf("DataTypes[%q].Indicator got %q, want %q", id, got.Indicator, want.Indicator())
 		}
 	}
 }

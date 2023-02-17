@@ -34,7 +34,7 @@ func (u UserdefField) String() string {
 	sb.WriteString(strings.ToUpper(u.Name))
 	if u.Type != Unspecified {
 		sb.WriteRune(':')
-		sb.WriteString(u.Type.Identifier())
+		sb.WriteString(u.Type.Indicator())
 	}
 	if u.Min != 0.0 || u.Max != 0.0 {
 		sb.WriteString(fmt.Sprintf("={%v,%v}", u.Min, u.Max))

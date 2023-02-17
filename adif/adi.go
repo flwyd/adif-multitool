@@ -108,7 +108,7 @@ func (o *ADIIO) Read(in io.Reader) (*Logfile, error) {
 				}
 				udparts := strings.SplitN(string(v), ",", 2)
 				u := UserdefField{Name: udparts[0]}
-				u.Type, err = DataTypeFromIdentifier(tag[2])
+				u.Type, err = DataTypeFromIndicator(tag[2])
 				if err != nil {
 					return nil, fmt.Errorf("%v from <%s", err, s)
 				}
@@ -132,7 +132,7 @@ func (o *ADIIO) Read(in io.Reader) (*Logfile, error) {
 				// as long as the tag length is accurate in bytes
 				f := Field{Name: tag[0], Value: string(v)}
 				if len(tag) == 3 {
-					f.Type, err = DataTypeFromIdentifier(tag[2])
+					f.Type, err = DataTypeFromIndicator(tag[2])
 					if err != nil {
 						return nil, fmt.Errorf("%v from <%s", err, s)
 					}
@@ -241,7 +241,7 @@ func (o *ADIIO) writeField(f Field, b *bufio.Writer) error {
 	if f.Type == Unspecified {
 		tag = fmt.Sprintf("<%s:%d>", o.fixCase(f.Name), len(f.Value))
 	} else {
-		tag = fmt.Sprintf("<%s:%d:%s>", o.fixCase(f.Name), len(f.Value), o.fixCase(f.Type.Identifier()))
+		tag = fmt.Sprintf("<%s:%d:%s>", o.fixCase(f.Name), len(f.Value), o.fixCase(f.Type.Indicator()))
 	}
 	if _, err := b.WriteString(fmt.Sprintf("%s%s%s", tag, f.Value, o.FieldSep.Val())); err != nil {
 		return fmt.Errorf("error writing %s: %w", f, err)

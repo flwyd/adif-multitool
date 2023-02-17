@@ -34,10 +34,10 @@ const (
 	Date
 	Time
 	Location
-	// TODO add types without data type identifiers? e.g. Character, Digit, GridSquare
+	// TODO add types without data type indicators? e.g. Character, Digit, GridSquare
 )
 
-var typeIdentifiers = map[string]DataType{
+var typeIndicators = map[string]DataType{
 	"":  Unspecified,
 	"M": MultilineString, "G": IntlMultilineString,
 	"S": String, "I": IntlString,
@@ -45,15 +45,15 @@ var typeIdentifiers = map[string]DataType{
 	"D": Date, "T": Time,
 	"L": Location}
 
-func DataTypeFromIdentifier(id string) (DataType, error) {
-	t, ok := typeIdentifiers[strings.ToUpper(id)]
+func DataTypeFromIndicator(id string) (DataType, error) {
+	t, ok := typeIndicators[strings.ToUpper(id)]
 	if !ok {
-		return Unspecified, fmt.Errorf("unknown data type identifier %s", id)
+		return Unspecified, fmt.Errorf("unknown data type indicator %s", id)
 	}
 	return t, nil
 }
 
-func (t DataType) Identifier() string {
+func (t DataType) Indicator() string {
 	switch t {
 	case Unspecified:
 		return ""
@@ -83,7 +83,7 @@ func (t DataType) Identifier() string {
 }
 
 func (t DataType) String() string {
-	return t.Identifier() // TODO use go generate
+	return t.Indicator() // TODO use go generate
 }
 
 type Field struct {
@@ -96,5 +96,5 @@ func (f Field) String() string {
 	if f.Type == Unspecified {
 		return fmt.Sprintf("%s=%s", strings.ToUpper(f.Name), f.Value)
 	}
-	return fmt.Sprintf("%s:%s=%s", strings.ToUpper(f.Name), f.Type.Identifier(), f.Value)
+	return fmt.Sprintf("%s:%s=%s", strings.ToUpper(f.Name), f.Type.Indicator(), f.Value)
 }

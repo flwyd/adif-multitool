@@ -69,7 +69,7 @@ func runValidate(ctx *Context, args []string) error {
 							fmt.Fprintf(log, "ERROR on %s record %d: %s\n", l, i, err)
 						}
 					} else { // spec enum validator can't handle userdef enums
-						dt := spec.DataTypes[u.Type.Identifier()]
+						dt := spec.DataTypes[u.Type.Indicator()]
 						fs := spec.Field{Name: u.Name, Type: dt}
 						validateSpec(spec.TypeValidators[dt.Name], fs)
 					}
