@@ -113,7 +113,7 @@ options are configured with option flags.  Formats are inferred from file names
 or can be set explicitly via `--input` and `--output` options.
 
 Name  | Extension | Notes
----- -| --------- | -----
+----- | --------- | -----
 ADI   | `.adi`    | Outputs `IntlString` (Unicode fields) in UTF-8
 ADX   | `.adx`    |
 CSV   | `.csv`    | Comma-separated values; other delimiters like tab supported via the `--csv-field-separator` option
@@ -123,8 +123,10 @@ Input files can have fields with any names, even if they’re not part of the
 ADIF spec.  The `--userdef` option will add user-defined field metadata to ADI
 and ADX output specifing type, range, or valid enumeration values.  ADX XML
 tags must be upper case; other formats accept any case field names in input
-files and use `UPPER_SNAKE_CASE` for output by default.  JSON input files should
-be structured as follows; `HEADER` is optional.
+files and use `UPPER_SNAKE_CASE` for output by default.  Application-defined
+fields in CSV and JSON should use the `APP_PROGRAMNAME_FIELD_NAME` syntax used
+in ADI files. JSON input files should be structured as follows; `HEADER` is
+optional.
 
 ```json
 {
@@ -314,7 +316,6 @@ Features I plan to add:
     `--output=csv`, piping the output to `wc -l`, and subtracting 1 for the
     header row.)  This could match the format of the “Report” comment in the
     test QSOs file produced with the ADIF spec.
-*   Proper handling for application-defined fields.
 *   Maybe convert to and from Cabrillo format for contests?
 *   TSV as a file format (without support for multi-line strings)?
 
@@ -354,7 +355,8 @@ in your own program should only be done with significant tolerance to churn.
 The v1 and future releases will follow [Semantic Versioning](https:///semver.org/)
 and any breaking changes to the CLI or public Go APIs will need to wait for v2.
 ADIF spec updates and new features will lead to a new minor version and bug
-fixes will increment the patch number.
+fixes will increment the patch number.  If you find this useful as a library,
+please let me know.
 
 ## Contributions welcome
 
@@ -362,10 +364,6 @@ ADIF Multitool is open source, using the Apache 2.0 license.  It is written in
 the [Go programming language](https://go.dev/).  Bug fixes, new features, and
 other contributions are welcome; please read the [contributing](CONTRIBUTING.md)
 and [code of conduct](CODE_OF_CONDUCT.md) pages.
-
-If you would like to use the `adif` package in your own Go programs, be aware
-that this code is still in a “version zero” state and APIs may change without
-notice.  If you find this useful as a library, please let me know.
 
 ### Source Code Headers
 

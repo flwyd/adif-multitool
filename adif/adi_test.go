@@ -39,7 +39,7 @@ func TestReadADI(t *testing.T) {
 	input := `Generated today <ADIF_VER:5>3.1.4 <CREATED_TIMESTAMP:15>20220102 153456 <PROGRAMID:11>adi_test <USERDEF1:8:S>My Field <PROGRAMVERSION:5>1.2.3
 <USERDEF2:19:E>SweaterSize,{S,M,L} <userdef3:15:N>shoesize,{5:20} <EOH>
 <QSO_DATE:8>19901031 <TIME_ON:4>1234  <BAND:3>40M<CALLSIGN:4>W1AW
-<NAME:17>Hiram Percy Maxim <EOR>
+<NAME:17>Hiram Percy Maxim <APP_MONOLOG_birth_day:8:D>18690902 <EOR>
 
 <qso_datE:8:D>20221224
 Field comment #1 <time_ON:6:T>095846
@@ -49,6 +49,8 @@ Field comment #2 <name:11:S>Santa Claus
 <MY field:12>{!@#}, ($%^)
 <eor>
 <QSO_date:8>19190219
+<APP_monolog_BIRTH_DAY:8>18960815
+<APP_adifmt_BIRTH_DAY:15:S>August 15, 1896
 <RIG:82:M>100 watt C.W.
 Armstrong regenerative circuit
 Inverted L antenna, 70' above ground
@@ -66,6 +68,7 @@ Comment at &lt;end&gt; of file.
 			{Name: "BAND", Value: "40M"},
 			{Name: "CALLSIGN", Value: "W1AW"},
 			{Name: "NAME", Value: "Hiram Percy Maxim"},
+			{Name: "APP_MONOLOG_BIRTH_DAY", Value: "18690902", Type: TypeDate},
 		},
 		{
 			{Name: "QSO_DATE", Value: "20221224", Type: TypeDate},
@@ -77,6 +80,8 @@ Comment at &lt;end&gt; of file.
 		},
 		{
 			{Name: "QSO_DATE", Value: "19190219"},
+			{Name: "APP_MONOLOG_BIRTH_DAY", Value: "18960815"},
+			{Name: "APP_ADIFMT_BIRTH_DAY", Value: "August 15, 1896", Type: TypeString},
 			{Name: "RIG", Value: `100 watt C.W.
 Armstrong regenerative circuit
 Inverted L antenna, 70' above ground
@@ -125,6 +130,7 @@ func TestWriteADI(t *testing.T) {
 		Field{Name: "BAND", Value: "40M"},
 		Field{Name: "CALLSIGN", Value: "W1AW"},
 		Field{Name: "NAME", Value: "Hiram Percy Maxim", Type: TypeString},
+		Field{Name: "APP_MONOLOG_BIRTH_DAY", Value: "18690902", Type: TypeDate},
 	))
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "20221224"},
@@ -137,6 +143,8 @@ func TestWriteADI(t *testing.T) {
 	l.Records[len(l.Records)-1].SetComment("Record comment")
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "19190219", Type: TypeDate},
+		Field{Name: "APP_MONOLOG_BIRTH_DAY", Value: "18960815"},
+		Field{Name: "APP_ADIFMT_BIRTH_DAY", Value: "August 15, 1896", Type: TypeString},
 		Field{Name: "RIG", Value: `100 watt C.W.
 Armstrong regenerative circuit
 Inverted L antenna, 70' above ground
@@ -158,9 +166,9 @@ Inverted L antenna, 70' above ground
 	}
 	want := `ADI format, see https://adif.org.uk/
 <ADIF_VER:5>3.1.4 <PROGRAMID:8>adi_test <PROGRAMVERSION:5>1.2.3 <CREATED_TIMESTAMP:15>20220102 153456 <USERDEF1:8:S>MY FIELD <USERDEF2:19:E>sweatersize,{S,M,L} <USERDEF3:15:N>ShoeSize,{5:20} <EOH>
-<QSO_DATE:8:D>19901031 <TIME_ON:4:T>1234 <BAND:3>40M <CALLSIGN:4>W1AW <NAME:17:S>Hiram Percy Maxim <EOR>
+<QSO_DATE:8:D>19901031 <TIME_ON:4:T>1234 <BAND:3>40M <CALLSIGN:4>W1AW <NAME:17:S>Hiram Percy Maxim <APP_MONOLOG_BIRTH_DAY:8:D>18690902 <EOR>
 Record comment <QSO_DATE:8>20221224 <TIME_ON:6>095846 <BAND:6:E>1.25cm <CALLSIGN:3:S>N0P <NAME:11>Santa Claus <MY FIELD:12>{!@#}, ($%^) <EOR>
-<QSO_DATE:8:D>19190219 <RIG:82:M>100 watt C.W.
+<QSO_DATE:8:D>19190219 <APP_MONOLOG_BIRTH_DAY:8>18960815 <APP_ADIFMT_BIRTH_DAY:15:S>August 15, 1896 <RIG:82:M>100 watt C.W.
 Armstrong regenerative circuit
 Inverted L antenna, 70' above ground
  <FREQ:5:N>7.654 <CALLSIGN:3:S>1AY <NAME:12:S>"C.G." Tuska <SWEATERSIZE:1>L <SHOESIZE:2>12 <EOR>

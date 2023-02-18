@@ -31,6 +31,7 @@ func runValidate(ctx *Context, args []string) error {
 	// TODO add any needed flags
 	log := os.Stderr
 	var errors, warnings int
+	appFields := make(map[string]adif.DataType)
 	out := adif.NewLogfile()
 	acc := accumulator{Out: out, Ctx: ctx}
 	for _, f := range filesOrStdin(args) {
@@ -39,11 +40,19 @@ func runValidate(ctx *Context, args []string) error {
 			return err
 		}
 		updateFieldOrder(out, l.FieldOrder)
-		// TODO merge headers and comments
 		for i, r := range l.Records {
 			vctx := spec.ValidationContext{}
 			var msgs []string
 			for _, f := range r.Fields() {
+				name := strings.ToUpper(f.Name)
+				if f.IsAppDefined() {
+					if adt := appFields[name]; adt == adif.TypeUnspecified {
+						appFields[name] = f.Type
+					} else if f.Type != adif.TypeUnspecified && f.Type != adt {
+						warnings++
+						fmt.Fprintf(log, "WARNING on %s record %d: inconsistent types for %s\n", l, i, f.Name)
+					}
+				}
 				if f.Value == "" {
 					continue
 				}
@@ -73,6 +82,9 @@ func runValidate(ctx *Context, args []string) error {
 						fs := spec.Field{Name: u.Name, Type: dt}
 						validateSpec(spec.TypeValidators[dt.Name], fs)
 					}
+				} else if f.IsAppDefined() {
+					fs := spec.Field{Name: f.Name, Type: spec.DataTypes[appFields[name].Indicator()]}
+					validateSpec(spec.TypeValidators[fs.Type.Name], fs)
 				}
 				if len(msgs) > 0 {
 					r.SetComment("adif-multitool: validate warnings: " + strings.Join(msgs, "; "))

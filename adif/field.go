@@ -103,3 +103,7 @@ func (f Field) String() string {
 	}
 	return fmt.Sprintf("%s:%s=%s", strings.ToUpper(f.Name), f.Type.Indicator(), f.Value)
 }
+
+func (f Field) IsAppDefined() bool {
+	return strings.HasPrefix(strings.ToUpper(f.Name), "APP_")
+}

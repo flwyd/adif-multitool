@@ -34,16 +34,22 @@ type adxField struct {
 	Comment   string `xml:",comment"`
 }
 
-func (f adxField) IsUserdef() bool {
-	return f.XMLName.Local == "USERDEF"
-}
+func (f adxField) IsUserdef() bool { return f.XMLName.Local == "USERDEF" }
+
+func (f adxField) IsAppDefined() bool { return f.XMLName.Local == "APP" }
 
 func (f adxField) Field() Field {
-	// TODO figure out app-specific fields
-	if f.IsUserdef() {
-		return Field{Name: f.FieldName, Value: f.Value, Type: typeIndicators[f.Type]}
+	dt, err := DataTypeFromIndicator(f.Type)
+	if err != nil {
+		dt = TypeUnspecified
 	}
-	return Field{Name: f.XMLName.Local, Value: f.Value, Type: typeIndicators[f.Type]}
+	if f.IsUserdef() {
+		return Field{Name: f.FieldName, Value: f.Value, Type: dt}
+	}
+	if f.IsAppDefined() {
+		return Field{Name: fmt.Sprintf("APP_%s_%s", f.ProgramID, f.FieldName), Value: f.Value, Type: dt}
+	}
+	return Field{Name: f.XMLName.Local, Value: f.Value, Type: dt}
 }
 
 func (f adxField) UserdefField() (UserdefField, error) {
@@ -77,7 +83,16 @@ func (f adxField) UserdefField() (UserdefField, error) {
 }
 
 func newAdxField(f Field) adxField {
-	// TODO figure out app-specific fields
+	if f.IsAppDefined() {
+		s := strings.SplitN(f.Name, "_", 3)
+		return adxField{
+			XMLName:   xml.Name{Local: "APP"},
+			ProgramID: s[1],
+			FieldName: s[2],
+			Type:      f.Type.Indicator(),
+			Value:     f.Value,
+		}
+	}
 	return adxField{
 		XMLName: xml.Name{Local: f.Name},
 		Value:   f.Value,
@@ -86,7 +101,6 @@ func newAdxField(f Field) adxField {
 }
 
 func newAdxUserdefField(f Field) adxField { // for use in records
-	// TODO figure out app-specific fields
 	return adxField{
 		XMLName:   xml.Name{Local: "USERDEF"},
 		FieldName: f.Name,

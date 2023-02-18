@@ -103,6 +103,10 @@ func TestValidateErrors(t *testing.T) {
 			record: []adif.Field{{Name: "BAND", Value: "70m"}},
 		},
 		{
+			name:   "app-defined field type error",
+			record: []adif.Field{{Name: "APP_MONOLOG_BOOLEAN", Value: "uh-huh", Type: adif.TypeBoolean}},
+		},
+		{
 			name:    "userdef invalid number",
 			record:  []adif.Field{{Name: "LUGGAGE_CODE", Value: "IZEA"}},
 			userdef: []adif.UserdefField{{Name: "LUGGAGE_CODE", Type: adif.TypeNumber}},

@@ -57,7 +57,7 @@ func TestReadADX(t *testing.T) {
 		<RECORDS>
 		<RECORD>
 <QSO_DATE>19901031</QSO_DATE> <TIME_ON>1234</TIME_ON>  <BAND>40M</BAND><CALLSIGN>W1AW</CALLSIGN>
-<NAME>Hiram Percy Maxim</NAME> </RECORD>
+<NAME>Hiram Percy Maxim</NAME> <APP PROGRAMID="MONOLOG" FIELDNAME="birth_day" TYPE="d">18690902</APP></RECORD>
 <RECORD>
 	<QSO_DATE TYPE="D">20221224<!--Field comment #1--></QSO_DATE>
 	<TIME_ON TYPE="T">095846</TIME_ON>
@@ -68,6 +68,8 @@ func TestReadADX(t *testing.T) {
 </RECORD>
 <RECORD>
 <QSO_DATE>19190219</QSO_DATE>
+<APP FIELDNAME="BIRTH_DAY" PROGRAMID="monolog">18960815</APP>
+<APP FIELDNAME="BIRTH_DAY" PROGRAMID="adifmt" TYPE="S">August 15, 1896</APP>
 <RIG TYPE="M">100 watt C.W.
 Armstrong regenerative circuit
 Inverted L antenna, 70' above ground
@@ -87,6 +89,7 @@ Inverted L antenna, 70' above ground
 			{Name: "BAND", Value: "40M"},
 			{Name: "CALLSIGN", Value: "W1AW"},
 			{Name: "NAME", Value: "Hiram Percy Maxim"},
+			{Name: "APP_MONOLOG_BIRTH_DAY", Value: "18690902", Type: TypeDate},
 		},
 		{
 			{Name: "QSO_DATE", Value: "20221224", Type: TypeDate},
@@ -98,6 +101,8 @@ Inverted L antenna, 70' above ground
 		},
 		{
 			{Name: "QSO_DATE", Value: "19190219"},
+			{Name: "APP_MONOLOG_BIRTH_DAY", Value: "18960815"},
+			{Name: "APP_ADIFMT_BIRTH_DAY", Value: "August 15, 1896", Type: TypeString},
 			{Name: "RIG", Value: `100 watt C.W.
 Armstrong regenerative circuit
 Inverted L antenna, 70' above ground
@@ -153,6 +158,7 @@ func TestWriteADX(t *testing.T) {
 		Field{Name: "BAND", Value: "40M"},
 		Field{Name: "CALLSIGN", Value: "W1AW"},
 		Field{Name: "NAME", Value: "Hiram Percy Maxim", Type: TypeString},
+		Field{Name: "APP_MONOLOG_birth_day", Value: "18690902", Type: TypeDate},
 	))
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "20221224"},
@@ -165,6 +171,8 @@ func TestWriteADX(t *testing.T) {
 	l.Records[len(l.Records)-1].SetComment("Record comment")
 	l.Records = append(l.Records, NewRecord(
 		Field{Name: "QSO_DATE", Value: "19190219", Type: TypeDate},
+		Field{Name: "APP_monolog_BIRTH_DAY", Value: "18960815"},
+		Field{Name: "APP_adifmt_BIRTH_DAY", Value: "August 15, 1896", Type: TypeString},
 		Field{Name: "RIG", Value: `100 watt C.W.
 Armstrong regenerative circuit
 Inverted L antenna, 70' above ground
@@ -203,6 +211,7 @@ Inverted L antenna, 70' above ground
       <BAND>40M</BAND>
       <CALLSIGN>W1AW</CALLSIGN>
       <NAME TYPE="S">Hiram Percy Maxim</NAME>
+      <APP TYPE="D" FIELDNAME="BIRTH_DAY" PROGRAMID="MONOLOG">18690902</APP>
     </RECORD>
     <RECORD>
       <!--Record comment-->
@@ -215,6 +224,8 @@ Inverted L antenna, 70' above ground
     </RECORD>
     <RECORD>
       <QSO_DATE TYPE="D">19190219</QSO_DATE>
+      <APP FIELDNAME="BIRTH_DAY" PROGRAMID="MONOLOG">18960815</APP>
+      <APP TYPE="S" FIELDNAME="BIRTH_DAY" PROGRAMID="ADIFMT">August 15, 1896</APP>
       <RIG TYPE="M">100 watt C.W.&#xA;Armstrong regenerative circuit&#xA;Inverted L antenna, 70&#39; above ground&#xA;</RIG>
       <FREQ TYPE="N">7.654</FREQ>
       <CALLSIGN TYPE="S">1AY</CALLSIGN>
