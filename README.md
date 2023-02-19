@@ -204,14 +204,14 @@ to UTC (Zulu time) with `adifmt edit --time-zone-from Australia/Sydney file.csv`
 `adifmt fix` coerces some fields into the format dictated by the ADIF
 specification.  The rule of thumb for default fixes is that they should be
 unsurprising to almost anyone, like converting `3:45 PM` to `1545` for a time
-field.  Currently only date and time fields are coerced, and dates must already
-be in year, month, day order.  In the future, other formats may be fixable,
-including varieties of the Boolean data types, decimal coordinates to
-degrees/minutes/seconds, forcing some string fields to upper case, and perhaps
-correcting some common variations on enum fields, e.g. `USA` →
-`UNITED STATES OF AMERICA`.  A future update will also provide options like date
-formats so that day/month/year or month/day/year input data can be unambiguously
-fixed.
+field.  Currently only date, time, and location fields are coerced.  Dates must
+already be in year, month, day order.  Location fields can be converted from
+decimal (GPS) coordinates to degrees/minutes.  In the future, other formats may
+be fixable, including varieties of the Boolean data types, forcing some string
+fields to upper case, and perhaps correcting some common variations on enum
+fields, e.g. `USA` → `UNITED STATES OF AMERICA`.  A future update will also
+provide options like date formats so that day/month/year or month/day/year
+input data can be unambiguously fixed.
 
 #### save
 

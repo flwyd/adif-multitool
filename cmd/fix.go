@@ -15,7 +15,10 @@
 package cmd
 
 import (
+	"fmt"
+	"math"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -39,35 +42,55 @@ func runFix(ctx *Context, args []string) error {
 		}
 		updateFieldOrder(out, l.FieldOrder)
 		for _, rec := range l.Records {
-			out.Records = append(out.Records, fixRecord(rec))
+			out.Records = append(out.Records, fixRecord(rec, l))
 		}
 	}
 	if err := acc.prepare(); err != nil {
 		return err
 	}
+	// fix again in case userdef fields were added
+	for _, r := range out.Records {
+		for _, f := range r.Fields() {
+			ff := fixField(f, out)
+			if f != ff {
+				r.Set(ff)
+			}
+		}
+	}
 	return write(ctx, out)
 }
 
-func fixRecord(r *adif.Record) *adif.Record {
+func fixRecord(r *adif.Record, l *adif.Logfile) *adif.Record {
 	fields := r.Fields()
 	for i, f := range fields {
-		if fieldType(f) == spec.DateDataType {
-			f.Value = fixDate(f.Value)
-		} else if fieldType(f) == spec.TimeDataType {
-			f.Value = fixTime(f.Value)
-		}
-		fields[i] = f
+		fields[i] = fixField(f, l)
 	}
 	return adif.NewRecord(fields...)
 }
 
-func fieldType(f adif.Field) spec.DataType {
+func fixField(f adif.Field, l *adif.Logfile) adif.Field {
+	t := fieldType(f, l)
+	if t == spec.DateDataType {
+		f.Value = fixDate(f.Value)
+	} else if t == spec.TimeDataType {
+		f.Value = fixTime(f.Value)
+	} else if t == spec.LocationDataType {
+		f.Value = fixLocation(f.Value, f.Name)
+	}
+	return f
+}
+
+func fieldType(f adif.Field, l *adif.Logfile) spec.DataType {
 	if fs, ok := spec.Fields[strings.ToUpper(f.Name)]; ok {
 		return fs.Type
 	}
-	if f.Type.Indicator() != "" {
+	t := f.Type
+	if u, ok := l.GetUserdef(f.Name); ok {
+		t = u.Type
+	}
+	if t.Indicator() != "" {
 		for _, dt := range spec.DataTypes {
-			if dt.Indicator == f.Type.Indicator() {
+			if dt.Indicator == t.Indicator() {
 				return dt
 			}
 		}
@@ -118,4 +141,52 @@ func fixTime(t string) string {
 		}
 	}
 	return t
+}
+
+var gpsPattern = regexp.MustCompile(`^[-+]?\d{1,3}\.\d+$`)
+
+func fixLocation(l, name string) string {
+	l = strings.TrimSpace(l)
+	if l == "" {
+		return l
+	}
+	if gpsPattern.MatchString(l) {
+		f, err := strconv.ParseFloat(l, 64)
+		if err != nil {
+			return l
+		}
+		var dir rune
+		name = strings.ToUpper(name)
+		if strings.Contains(name, "LATITUDE") {
+			name = "LAT"
+		} else if strings.Contains(name, "LONGITUDE") {
+			name = "LON"
+		}
+		if strings.Contains(name, "LAT") {
+			if math.Abs(f) > 90.0 {
+				return l
+			}
+			if f >= 0.0 {
+				dir = 'N'
+			} else {
+				dir = 'S'
+			}
+		} else if strings.Contains(name, "LON") {
+			if math.Abs(f) > 180.0 {
+				return l
+			}
+			if f >= 0.0 {
+				dir = 'E'
+			} else {
+				dir = 'W'
+			}
+		} else {
+			return l // can't tell if it's latitude or longitude, so can't set dir
+		}
+		f = math.Abs(f)
+		deg := int(f)
+		min := (f - float64(deg)) * 60.0
+		return fmt.Sprintf("%c%03d %06.3f", dir, deg, min)
+	}
+	return l
 }

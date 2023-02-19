@@ -155,3 +155,51 @@ func TestFixTime(t *testing.T) {
 		}
 	}
 }
+
+func TestFixLocation(t *testing.T) {
+	adi := adif.NewADIIO()
+	csv := adif.NewCSVIO()
+	header := "My Comment\n<ADIF_VER:5>3.1.4 <PROGRAMID:8>fix test <PROGRAMVERSION:5>1.2.3 <USERDEF1:13:L>LONG_LATITUDE <USERDEF2:14:L>LATE_LONGITUDE <EOH>\n"
+	tests := []struct{ name, value, want string }{
+		{name: "LAT", value: "N012 34.567", want: "N012 34.567"},
+		{name: "LON", value: "W123 45.678", want: "W123 45.678"},
+		{name: "MY_LAT", value: "S000 59.987", want: "S000 59.987"},
+		{name: "MY_LON", value: "E009 09.000", want: "E009 09.000"},
+		{name: "LONG_LATITUDE", value: "N089 59.999", want: "N089 59.999"},
+		{name: "LATE_LONGITUDE", value: "E179 00.000", want: "E179 00.000"},
+		// to check deg mm.mmm values see https://pgc.umn.edu/apps/convert/
+		{name: "LAT", value: "12.50123", want: "N012 30.074"},
+		{name: "LON", value: "-123.25987654", want: "W123 15.593"},
+		{name: "MY_LAT", value: "-6.75", want: "S006 45.000"},
+		{name: "MY_LON", value: "0.003", want: "E000 00.180"},
+		{name: "LONG_LATITUDE", value: "9.99999", want: "N009 59.999"},
+		{name: "LATE_LONGITUDE", value: "+179.0", want: "E179 00.000"},
+		// leave out-of-range values alone
+		{name: "LAT", value: "90.0001", want: "90.0001"},
+		{name: "LON", value: "181.123", want: "181.123"},
+		{name: "MY_LAT", value: "-123.456", want: "-123.456"},
+		{name: "MY_LON", value: "-200.1234", want: "-200.1234"},
+	}
+	for _, tc := range tests {
+		out := &bytes.Buffer{}
+		file1 := fmt.Sprintf("LONG_WAVE,%s\n83.54294,%s\n", tc.name, tc.value)
+		ctx := &Context{
+			OutputFormat: adif.FormatADI,
+			Readers:      readers(adi, csv),
+			Writers:      writers(adi, csv),
+			Out:          out,
+			UserdefFields: UserdefFieldList{adif.UserdefField{Name: "LONG_LATITUDE", Type: adif.TypeLocation},
+				adif.UserdefField{Name: "LATE_LONGITUDE", Type: adif.TypeLocation}},
+			Prepare: testPrepare("My Comment", "3.1.4", "fix test", "1.2.3"),
+			fs:      fakeFilesystem{map[string]string{"foo.csv": file1}}}
+		if err := Fix.Run(ctx, []string{"foo.csv"}); err != nil {
+			t.Errorf("Fix.Run(ctx, foo.csv) got error %v", err)
+		} else {
+			got := out.String()
+			want := fmt.Sprintf("%s<LONG_WAVE:8>83.54294 <%s:%d>%s <EOR>\n", header, tc.name, len(tc.want), tc.want)
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Errorf("fix %s=%s want %s got diff %s", tc.name, tc.value, tc.want, diff)
+			}
+		}
+	}
+}
