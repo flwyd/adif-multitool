@@ -18,4 +18,5 @@ type Command struct {
 	Name        string
 	Description string
 	Run         func(ctx *Context, args []string) error
+	Help        func() string
 }

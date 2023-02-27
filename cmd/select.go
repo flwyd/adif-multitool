@@ -22,11 +22,15 @@ import (
 	"github.com/flwyd/adif-multitool/adif"
 )
 
-var Select = Command{Name: "select", Run: runSelect,
-	Description: "Print only specific fields from the input; skip records with no matching fields"}
+var Select = Command{Name: "select", Run: runSelect, Help: helpSelect,
+	Description: "Print only specific fields from the input"}
 
 type SelectContext struct {
 	Fields FieldList
+}
+
+func helpSelect() string {
+	return "Records with no matching fields will be skipped in the output.\n"
 }
 
 func runSelect(ctx *Context, args []string) error {

@@ -23,9 +23,12 @@ import (
 	"github.com/flwyd/adif-multitool/adif/spec"
 )
 
-// TODO write command tests
-var Validate = Command{Name: "validate", Run: runValidate,
+var Validate = Command{Name: "validate", Run: runValidate, Help: helpValidate,
 	Description: "Validate field values; non-zero exit and no stdout if invalid"}
+
+func helpValidate() string {
+	return "Non-failure warnings are added as comments in ADI and ADX output.\n"
+}
 
 func runValidate(ctx *Context, args []string) error {
 	// TODO add any needed flags

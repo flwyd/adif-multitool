@@ -3,22 +3,26 @@
 Validate, modify, and convert ham radio log files with a handy command-line
 tool. 📻🌳🪓
 
-`adifmt` provides a suite of commands for working with [ADIF](https://adif.org/)
-logs from ham radio software. Each `adifmt` invocation reads log files from the
-command line or standard input and prints an ADIF log to standard output,
-allowing multiple commands to be chained together in a pipeline. For example, to
-add a `BAND` field based on the `FREQ` (radio frequency) field, add your
-station's maidenhead locator (`MY_GRIDSQURE`) to all entries, validate that all
-fields are properly formatted, and save a log file containing only SSB voice
-contacts, a pipeline might look like
+`adifmt` provides a suite of commands for working with
+[ADIF](https://adif.org/) logs from ham radio software.  Each `adifmt`
+invocation reads log files from the command line or standard input and prints
+an ADIF log to standard output, allowing multiple commands to be chained
+together in a pipeline.  For example, to add a `BAND` field based on the `FREQ`
+(radio frequency) field, add your station's maidenhead locator (`MY_GRIDSQURE`)
+to all entries, automatically fix some incorrectly formatted fields, validate
+that all fields are properly formatted, and save a log file containing only SSB
+voice contacts, a pipeline might look like
 
 ```sh
-adifmt infer --field band my_original_log.adi \
+adifmt infer --fields band my_original_log.adi \
   | adifmt edit --add my_gridsquare=FN31pr \
+  | adifmt fix \
+  | adifmt validate \
   | adifmt filter --field mode=SSB \
-  | adifmt validate
   | adifmt save my_ssb_log.adx
 ```
+
+*(The `filter` command is not yet implemented.)*
 
 *Note*: `adifmt` is pronounced “ADIF M T” or “ADIF multitool”, not “adi fmt” nor
 ”addy format”.
@@ -159,14 +163,17 @@ Name       | Description |
 `edit`     | Add, change, remove, or adjust field values |
 `fix`      | Correct field formats to match the ADIF specification |
 `help`     | Print program or command usage information |
+`infer`    | Add missing fields based on present fields |
 `save`     | Save standard input to file with format inferred by extension |
-`select`   | Print only specific fields from the input; skip records with no matching fields |
+`select`   | Print only specific fields from the input |
 `validate` | Validate field values; non-zero exit and no stdout if invalid |
 `version`  | Print program version information |
 
+`adifmt help` will also show this list.
+
 #### help
 
-`adifmt help` prints usage information and a list of available commands and
+`adifmt help` prints usage information, a list of available commands, and
 options which apply to any command.  `adifmt help cmd` prints usage information
 about and options for command `cmd`.  There are a lot of options, so consider
 running `adifmt help | less`.
@@ -213,6 +220,48 @@ fields, e.g. `USA` → `UNITED STATES OF AMERICA`.  A future update will also
 provide options like date formats so that day/month/year or month/day/year
 input data can be unambiguously fixed.
 
+#### infer
+
+`adifmt infer` guesses the value for fields which are not present in a record.
+Field names to infer are given by the `-fields` option, which can be repeated
+multiple times and/or comma-separated.  Fields in the list will not be changed
+if they are present in a record with a non-empty value.
+
+`SIG_INFO` and `MY_SIG_INFO` are handled specially.  If `SIG`/`MY_SIG` is is
+present, that value determines which field to use for `SIG_INFO`/`MY_SIG_INFO`.
+For example, if `SIG` is `SOTA`, `SIG_INFO` will be set to the value of
+`SOTA_REF` even if `POTA_REF` is also present.  If `SIG`/`MY_SIG` is absent,
+all special activity fields (IOTA, POTA, SOTA, WWFF) will be checked.  If
+exactly one of them is present, that value will be used for
+`SIG_INFO`/`MY_SIG_INFO` and `SIG`/`MY_SIG` will be set to the activity name.
+If (`MY_`)`SIG` is set to a special interest activity or event that does not
+have a dedicated ADIF field (e.g. 13 Colonies, Volunteers on the Air),
+(`MY_`)`SIG_INFO` will not be inferred.
+
+Inferable fields:
+
+* `BAND` from `FREQ`
+* `BAND_RX` from `FREQ_RX`
+* `MODE` from `SUBMODE`
+* `COUNTRY` from `DXCC`
+* `MY_COUNTRY` from `MY_DXCC`
+* `DXCC` from `COUNTRY`
+* `MY_DXCC` from `MY_COUNTRY`
+* `GRIDSQUARE` and `GRIDSQUARE_EXT` from `LAT`/`LON`
+* `MY_GRIDSQUARE` and `MY_GRIDSQUARE_EXT` from `MY_LAT`/`MY_LON`
+* `OPERATOR` from `GUEST_OP`
+* `STATION_CALLSIGN` from `OPERATOR` or `GUEST_OP`
+* `OWNER_CALLSIGN` from `STATION_CALLSIGN`, `OPERATOR`, or `GUEST_OP`
+* `SIG_INFO` from one of `IOTA`, `POTA_REF`, `SOTA_REF`, `WWFF_REF` based on
+  `SIG` (sets `SIG` if unset and only one of the others is set)
+* `MY_SIG_INFO` from one of `MY_IOTA`, `MY_POTA_REF`, `MY_SOTA_REF`,
+  `MY_WWFF_REF` based on `MY_SIG` (sets `MY_SIG` if unset and only one of the
+  others is set)
+* `IOTA`, `POTA_REF`, `SOTA_REF`, and `WWFF_REF` from `SIG_INFO` if `SIG` is
+  set to the appropriate program.
+* `MY_IOTA`, `MY_POTA_REF`, `MY_SOTA_REF`, and `MY_WWFF_REF` from `MY_SIG_INFO`
+  if `MY_SIG` is set to the appropriate program.
+
 #### save
 
 `adifmt save` writes ADIF records from standard input to a file.  The output
@@ -243,7 +292,7 @@ find duplicate QSOs by date, band, and mode, use
 
 ```sh
 adifmt select --fields call,qso_date,band,mode --output csv mylog.adi \
-  | sort | uniq -d
+  | tail +2 | sort | uniq -d
 ```
 
 This is similar to a SQL `SELECT` clause, except it cannot (yet?) transform the
@@ -298,12 +347,6 @@ Features I plan to add:
 *   Validate more fields.
 *   Filter a log to only records matching some criteria, similar to a SQL
     `WHERE` clause.
-*   Infer missing fields based on the values of other fields. For example, the
-    `BAND` field can be inferred from the frequency; `MODE` can be inferred from
-    `SUBMODE`; `OPERATOR`, `STATION_CALLSIGN`, and `OWNER_CALLSIGN` can stand in
-    for each other; `GRIDSQUARE` can be determined from `LAT` and `LON`; and a
-    missing `DXCC` or `COUNTRY` field can be determined from the value of the
-    other one.
 *   Identify duplicate records using flexible criteria, e.g., two contacts with
     the same callsign on the same band with the same mode on the same Zulu day
     and the same `MY_SIG_INFO` value.
@@ -311,6 +354,7 @@ Features I plan to add:
     `adifmt cat all.csv | adifmt save '{MY_CALL}@{MY_POTA_REF}-{QSO_DATE}.adi'`
     to split a large log file into one log file for each (callsign, park, date)
     group, matching the expected POTA filename format.
+*   Option for `save` to append records to an existing ADIF file.
 *   Count the total number of records or the number of distinct values of a
     field.  (The total number of records can currently be counted with
     `--output=csv`, piping the output to `wc -l`, and subtracting 1 for the

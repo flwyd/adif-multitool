@@ -205,6 +205,9 @@ func usage(fs *flag.FlagSet, command string) func() {
 			}
 			cfs.SetOutput(out)
 			cfs.PrintDefaults()
+			if c.Help != nil {
+				fmt.Fprint(out, c.Help())
+			}
 		} else {
 			fmt.Fprintln(out, "Commands:")
 			for _, c := range cmds {

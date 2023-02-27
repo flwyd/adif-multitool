@@ -54,6 +54,14 @@ var (
 			return nil
 		}}}
 
+	inferConf = cmdConfig{Command: cmd.Infer,
+		Configure: func(ctx *cmd.Context, fs *flag.FlagSet) {
+			cctx := cmd.InferContext{}
+			fs.Var(&cctx.Fields, "fields", "Comma-separated or multiple instance field `names` to infer if absent")
+			fs.BoolVar(&cctx.CommentLog, "comment-log", false, "Add record comments with a list of successfully inferred fields")
+			ctx.CommandCtx = &cctx
+		}}
+
 	saveConf = cmdConfig{Command: cmd.Save,
 		Configure: func(ctx *cmd.Context, fs *flag.FlagSet) {
 			cctx := cmd.SaveContext{}
@@ -65,7 +73,7 @@ var (
 	selectConf = cmdConfig{Command: cmd.Select,
 		Configure: func(ctx *cmd.Context, fs *flag.FlagSet) {
 			cctx := cmd.SelectContext{Fields: make(cmd.FieldList, 0, 16)}
-			fs.Var(&cctx.Fields, "fields", "Comma-separated or multiple instance field names to include in output")
+			fs.Var(&cctx.Fields, "fields", "Comma-separated or multiple instance field `names` to include in output")
 			ctx.CommandCtx = &cctx
 		}}
 
@@ -80,7 +88,7 @@ var (
 			return nil
 		}}}
 
-	cmds = []cmdConfig{catConf, editConf, fixConf, helpConf, saveConf, selectConf, validateConf, versionConf}
+	cmds = []cmdConfig{catConf, editConf, fixConf, helpConf, inferConf, saveConf, selectConf, validateConf, versionConf}
 )
 
 func commandNamed(name string) (cmdConfig, bool) {

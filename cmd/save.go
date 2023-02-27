@@ -21,12 +21,18 @@ import (
 	"github.com/flwyd/adif-multitool/adif"
 )
 
-var Save = Command{Name: "save", Run: runSave,
+var Save = Command{Name: "save", Run: runSave, Help: helpSave,
 	Description: "Save standard input to file with format inferred by extension"}
 
 type SaveContext struct {
 	OverwriteExisting bool
 	WriteIfEmpty      bool
+}
+
+func helpSave() string {
+	return `Unless set explicitly, existing files will not be overwritten and
+logfiles withoutout any records will not be saved (useful if validate failed).
+`
 }
 
 func runSave(ctx *Context, args []string) error {

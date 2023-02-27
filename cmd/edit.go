@@ -22,7 +22,7 @@ import (
 	"github.com/flwyd/adif-multitool/adif/spec"
 )
 
-var Edit = Command{Name: "edit", Run: runEdit,
+var Edit = Command{Name: "edit", Run: runEdit, Help: helpEdit,
 	Description: "Add, change, remove, or adjust field values"}
 
 type EditContext struct {
@@ -32,6 +32,16 @@ type EditContext struct {
 	RemoveBlank bool
 	FromZone    TimeZone
 	ToZone      TimeZone
+}
+
+func helpEdit() string {
+	return fmt.Sprintf(
+		"Time zone adjustments affect %s, %s, %s, and %s.\n",
+		spec.TimeOnField.Name,
+		spec.TimeOffField.Name,
+		spec.QsoDateField.Name,
+		spec.QsoDateOffField.Name,
+	)
 }
 
 func runEdit(ctx *Context, args []string) error {

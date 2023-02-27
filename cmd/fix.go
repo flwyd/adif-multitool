@@ -26,10 +26,19 @@ import (
 	"github.com/flwyd/adif-multitool/adif/spec"
 )
 
-var Fix = Command{Name: "fix", Run: runFix,
+var Fix = Command{Name: "fix", Run: runFix, Help: helpFix,
 	Description: "Correct field formats to match the ADIF specification"}
 
 var allNumeric = regexp.MustCompile("^[0-9]+$")
+
+func helpFix() string {
+	return `Fixable data formats:
+  Date fields: 2006-01-02, 2006/01/02, 2006.01.02 (or without zero padding)
+  Time fields (seconds): 15:04:05, 3:04:05 PM, 3:04:05pm
+  Time fields (no seconds): 15:04, 3:04 PM, 3:04pm
+  Location fields: decimal degrees (GPS coordinates)
+`
+}
 
 func runFix(ctx *Context, args []string) error {
 	// TODO add any needed flags
@@ -155,7 +164,6 @@ func fixLocation(l, name string) string {
 		if err != nil {
 			return l
 		}
-		var dir rune
 		name = strings.ToUpper(name)
 		if strings.Contains(name, "LATITUDE") {
 			name = "LAT"
@@ -163,30 +171,53 @@ func fixLocation(l, name string) string {
 			name = "LON"
 		}
 		if strings.Contains(name, "LAT") {
-			if math.Abs(f) > 90.0 {
+			s, err := formatLatitude(f)
+			if err != nil {
 				return l
 			}
-			if f >= 0.0 {
-				dir = 'N'
-			} else {
-				dir = 'S'
-			}
+			return s
 		} else if strings.Contains(name, "LON") {
-			if math.Abs(f) > 180.0 {
+			s, err := formatLongitude(f)
+			if err != nil {
 				return l
 			}
-			if f >= 0.0 {
-				dir = 'E'
-			} else {
-				dir = 'W'
-			}
+			return s
 		} else {
 			return l // can't tell if it's latitude or longitude, so can't set dir
 		}
-		f = math.Abs(f)
-		deg := int(f)
-		min := (f - float64(deg)) * 60.0
-		return fmt.Sprintf("%c%03d %06.3f", dir, deg, min)
 	}
 	return l
+}
+
+func formatLatitude(deg float64) (string, error) {
+	if math.Abs(deg) > 90 {
+		return "", fmt.Errorf("out of latitude range: %f", deg)
+	}
+	var dir rune
+	if deg >= 0 {
+		dir = 'N'
+	} else {
+		dir = 'S'
+	}
+	return formatLocation(deg, dir), nil
+}
+
+func formatLongitude(deg float64) (string, error) {
+	if math.Abs(deg) > 180 {
+		return "", fmt.Errorf("out of longitude range: %f", deg)
+	}
+	var dir rune
+	if deg >= 0 {
+		dir = 'E'
+	} else {
+		dir = 'W'
+	}
+	return formatLocation(deg, dir), nil
+}
+
+func formatLocation(degrees float64, dir rune) string {
+	f := math.Abs(degrees)
+	deg := int(f)
+	min := (f - float64(deg)) * 60.0
+	return fmt.Sprintf("%c%03d %06.3f", dir, deg, min)
 }
