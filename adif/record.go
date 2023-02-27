@@ -76,7 +76,7 @@ func (r *Record) String() string {
 
 // Equal compares to records for equality of fields, ignoring order.
 func (r *Record) Equal(o *Record) bool {
-	if len(r.fields) != len(r.fields) {
+	if len(r.fields) != len(o.fields) {
 		return false
 	}
 	for _, f := range r.fields {
