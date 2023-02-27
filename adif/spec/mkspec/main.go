@@ -137,13 +137,26 @@ func (e *enumSpec) TypeIdentifier() string {
 func (e *enumSpec) ValueIdentifier(r record) string {
 	// it seems the value used in data files is always the second field, first is the enum name, e.g.
 	// "Enumeration Name", "Mode", "Submodes", "Description", "Import-only", "Comments"
-	name := fixIdentifierPat.ReplaceAllString(r.Values[1].Val, "_")
-	if r.Values[0].Val == "Country" {
+	name := r.Values[1].Val
+	switch r.Values[0].Val {
+	default:
+		name = fixIdentifierPat.ReplaceAllString(name, "_")
+		name = strings.TrimPrefix(strings.TrimSuffix(name, "_"), "_")
+	case "QSO_Complete":
+		// avoid "?" as abbreviation, use Meaning property insetad
+		name = strcase.UpperCamelCase(r.Value("Meaning"))
+	case "Country":
+		abbrevs := map[string]string{" IS.": " ISLANDS", " I.": " ISLAND", "PEOPLE'S": "PEOPLES"}
+		for k, v := range abbrevs {
+			name = strings.ReplaceAll(name, k, v)
+		}
+		name = fixIdentifierPat.ReplaceAllString(name, "_")
+		name = strcase.UpperCamelCase(name)
 		// COMOROS and PALESTINE were deleted and added again with new entity codes
 		if r.Value("Deleted") == "true" {
-			name += "_Deleted"
+			name += "_deleted"
 		}
-	} else if r.Values[0].Val == "Primary_Administrative_Subdivision" {
+	case "Primary_Administrative_Subdivision":
 		// Many countries use the same short abbreviations for states/regions,
 		// so disambiguate with the DXCC code
 		for _, v := range r.Values {
@@ -157,6 +170,9 @@ func (e *enumSpec) ValueIdentifier(r record) string {
 				break
 			}
 		}
+	}
+	if name == "" {
+		name = fmt.Sprintf("__invalid /* invalid  from %s */", r.Values[1].Val)
 	}
 	return strcase.UpperCamelCase(e.Name) + name
 }

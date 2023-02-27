@@ -1005,57 +1005,57 @@ func (e AwardSponsorEnum) String() string {
 
 // AwardSponsorEnum values.
 var (
-	AwardSponsorADIF_ = AwardSponsorEnum{
+	AwardSponsorADIF = AwardSponsorEnum{
 		EnumerationName:        "Award_Sponsor",
 		Sponsor:                "ADIF_",
 		SponsoringOrganization: "ADIF Development Group",
 	}
-	AwardSponsorARI_ = AwardSponsorEnum{
+	AwardSponsorARI = AwardSponsorEnum{
 		EnumerationName:        "Award_Sponsor",
 		Sponsor:                "ARI_",
 		SponsoringOrganization: "ARI - l'Associazione Radioamatori Italiani",
 	}
-	AwardSponsorARRL_ = AwardSponsorEnum{
+	AwardSponsorARRL = AwardSponsorEnum{
 		EnumerationName:        "Award_Sponsor",
 		Sponsor:                "ARRL_",
 		SponsoringOrganization: "ARRL - American Radio Relay League",
 	}
-	AwardSponsorCQ_ = AwardSponsorEnum{
+	AwardSponsorCQ = AwardSponsorEnum{
 		EnumerationName:        "Award_Sponsor",
 		Sponsor:                "CQ_",
 		SponsoringOrganization: "CQ Magazine",
 	}
-	AwardSponsorDARC_ = AwardSponsorEnum{
+	AwardSponsorDARC = AwardSponsorEnum{
 		EnumerationName:        "Award_Sponsor",
 		Sponsor:                "DARC_",
 		SponsoringOrganization: "DARC - Deutscher Amateur-Radio-Club e.V.",
 	}
-	AwardSponsorEQSL_ = AwardSponsorEnum{
+	AwardSponsorEQSL = AwardSponsorEnum{
 		EnumerationName:        "Award_Sponsor",
 		Sponsor:                "EQSL_",
 		SponsoringOrganization: "eQSL",
 	}
-	AwardSponsorIARU_ = AwardSponsorEnum{
+	AwardSponsorIARU = AwardSponsorEnum{
 		EnumerationName:        "Award_Sponsor",
 		Sponsor:                "IARU_",
 		SponsoringOrganization: "IARU - International Amateur Radio Union",
 	}
-	AwardSponsorJARL_ = AwardSponsorEnum{
+	AwardSponsorJARL = AwardSponsorEnum{
 		EnumerationName:        "Award_Sponsor",
 		Sponsor:                "JARL_",
 		SponsoringOrganization: "JARL - Japan Amateur Radio League",
 	}
-	AwardSponsorRSGB_ = AwardSponsorEnum{
+	AwardSponsorRSGB = AwardSponsorEnum{
 		EnumerationName:        "Award_Sponsor",
 		Sponsor:                "RSGB_",
 		SponsoringOrganization: "RSGB - Radio Society of Great Britain",
 	}
-	AwardSponsorTAG_ = AwardSponsorEnum{
+	AwardSponsorTAG = AwardSponsorEnum{
 		EnumerationName:        "Award_Sponsor",
 		Sponsor:                "TAG_",
 		SponsoringOrganization: "TAG - Tambov award group",
 	}
-	AwardSponsorWABAG_ = AwardSponsorEnum{
+	AwardSponsorWABAG = AwardSponsorEnum{
 		EnumerationName:        "Award_Sponsor",
 		Sponsor:                "WABAG_",
 		SponsoringOrganization: "WAB - Worked all Britain",
@@ -1072,17 +1072,17 @@ var AwardSponsorEnumeration = Enumeration{
 		"Comments",
 	},
 	Values: []EnumValue{
-		AwardSponsorADIF_,
-		AwardSponsorARI_,
-		AwardSponsorARRL_,
-		AwardSponsorCQ_,
-		AwardSponsorDARC_,
-		AwardSponsorEQSL_,
-		AwardSponsorIARU_,
-		AwardSponsorJARL_,
-		AwardSponsorRSGB_,
-		AwardSponsorTAG_,
-		AwardSponsorWABAG_,
+		AwardSponsorADIF,
+		AwardSponsorARI,
+		AwardSponsorARRL,
+		AwardSponsorCQ,
+		AwardSponsorDARC,
+		AwardSponsorEQSL,
+		AwardSponsorIARU,
+		AwardSponsorJARL,
+		AwardSponsorRSGB,
+		AwardSponsorTAG,
+		AwardSponsorWABAG,
 	},
 }
 
@@ -21699,22 +21699,22 @@ func (e QsoCompleteEnum) String() string {
 
 // QsoCompleteEnum values.
 var (
-	QsoCompleteY = QsoCompleteEnum{
+	QsoCompleteYes = QsoCompleteEnum{
 		EnumerationName: "QSO_Complete",
 		Abbreviation:    "Y",
 		Meaning:         "yes",
 	}
-	QsoCompleteN = QsoCompleteEnum{
+	QsoCompleteNo = QsoCompleteEnum{
 		EnumerationName: "QSO_Complete",
 		Abbreviation:    "N",
 		Meaning:         "no",
 	}
-	QsoCompleteNIL = QsoCompleteEnum{
+	QsoCompleteNotHeard = QsoCompleteEnum{
 		EnumerationName: "QSO_Complete",
 		Abbreviation:    "NIL",
 		Meaning:         "not heard",
 	}
-	QsoComplete_ = QsoCompleteEnum{
+	QsoCompleteUncertain = QsoCompleteEnum{
 		EnumerationName: "QSO_Complete",
 		Abbreviation:    "?",
 		Meaning:         "uncertain",
@@ -21731,10 +21731,10 @@ var QsoCompleteEnumeration = Enumeration{
 		"Comments",
 	},
 	Values: []EnumValue{
-		QsoCompleteY,
-		QsoCompleteN,
-		QsoCompleteNIL,
-		QsoComplete_,
+		QsoCompleteYes,
+		QsoCompleteNo,
+		QsoCompleteNotHeard,
+		QsoCompleteUncertain,
 	},
 }
 
@@ -23627,2419 +23627,2419 @@ func (e CountryEnum) String() string {
 
 // CountryEnum values.
 var (
-	CountryNone_the_contacted_station_is_known_to_not_be_within_a_DXCC_entity_ = CountryEnum{
+	CountryNoneTheContactedStationIsKnownToNotBeWithinADxccEntity = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "None (the contacted station is known to not be within a DXCC entity)",
 		EntityCode:      "0",
 		Deleted:         "",
 	}
-	CountryCANADA = CountryEnum{
+	CountryCanada = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CANADA",
 		EntityCode:      "1",
 		Deleted:         "",
 	}
-	CountryABU_AIL_IS__Deleted = CountryEnum{
+	CountryAbuAilIslands_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ABU AIL IS.",
 		EntityCode:      "2",
 		Deleted:         "true",
 	}
-	CountryAFGHANISTAN = CountryEnum{
+	CountryAfghanistan = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "AFGHANISTAN",
 		EntityCode:      "3",
 		Deleted:         "",
 	}
-	CountryAGALEGA_ST_BRANDON_IS_ = CountryEnum{
+	CountryAgalegaStBrandonIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "AGALEGA & ST. BRANDON IS.",
 		EntityCode:      "4",
 		Deleted:         "",
 	}
-	CountryALAND_IS_ = CountryEnum{
+	CountryAlandIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ALAND IS.",
 		EntityCode:      "5",
 		Deleted:         "",
 	}
-	CountryALASKA = CountryEnum{
+	CountryAlaska = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ALASKA",
 		EntityCode:      "6",
 		Deleted:         "",
 	}
-	CountryALBANIA = CountryEnum{
+	CountryAlbania = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ALBANIA",
 		EntityCode:      "7",
 		Deleted:         "",
 	}
-	CountryALDABRA_Deleted = CountryEnum{
+	CountryAldabra_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ALDABRA",
 		EntityCode:      "8",
 		Deleted:         "true",
 	}
-	CountryAMERICAN_SAMOA = CountryEnum{
+	CountryAmericanSamoa = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "AMERICAN SAMOA",
 		EntityCode:      "9",
 		Deleted:         "",
 	}
-	CountryAMSTERDAM_ST_PAUL_IS_ = CountryEnum{
+	CountryAmsterdamStPaulIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "AMSTERDAM & ST. PAUL IS.",
 		EntityCode:      "10",
 		Deleted:         "",
 	}
-	CountryANDAMAN_NICOBAR_IS_ = CountryEnum{
+	CountryAndamanNicobarIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ANDAMAN & NICOBAR IS.",
 		EntityCode:      "11",
 		Deleted:         "",
 	}
-	CountryANGUILLA = CountryEnum{
+	CountryAnguilla = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ANGUILLA",
 		EntityCode:      "12",
 		Deleted:         "",
 	}
-	CountryANTARCTICA = CountryEnum{
+	CountryAntarctica = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ANTARCTICA",
 		EntityCode:      "13",
 		Deleted:         "",
 	}
-	CountryARMENIA = CountryEnum{
+	CountryArmenia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ARMENIA",
 		EntityCode:      "14",
 		Deleted:         "",
 	}
-	CountryASIATIC_RUSSIA = CountryEnum{
+	CountryAsiaticRussia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ASIATIC RUSSIA",
 		EntityCode:      "15",
 		Deleted:         "",
 	}
-	CountryNEW_ZEALAND_SUBANTARCTIC_ISLANDS = CountryEnum{
+	CountryNewZealandSubantarcticIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NEW ZEALAND SUBANTARCTIC ISLANDS",
 		EntityCode:      "16",
 		Deleted:         "",
 	}
-	CountryAVES_I_ = CountryEnum{
+	CountryAvesIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "AVES I.",
 		EntityCode:      "17",
 		Deleted:         "",
 	}
-	CountryAZERBAIJAN = CountryEnum{
+	CountryAzerbaijan = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "AZERBAIJAN",
 		EntityCode:      "18",
 		Deleted:         "",
 	}
-	CountryBAJO_NUEVO_Deleted = CountryEnum{
+	CountryBajoNuevo_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BAJO NUEVO",
 		EntityCode:      "19",
 		Deleted:         "true",
 	}
-	CountryBAKER_HOWLAND_IS_ = CountryEnum{
+	CountryBakerHowlandIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BAKER & HOWLAND IS.",
 		EntityCode:      "20",
 		Deleted:         "",
 	}
-	CountryBALEARIC_IS_ = CountryEnum{
+	CountryBalearicIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BALEARIC IS.",
 		EntityCode:      "21",
 		Deleted:         "",
 	}
-	CountryPALAU = CountryEnum{
+	CountryPalau = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PALAU",
 		EntityCode:      "22",
 		Deleted:         "",
 	}
-	CountryBLENHEIM_REEF_Deleted = CountryEnum{
+	CountryBlenheimReef_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BLENHEIM REEF",
 		EntityCode:      "23",
 		Deleted:         "true",
 	}
-	CountryBOUVET = CountryEnum{
+	CountryBouvet = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BOUVET",
 		EntityCode:      "24",
 		Deleted:         "",
 	}
-	CountryBRITISH_NORTH_BORNEO_Deleted = CountryEnum{
+	CountryBritishNorthBorneo_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BRITISH NORTH BORNEO",
 		EntityCode:      "25",
 		Deleted:         "true",
 	}
-	CountryBRITISH_SOMALILAND_Deleted = CountryEnum{
+	CountryBritishSomaliland_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BRITISH SOMALILAND",
 		EntityCode:      "26",
 		Deleted:         "true",
 	}
-	CountryBELARUS = CountryEnum{
+	CountryBelarus = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BELARUS",
 		EntityCode:      "27",
 		Deleted:         "",
 	}
-	CountryCANAL_ZONE_Deleted = CountryEnum{
+	CountryCanalZone_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CANAL ZONE",
 		EntityCode:      "28",
 		Deleted:         "true",
 	}
-	CountryCANARY_IS_ = CountryEnum{
+	CountryCanaryIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CANARY IS.",
 		EntityCode:      "29",
 		Deleted:         "",
 	}
-	CountryCELEBE_MOLUCCA_IS__Deleted = CountryEnum{
+	CountryCelebeMoluccaIslands_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CELEBE & MOLUCCA IS.",
 		EntityCode:      "30",
 		Deleted:         "true",
 	}
-	CountryC_KIRIBATI_BRITISH_PHOENIX_IS_ = CountryEnum{
+	CountryCKiribatiBritishPhoenixIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "C. KIRIBATI (BRITISH PHOENIX IS.)",
 		EntityCode:      "31",
 		Deleted:         "",
 	}
-	CountryCEUTA_MELILLA = CountryEnum{
+	CountryCeutaMelilla = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CEUTA & MELILLA",
 		EntityCode:      "32",
 		Deleted:         "",
 	}
-	CountryCHAGOS_IS_ = CountryEnum{
+	CountryChagosIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CHAGOS IS.",
 		EntityCode:      "33",
 		Deleted:         "",
 	}
-	CountryCHATHAM_IS_ = CountryEnum{
+	CountryChathamIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CHATHAM IS.",
 		EntityCode:      "34",
 		Deleted:         "",
 	}
-	CountryCHRISTMAS_I_ = CountryEnum{
+	CountryChristmasIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CHRISTMAS I.",
 		EntityCode:      "35",
 		Deleted:         "",
 	}
-	CountryCLIPPERTON_I_ = CountryEnum{
+	CountryClippertonIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CLIPPERTON I.",
 		EntityCode:      "36",
 		Deleted:         "",
 	}
-	CountryCOCOS_I_ = CountryEnum{
+	CountryCocosIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "COCOS I.",
 		EntityCode:      "37",
 		Deleted:         "",
 	}
-	CountryCOCOS_KEELING_IS_ = CountryEnum{
+	CountryCocosKeelingIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "COCOS (KEELING) IS.",
 		EntityCode:      "38",
 		Deleted:         "",
 	}
-	CountryCOMOROS_Deleted = CountryEnum{
+	CountryComoros_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "COMOROS",
 		EntityCode:      "39",
 		Deleted:         "true",
 	}
-	CountryCRETE = CountryEnum{
+	CountryCrete = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CRETE",
 		EntityCode:      "40",
 		Deleted:         "",
 	}
-	CountryCROZET_I_ = CountryEnum{
+	CountryCrozetIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CROZET I.",
 		EntityCode:      "41",
 		Deleted:         "",
 	}
-	CountryDAMAO_DIU_Deleted = CountryEnum{
+	CountryDamaoDiu_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "DAMAO, DIU",
 		EntityCode:      "42",
 		Deleted:         "true",
 	}
-	CountryDESECHEO_I_ = CountryEnum{
+	CountryDesecheoIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "DESECHEO I.",
 		EntityCode:      "43",
 		Deleted:         "",
 	}
-	CountryDESROCHES_Deleted = CountryEnum{
+	CountryDesroches_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "DESROCHES",
 		EntityCode:      "44",
 		Deleted:         "true",
 	}
-	CountryDODECANESE = CountryEnum{
+	CountryDodecanese = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "DODECANESE",
 		EntityCode:      "45",
 		Deleted:         "",
 	}
-	CountryEAST_MALAYSIA = CountryEnum{
+	CountryEastMalaysia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "EAST MALAYSIA",
 		EntityCode:      "46",
 		Deleted:         "",
 	}
-	CountryEASTER_I_ = CountryEnum{
+	CountryEasterIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "EASTER I.",
 		EntityCode:      "47",
 		Deleted:         "",
 	}
-	CountryE_KIRIBATI_LINE_IS_ = CountryEnum{
+	CountryEKiribatiLineIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "E. KIRIBATI (LINE IS.)",
 		EntityCode:      "48",
 		Deleted:         "",
 	}
-	CountryEQUATORIAL_GUINEA = CountryEnum{
+	CountryEquatorialGuinea = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "EQUATORIAL GUINEA",
 		EntityCode:      "49",
 		Deleted:         "",
 	}
-	CountryMEXICO = CountryEnum{
+	CountryMexico = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MEXICO",
 		EntityCode:      "50",
 		Deleted:         "",
 	}
-	CountryERITREA = CountryEnum{
+	CountryEritrea = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ERITREA",
 		EntityCode:      "51",
 		Deleted:         "",
 	}
-	CountryESTONIA = CountryEnum{
+	CountryEstonia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ESTONIA",
 		EntityCode:      "52",
 		Deleted:         "",
 	}
-	CountryETHIOPIA = CountryEnum{
+	CountryEthiopia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ETHIOPIA",
 		EntityCode:      "53",
 		Deleted:         "",
 	}
-	CountryEUROPEAN_RUSSIA = CountryEnum{
+	CountryEuropeanRussia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "EUROPEAN RUSSIA",
 		EntityCode:      "54",
 		Deleted:         "",
 	}
-	CountryFARQUHAR_Deleted = CountryEnum{
+	CountryFarquhar_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "FARQUHAR",
 		EntityCode:      "55",
 		Deleted:         "true",
 	}
-	CountryFERNANDO_DE_NORONHA = CountryEnum{
+	CountryFernandoDeNoronha = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "FERNANDO DE NORONHA",
 		EntityCode:      "56",
 		Deleted:         "",
 	}
-	CountryFRENCH_EQUATORIAL_AFRICA_Deleted = CountryEnum{
+	CountryFrenchEquatorialAfrica_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "FRENCH EQUATORIAL AFRICA",
 		EntityCode:      "57",
 		Deleted:         "true",
 	}
-	CountryFRENCH_INDO_CHINA_Deleted = CountryEnum{
+	CountryFrenchIndoChina_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "FRENCH INDO-CHINA",
 		EntityCode:      "58",
 		Deleted:         "true",
 	}
-	CountryFRENCH_WEST_AFRICA_Deleted = CountryEnum{
+	CountryFrenchWestAfrica_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "FRENCH WEST AFRICA",
 		EntityCode:      "59",
 		Deleted:         "true",
 	}
-	CountryBAHAMAS = CountryEnum{
+	CountryBahamas = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BAHAMAS",
 		EntityCode:      "60",
 		Deleted:         "",
 	}
-	CountryFRANZ_JOSEF_LAND = CountryEnum{
+	CountryFranzJosefLand = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "FRANZ JOSEF LAND",
 		EntityCode:      "61",
 		Deleted:         "",
 	}
-	CountryBARBADOS = CountryEnum{
+	CountryBarbados = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BARBADOS",
 		EntityCode:      "62",
 		Deleted:         "",
 	}
-	CountryFRENCH_GUIANA = CountryEnum{
+	CountryFrenchGuiana = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "FRENCH GUIANA",
 		EntityCode:      "63",
 		Deleted:         "",
 	}
-	CountryBERMUDA = CountryEnum{
+	CountryBermuda = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BERMUDA",
 		EntityCode:      "64",
 		Deleted:         "",
 	}
-	CountryBRITISH_VIRGIN_IS_ = CountryEnum{
+	CountryBritishVirginIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BRITISH VIRGIN IS.",
 		EntityCode:      "65",
 		Deleted:         "",
 	}
-	CountryBELIZE = CountryEnum{
+	CountryBelize = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BELIZE",
 		EntityCode:      "66",
 		Deleted:         "",
 	}
-	CountryFRENCH_INDIA_Deleted = CountryEnum{
+	CountryFrenchIndia_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "FRENCH INDIA",
 		EntityCode:      "67",
 		Deleted:         "true",
 	}
-	CountryKUWAIT_SAUDI_ARABIA_NEUTRAL_ZONE_Deleted = CountryEnum{
+	CountryKuwaitSaudiArabiaNeutralZone_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "KUWAIT/SAUDI ARABIA NEUTRAL ZONE",
 		EntityCode:      "68",
 		Deleted:         "true",
 	}
-	CountryCAYMAN_IS_ = CountryEnum{
+	CountryCaymanIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CAYMAN IS.",
 		EntityCode:      "69",
 		Deleted:         "",
 	}
-	CountryCUBA = CountryEnum{
+	CountryCuba = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CUBA",
 		EntityCode:      "70",
 		Deleted:         "",
 	}
-	CountryGALAPAGOS_IS_ = CountryEnum{
+	CountryGalapagosIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GALAPAGOS IS.",
 		EntityCode:      "71",
 		Deleted:         "",
 	}
-	CountryDOMINICAN_REPUBLIC = CountryEnum{
+	CountryDominicanRepublic = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "DOMINICAN REPUBLIC",
 		EntityCode:      "72",
 		Deleted:         "",
 	}
-	CountryEL_SALVADOR = CountryEnum{
+	CountryElSalvador = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "EL SALVADOR",
 		EntityCode:      "74",
 		Deleted:         "",
 	}
-	CountryGEORGIA = CountryEnum{
+	CountryGeorgia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GEORGIA",
 		EntityCode:      "75",
 		Deleted:         "",
 	}
-	CountryGUATEMALA = CountryEnum{
+	CountryGuatemala = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GUATEMALA",
 		EntityCode:      "76",
 		Deleted:         "",
 	}
-	CountryGRENADA = CountryEnum{
+	CountryGrenada = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GRENADA",
 		EntityCode:      "77",
 		Deleted:         "",
 	}
-	CountryHAITI = CountryEnum{
+	CountryHaiti = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "HAITI",
 		EntityCode:      "78",
 		Deleted:         "",
 	}
-	CountryGUADELOUPE = CountryEnum{
+	CountryGuadeloupe = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GUADELOUPE",
 		EntityCode:      "79",
 		Deleted:         "",
 	}
-	CountryHONDURAS = CountryEnum{
+	CountryHonduras = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "HONDURAS",
 		EntityCode:      "80",
 		Deleted:         "",
 	}
-	CountryGERMANY_Deleted = CountryEnum{
+	CountryGermany_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GERMANY",
 		EntityCode:      "81",
 		Deleted:         "true",
 	}
-	CountryJAMAICA = CountryEnum{
+	CountryJamaica = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "JAMAICA",
 		EntityCode:      "82",
 		Deleted:         "",
 	}
-	CountryMARTINIQUE = CountryEnum{
+	CountryMartinique = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MARTINIQUE",
 		EntityCode:      "84",
 		Deleted:         "",
 	}
-	CountryBONAIRE_CURACAO_Deleted = CountryEnum{
+	CountryBonaireCuracao_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BONAIRE, CURACAO",
 		EntityCode:      "85",
 		Deleted:         "true",
 	}
-	CountryNICARAGUA = CountryEnum{
+	CountryNicaragua = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NICARAGUA",
 		EntityCode:      "86",
 		Deleted:         "",
 	}
-	CountryPANAMA = CountryEnum{
+	CountryPanama = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PANAMA",
 		EntityCode:      "88",
 		Deleted:         "",
 	}
-	CountryTURKS_CAICOS_IS_ = CountryEnum{
+	CountryTurksCaicosIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TURKS & CAICOS IS.",
 		EntityCode:      "89",
 		Deleted:         "",
 	}
-	CountryTRINIDAD_TOBAGO = CountryEnum{
+	CountryTrinidadTobago = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TRINIDAD & TOBAGO",
 		EntityCode:      "90",
 		Deleted:         "",
 	}
-	CountryARUBA = CountryEnum{
+	CountryAruba = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ARUBA",
 		EntityCode:      "91",
 		Deleted:         "",
 	}
-	CountryGEYSER_REEF_Deleted = CountryEnum{
+	CountryGeyserReef_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GEYSER REEF",
 		EntityCode:      "93",
 		Deleted:         "true",
 	}
-	CountryANTIGUA_BARBUDA = CountryEnum{
+	CountryAntiguaBarbuda = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ANTIGUA & BARBUDA",
 		EntityCode:      "94",
 		Deleted:         "",
 	}
-	CountryDOMINICA = CountryEnum{
+	CountryDominica = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "DOMINICA",
 		EntityCode:      "95",
 		Deleted:         "",
 	}
-	CountryMONTSERRAT = CountryEnum{
+	CountryMontserrat = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MONTSERRAT",
 		EntityCode:      "96",
 		Deleted:         "",
 	}
-	CountryST_LUCIA = CountryEnum{
+	CountryStLucia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ST. LUCIA",
 		EntityCode:      "97",
 		Deleted:         "",
 	}
-	CountryST_VINCENT = CountryEnum{
+	CountryStVincent = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ST. VINCENT",
 		EntityCode:      "98",
 		Deleted:         "",
 	}
-	CountryGLORIOSO_IS_ = CountryEnum{
+	CountryGloriosoIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GLORIOSO IS.",
 		EntityCode:      "99",
 		Deleted:         "",
 	}
-	CountryARGENTINA = CountryEnum{
+	CountryArgentina = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ARGENTINA",
 		EntityCode:      "100",
 		Deleted:         "",
 	}
-	CountryGOA_Deleted = CountryEnum{
+	CountryGoa_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GOA",
 		EntityCode:      "101",
 		Deleted:         "true",
 	}
-	CountryGOLD_COAST_TOGOLAND_Deleted = CountryEnum{
+	CountryGoldCoastTogoland_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GOLD COAST, TOGOLAND",
 		EntityCode:      "102",
 		Deleted:         "true",
 	}
-	CountryGUAM = CountryEnum{
+	CountryGuam = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GUAM",
 		EntityCode:      "103",
 		Deleted:         "",
 	}
-	CountryBOLIVIA = CountryEnum{
+	CountryBolivia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BOLIVIA",
 		EntityCode:      "104",
 		Deleted:         "",
 	}
-	CountryGUANTANAMO_BAY = CountryEnum{
+	CountryGuantanamoBay = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GUANTANAMO BAY",
 		EntityCode:      "105",
 		Deleted:         "",
 	}
-	CountryGUERNSEY = CountryEnum{
+	CountryGuernsey = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GUERNSEY",
 		EntityCode:      "106",
 		Deleted:         "",
 	}
-	CountryGUINEA = CountryEnum{
+	CountryGuinea = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GUINEA",
 		EntityCode:      "107",
 		Deleted:         "",
 	}
-	CountryBRAZIL = CountryEnum{
+	CountryBrazil = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BRAZIL",
 		EntityCode:      "108",
 		Deleted:         "",
 	}
-	CountryGUINEA_BISSAU = CountryEnum{
+	CountryGuineaBissau = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GUINEA-BISSAU",
 		EntityCode:      "109",
 		Deleted:         "",
 	}
-	CountryHAWAII = CountryEnum{
+	CountryHawaii = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "HAWAII",
 		EntityCode:      "110",
 		Deleted:         "",
 	}
-	CountryHEARD_I_ = CountryEnum{
+	CountryHeardIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "HEARD I.",
 		EntityCode:      "111",
 		Deleted:         "",
 	}
-	CountryCHILE = CountryEnum{
+	CountryChile = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CHILE",
 		EntityCode:      "112",
 		Deleted:         "",
 	}
-	CountryIFNI_Deleted = CountryEnum{
+	CountryIfni_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "IFNI",
 		EntityCode:      "113",
 		Deleted:         "true",
 	}
-	CountryISLE_OF_MAN = CountryEnum{
+	CountryIsleOfMan = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ISLE OF MAN",
 		EntityCode:      "114",
 		Deleted:         "",
 	}
-	CountryITALIAN_SOMALILAND_Deleted = CountryEnum{
+	CountryItalianSomaliland_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ITALIAN SOMALILAND",
 		EntityCode:      "115",
 		Deleted:         "true",
 	}
-	CountryCOLOMBIA = CountryEnum{
+	CountryColombia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "COLOMBIA",
 		EntityCode:      "116",
 		Deleted:         "",
 	}
-	CountryITU_HQ = CountryEnum{
+	CountryItuHq = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ITU HQ",
 		EntityCode:      "117",
 		Deleted:         "",
 	}
-	CountryJAN_MAYEN = CountryEnum{
+	CountryJanMayen = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "JAN MAYEN",
 		EntityCode:      "118",
 		Deleted:         "",
 	}
-	CountryJAVA_Deleted = CountryEnum{
+	CountryJava_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "JAVA",
 		EntityCode:      "119",
 		Deleted:         "true",
 	}
-	CountryECUADOR = CountryEnum{
+	CountryEcuador = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ECUADOR",
 		EntityCode:      "120",
 		Deleted:         "",
 	}
-	CountryJERSEY = CountryEnum{
+	CountryJersey = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "JERSEY",
 		EntityCode:      "122",
 		Deleted:         "",
 	}
-	CountryJOHNSTON_I_ = CountryEnum{
+	CountryJohnstonIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "JOHNSTON I.",
 		EntityCode:      "123",
 		Deleted:         "",
 	}
-	CountryJUAN_DE_NOVA_EUROPA = CountryEnum{
+	CountryJuanDeNovaEuropa = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "JUAN DE NOVA, EUROPA",
 		EntityCode:      "124",
 		Deleted:         "",
 	}
-	CountryJUAN_FERNANDEZ_IS_ = CountryEnum{
+	CountryJuanFernandezIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "JUAN FERNANDEZ IS.",
 		EntityCode:      "125",
 		Deleted:         "",
 	}
-	CountryKALININGRAD = CountryEnum{
+	CountryKaliningrad = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "KALININGRAD",
 		EntityCode:      "126",
 		Deleted:         "",
 	}
-	CountryKAMARAN_IS__Deleted = CountryEnum{
+	CountryKamaranIslands_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "KAMARAN IS.",
 		EntityCode:      "127",
 		Deleted:         "true",
 	}
-	CountryKARELO_FINNISH_REPUBLIC_Deleted = CountryEnum{
+	CountryKareloFinnishRepublic_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "KARELO-FINNISH REPUBLIC",
 		EntityCode:      "128",
 		Deleted:         "true",
 	}
-	CountryGUYANA = CountryEnum{
+	CountryGuyana = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GUYANA",
 		EntityCode:      "129",
 		Deleted:         "",
 	}
-	CountryKAZAKHSTAN = CountryEnum{
+	CountryKazakhstan = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "KAZAKHSTAN",
 		EntityCode:      "130",
 		Deleted:         "",
 	}
-	CountryKERGUELEN_IS_ = CountryEnum{
+	CountryKerguelenIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "KERGUELEN IS.",
 		EntityCode:      "131",
 		Deleted:         "",
 	}
-	CountryPARAGUAY = CountryEnum{
+	CountryParaguay = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PARAGUAY",
 		EntityCode:      "132",
 		Deleted:         "",
 	}
-	CountryKERMADEC_IS_ = CountryEnum{
+	CountryKermadecIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "KERMADEC IS.",
 		EntityCode:      "133",
 		Deleted:         "",
 	}
-	CountryKINGMAN_REEF_Deleted = CountryEnum{
+	CountryKingmanReef_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "KINGMAN REEF",
 		EntityCode:      "134",
 		Deleted:         "true",
 	}
-	CountryKYRGYZSTAN = CountryEnum{
+	CountryKyrgyzstan = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "KYRGYZSTAN",
 		EntityCode:      "135",
 		Deleted:         "",
 	}
-	CountryPERU = CountryEnum{
+	CountryPeru = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PERU",
 		EntityCode:      "136",
 		Deleted:         "",
 	}
-	CountryREPUBLIC_OF_KOREA = CountryEnum{
+	CountryRepublicOfKorea = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "REPUBLIC OF KOREA",
 		EntityCode:      "137",
 		Deleted:         "",
 	}
-	CountryKURE_I_ = CountryEnum{
+	CountryKureIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "KURE I.",
 		EntityCode:      "138",
 		Deleted:         "",
 	}
-	CountryKURIA_MURIA_I__Deleted = CountryEnum{
+	CountryKuriaMuriaIsland_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "KURIA MURIA I.",
 		EntityCode:      "139",
 		Deleted:         "true",
 	}
-	CountrySURINAME = CountryEnum{
+	CountrySuriname = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SURINAME",
 		EntityCode:      "140",
 		Deleted:         "",
 	}
-	CountryFALKLAND_IS_ = CountryEnum{
+	CountryFalklandIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "FALKLAND IS.",
 		EntityCode:      "141",
 		Deleted:         "",
 	}
-	CountryLAKSHADWEEP_IS_ = CountryEnum{
+	CountryLakshadweepIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "LAKSHADWEEP IS.",
 		EntityCode:      "142",
 		Deleted:         "",
 	}
-	CountryLAOS = CountryEnum{
+	CountryLaos = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "LAOS",
 		EntityCode:      "143",
 		Deleted:         "",
 	}
-	CountryURUGUAY = CountryEnum{
+	CountryUruguay = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "URUGUAY",
 		EntityCode:      "144",
 		Deleted:         "",
 	}
-	CountryLATVIA = CountryEnum{
+	CountryLatvia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "LATVIA",
 		EntityCode:      "145",
 		Deleted:         "",
 	}
-	CountryLITHUANIA = CountryEnum{
+	CountryLithuania = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "LITHUANIA",
 		EntityCode:      "146",
 		Deleted:         "",
 	}
-	CountryLORD_HOWE_I_ = CountryEnum{
+	CountryLordHoweIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "LORD HOWE I.",
 		EntityCode:      "147",
 		Deleted:         "",
 	}
-	CountryVENEZUELA = CountryEnum{
+	CountryVenezuela = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "VENEZUELA",
 		EntityCode:      "148",
 		Deleted:         "",
 	}
-	CountryAZORES = CountryEnum{
+	CountryAzores = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "AZORES",
 		EntityCode:      "149",
 		Deleted:         "",
 	}
-	CountryAUSTRALIA = CountryEnum{
+	CountryAustralia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "AUSTRALIA",
 		EntityCode:      "150",
 		Deleted:         "",
 	}
-	CountryMALYJ_VYSOTSKIJ_I__Deleted = CountryEnum{
+	CountryMalyjVysotskijIsland_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MALYJ VYSOTSKIJ I.",
 		EntityCode:      "151",
 		Deleted:         "true",
 	}
-	CountryMACAO = CountryEnum{
+	CountryMacao = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MACAO",
 		EntityCode:      "152",
 		Deleted:         "",
 	}
-	CountryMACQUARIE_I_ = CountryEnum{
+	CountryMacquarieIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MACQUARIE I.",
 		EntityCode:      "153",
 		Deleted:         "",
 	}
-	CountryYEMEN_ARAB_REPUBLIC_Deleted = CountryEnum{
+	CountryYemenArabRepublic_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "YEMEN ARAB REPUBLIC",
 		EntityCode:      "154",
 		Deleted:         "true",
 	}
-	CountryMALAYA_Deleted = CountryEnum{
+	CountryMalaya_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MALAYA",
 		EntityCode:      "155",
 		Deleted:         "true",
 	}
-	CountryNAURU = CountryEnum{
+	CountryNauru = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NAURU",
 		EntityCode:      "157",
 		Deleted:         "",
 	}
-	CountryVANUATU = CountryEnum{
+	CountryVanuatu = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "VANUATU",
 		EntityCode:      "158",
 		Deleted:         "",
 	}
-	CountryMALDIVES = CountryEnum{
+	CountryMaldives = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MALDIVES",
 		EntityCode:      "159",
 		Deleted:         "",
 	}
-	CountryTONGA = CountryEnum{
+	CountryTonga = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TONGA",
 		EntityCode:      "160",
 		Deleted:         "",
 	}
-	CountryMALPELO_I_ = CountryEnum{
+	CountryMalpeloIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MALPELO I.",
 		EntityCode:      "161",
 		Deleted:         "",
 	}
-	CountryNEW_CALEDONIA = CountryEnum{
+	CountryNewCaledonia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NEW CALEDONIA",
 		EntityCode:      "162",
 		Deleted:         "",
 	}
-	CountryPAPUA_NEW_GUINEA = CountryEnum{
+	CountryPapuaNewGuinea = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PAPUA NEW GUINEA",
 		EntityCode:      "163",
 		Deleted:         "",
 	}
-	CountryMANCHURIA_Deleted = CountryEnum{
+	CountryManchuria_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MANCHURIA",
 		EntityCode:      "164",
 		Deleted:         "true",
 	}
-	CountryMAURITIUS = CountryEnum{
+	CountryMauritius = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MAURITIUS",
 		EntityCode:      "165",
 		Deleted:         "",
 	}
-	CountryMARIANA_IS_ = CountryEnum{
+	CountryMarianaIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MARIANA IS.",
 		EntityCode:      "166",
 		Deleted:         "",
 	}
-	CountryMARKET_REEF = CountryEnum{
+	CountryMarketReef = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MARKET REEF",
 		EntityCode:      "167",
 		Deleted:         "",
 	}
-	CountryMARSHALL_IS_ = CountryEnum{
+	CountryMarshallIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MARSHALL IS.",
 		EntityCode:      "168",
 		Deleted:         "",
 	}
-	CountryMAYOTTE = CountryEnum{
+	CountryMayotte = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MAYOTTE",
 		EntityCode:      "169",
 		Deleted:         "",
 	}
-	CountryNEW_ZEALAND = CountryEnum{
+	CountryNewZealand = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NEW ZEALAND",
 		EntityCode:      "170",
 		Deleted:         "",
 	}
-	CountryMELLISH_REEF = CountryEnum{
+	CountryMellishReef = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MELLISH REEF",
 		EntityCode:      "171",
 		Deleted:         "",
 	}
-	CountryPITCAIRN_I_ = CountryEnum{
+	CountryPitcairnIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PITCAIRN I.",
 		EntityCode:      "172",
 		Deleted:         "",
 	}
-	CountryMICRONESIA = CountryEnum{
+	CountryMicronesia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MICRONESIA",
 		EntityCode:      "173",
 		Deleted:         "",
 	}
-	CountryMIDWAY_I_ = CountryEnum{
+	CountryMidwayIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MIDWAY I.",
 		EntityCode:      "174",
 		Deleted:         "",
 	}
-	CountryFRENCH_POLYNESIA = CountryEnum{
+	CountryFrenchPolynesia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "FRENCH POLYNESIA",
 		EntityCode:      "175",
 		Deleted:         "",
 	}
-	CountryFIJI = CountryEnum{
+	CountryFiji = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "FIJI",
 		EntityCode:      "176",
 		Deleted:         "",
 	}
-	CountryMINAMI_TORISHIMA = CountryEnum{
+	CountryMinamiTorishima = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MINAMI TORISHIMA",
 		EntityCode:      "177",
 		Deleted:         "",
 	}
-	CountryMINERVA_REEF_Deleted = CountryEnum{
+	CountryMinervaReef_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MINERVA REEF",
 		EntityCode:      "178",
 		Deleted:         "true",
 	}
-	CountryMOLDOVA = CountryEnum{
+	CountryMoldova = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MOLDOVA",
 		EntityCode:      "179",
 		Deleted:         "",
 	}
-	CountryMOUNT_ATHOS = CountryEnum{
+	CountryMountAthos = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MOUNT ATHOS",
 		EntityCode:      "180",
 		Deleted:         "",
 	}
-	CountryMOZAMBIQUE = CountryEnum{
+	CountryMozambique = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MOZAMBIQUE",
 		EntityCode:      "181",
 		Deleted:         "",
 	}
-	CountryNAVASSA_I_ = CountryEnum{
+	CountryNavassaIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NAVASSA I.",
 		EntityCode:      "182",
 		Deleted:         "",
 	}
-	CountryNETHERLANDS_BORNEO_Deleted = CountryEnum{
+	CountryNetherlandsBorneo_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NETHERLANDS BORNEO",
 		EntityCode:      "183",
 		Deleted:         "true",
 	}
-	CountryNETHERLANDS_NEW_GUINEA_Deleted = CountryEnum{
+	CountryNetherlandsNewGuinea_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NETHERLANDS NEW GUINEA",
 		EntityCode:      "184",
 		Deleted:         "true",
 	}
-	CountrySOLOMON_IS_ = CountryEnum{
+	CountrySolomonIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SOLOMON IS.",
 		EntityCode:      "185",
 		Deleted:         "",
 	}
-	CountryNEWFOUNDLAND_LABRADOR_Deleted = CountryEnum{
+	CountryNewfoundlandLabrador_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NEWFOUNDLAND, LABRADOR",
 		EntityCode:      "186",
 		Deleted:         "true",
 	}
-	CountryNIGER = CountryEnum{
+	CountryNiger = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NIGER",
 		EntityCode:      "187",
 		Deleted:         "",
 	}
-	CountryNIUE = CountryEnum{
+	CountryNiue = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NIUE",
 		EntityCode:      "188",
 		Deleted:         "",
 	}
-	CountryNORFOLK_I_ = CountryEnum{
+	CountryNorfolkIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NORFOLK I.",
 		EntityCode:      "189",
 		Deleted:         "",
 	}
-	CountrySAMOA = CountryEnum{
+	CountrySamoa = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SAMOA",
 		EntityCode:      "190",
 		Deleted:         "",
 	}
-	CountryNORTH_COOK_IS_ = CountryEnum{
+	CountryNorthCookIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NORTH COOK IS.",
 		EntityCode:      "191",
 		Deleted:         "",
 	}
-	CountryOGASAWARA = CountryEnum{
+	CountryOgasawara = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "OGASAWARA",
 		EntityCode:      "192",
 		Deleted:         "",
 	}
-	CountryOKINAWA_RYUKYU_IS__Deleted = CountryEnum{
+	CountryOkinawaRyukyuIslands_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "OKINAWA (RYUKYU IS.)",
 		EntityCode:      "193",
 		Deleted:         "true",
 	}
-	CountryOKINO_TORI_SHIMA_Deleted = CountryEnum{
+	CountryOkinoToriShima_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "OKINO TORI-SHIMA",
 		EntityCode:      "194",
 		Deleted:         "true",
 	}
-	CountryANNOBON_I_ = CountryEnum{
+	CountryAnnobonIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ANNOBON I.",
 		EntityCode:      "195",
 		Deleted:         "",
 	}
-	CountryPALESTINE_Deleted = CountryEnum{
+	CountryPalestine_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PALESTINE",
 		EntityCode:      "196",
 		Deleted:         "true",
 	}
-	CountryPALMYRA_JARVIS_IS_ = CountryEnum{
+	CountryPalmyraJarvisIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PALMYRA & JARVIS IS.",
 		EntityCode:      "197",
 		Deleted:         "",
 	}
-	CountryPAPUA_TERRITORY_Deleted = CountryEnum{
+	CountryPapuaTerritory_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PAPUA TERRITORY",
 		EntityCode:      "198",
 		Deleted:         "true",
 	}
-	CountryPETER_1_I_ = CountryEnum{
+	CountryPeter1Island = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PETER 1 I.",
 		EntityCode:      "199",
 		Deleted:         "",
 	}
-	CountryPORTUGUESE_TIMOR_Deleted = CountryEnum{
+	CountryPortugueseTimor_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PORTUGUESE TIMOR",
 		EntityCode:      "200",
 		Deleted:         "true",
 	}
-	CountryPRINCE_EDWARD_MARION_IS_ = CountryEnum{
+	CountryPrinceEdwardMarionIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PRINCE EDWARD & MARION IS.",
 		EntityCode:      "201",
 		Deleted:         "",
 	}
-	CountryPUERTO_RICO = CountryEnum{
+	CountryPuertoRico = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PUERTO RICO",
 		EntityCode:      "202",
 		Deleted:         "",
 	}
-	CountryANDORRA = CountryEnum{
+	CountryAndorra = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ANDORRA",
 		EntityCode:      "203",
 		Deleted:         "",
 	}
-	CountryREVILLAGIGEDO = CountryEnum{
+	CountryRevillagigedo = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "REVILLAGIGEDO",
 		EntityCode:      "204",
 		Deleted:         "",
 	}
-	CountryASCENSION_I_ = CountryEnum{
+	CountryAscensionIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ASCENSION I.",
 		EntityCode:      "205",
 		Deleted:         "",
 	}
-	CountryAUSTRIA = CountryEnum{
+	CountryAustria = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "AUSTRIA",
 		EntityCode:      "206",
 		Deleted:         "",
 	}
-	CountryRODRIGUEZ_I_ = CountryEnum{
+	CountryRodriguezIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "RODRIGUEZ I.",
 		EntityCode:      "207",
 		Deleted:         "",
 	}
-	CountryRUANDA_URUNDI_Deleted = CountryEnum{
+	CountryRuandaUrundi_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "RUANDA-URUNDI",
 		EntityCode:      "208",
 		Deleted:         "true",
 	}
-	CountryBELGIUM = CountryEnum{
+	CountryBelgium = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BELGIUM",
 		EntityCode:      "209",
 		Deleted:         "",
 	}
-	CountrySAAR_Deleted = CountryEnum{
+	CountrySaar_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SAAR",
 		EntityCode:      "210",
 		Deleted:         "true",
 	}
-	CountrySABLE_I_ = CountryEnum{
+	CountrySableIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SABLE I.",
 		EntityCode:      "211",
 		Deleted:         "",
 	}
-	CountryBULGARIA = CountryEnum{
+	CountryBulgaria = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BULGARIA",
 		EntityCode:      "212",
 		Deleted:         "",
 	}
-	CountrySAINT_MARTIN = CountryEnum{
+	CountrySaintMartin = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SAINT MARTIN",
 		EntityCode:      "213",
 		Deleted:         "",
 	}
-	CountryCORSICA = CountryEnum{
+	CountryCorsica = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CORSICA",
 		EntityCode:      "214",
 		Deleted:         "",
 	}
-	CountryCYPRUS = CountryEnum{
+	CountryCyprus = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CYPRUS",
 		EntityCode:      "215",
 		Deleted:         "",
 	}
-	CountrySAN_ANDRES_PROVIDENCIA = CountryEnum{
+	CountrySanAndresProvidencia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SAN ANDRES & PROVIDENCIA",
 		EntityCode:      "216",
 		Deleted:         "",
 	}
-	CountrySAN_FELIX_SAN_AMBROSIO = CountryEnum{
+	CountrySanFelixSanAmbrosio = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SAN FELIX & SAN AMBROSIO",
 		EntityCode:      "217",
 		Deleted:         "",
 	}
-	CountryCZECHOSLOVAKIA_Deleted = CountryEnum{
+	CountryCzechoslovakia_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CZECHOSLOVAKIA",
 		EntityCode:      "218",
 		Deleted:         "true",
 	}
-	CountrySAO_TOME_PRINCIPE = CountryEnum{
+	CountrySaoTomePrincipe = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SAO TOME & PRINCIPE",
 		EntityCode:      "219",
 		Deleted:         "",
 	}
-	CountrySARAWAK_Deleted = CountryEnum{
+	CountrySarawak_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SARAWAK",
 		EntityCode:      "220",
 		Deleted:         "true",
 	}
-	CountryDENMARK = CountryEnum{
+	CountryDenmark = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "DENMARK",
 		EntityCode:      "221",
 		Deleted:         "",
 	}
-	CountryFAROE_IS_ = CountryEnum{
+	CountryFaroeIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "FAROE IS.",
 		EntityCode:      "222",
 		Deleted:         "",
 	}
-	CountryENGLAND = CountryEnum{
+	CountryEngland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ENGLAND",
 		EntityCode:      "223",
 		Deleted:         "",
 	}
-	CountryFINLAND = CountryEnum{
+	CountryFinland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "FINLAND",
 		EntityCode:      "224",
 		Deleted:         "",
 	}
-	CountrySARDINIA = CountryEnum{
+	CountrySardinia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SARDINIA",
 		EntityCode:      "225",
 		Deleted:         "",
 	}
-	CountrySAUDI_ARABIA_IRAQ_NEUTRAL_ZONE_Deleted = CountryEnum{
+	CountrySaudiArabiaIraqNeutralZone_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SAUDI ARABIA/IRAQ NEUTRAL ZONE",
 		EntityCode:      "226",
 		Deleted:         "true",
 	}
-	CountryFRANCE = CountryEnum{
+	CountryFrance = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "FRANCE",
 		EntityCode:      "227",
 		Deleted:         "",
 	}
-	CountrySERRANA_BANK_RONCADOR_CAY_Deleted = CountryEnum{
+	CountrySerranaBankRoncadorCay_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SERRANA BANK & RONCADOR CAY",
 		EntityCode:      "228",
 		Deleted:         "true",
 	}
-	CountryGERMAN_DEMOCRATIC_REPUBLIC_Deleted = CountryEnum{
+	CountryGermanDemocraticRepublic_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GERMAN DEMOCRATIC REPUBLIC",
 		EntityCode:      "229",
 		Deleted:         "true",
 	}
-	CountryFEDERAL_REPUBLIC_OF_GERMANY = CountryEnum{
+	CountryFederalRepublicOfGermany = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "FEDERAL REPUBLIC OF GERMANY",
 		EntityCode:      "230",
 		Deleted:         "",
 	}
-	CountrySIKKIM_Deleted = CountryEnum{
+	CountrySikkim_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SIKKIM",
 		EntityCode:      "231",
 		Deleted:         "true",
 	}
-	CountrySOMALIA = CountryEnum{
+	CountrySomalia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SOMALIA",
 		EntityCode:      "232",
 		Deleted:         "",
 	}
-	CountryGIBRALTAR = CountryEnum{
+	CountryGibraltar = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GIBRALTAR",
 		EntityCode:      "233",
 		Deleted:         "",
 	}
-	CountrySOUTH_COOK_IS_ = CountryEnum{
+	CountrySouthCookIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SOUTH COOK IS.",
 		EntityCode:      "234",
 		Deleted:         "",
 	}
-	CountrySOUTH_GEORGIA_I_ = CountryEnum{
+	CountrySouthGeorgiaIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SOUTH GEORGIA I.",
 		EntityCode:      "235",
 		Deleted:         "",
 	}
-	CountryGREECE = CountryEnum{
+	CountryGreece = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GREECE",
 		EntityCode:      "236",
 		Deleted:         "",
 	}
-	CountryGREENLAND = CountryEnum{
+	CountryGreenland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GREENLAND",
 		EntityCode:      "237",
 		Deleted:         "",
 	}
-	CountrySOUTH_ORKNEY_IS_ = CountryEnum{
+	CountrySouthOrkneyIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SOUTH ORKNEY IS.",
 		EntityCode:      "238",
 		Deleted:         "",
 	}
-	CountryHUNGARY = CountryEnum{
+	CountryHungary = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "HUNGARY",
 		EntityCode:      "239",
 		Deleted:         "",
 	}
-	CountrySOUTH_SANDWICH_IS_ = CountryEnum{
+	CountrySouthSandwichIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SOUTH SANDWICH IS.",
 		EntityCode:      "240",
 		Deleted:         "",
 	}
-	CountrySOUTH_SHETLAND_IS_ = CountryEnum{
+	CountrySouthShetlandIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SOUTH SHETLAND IS.",
 		EntityCode:      "241",
 		Deleted:         "",
 	}
-	CountryICELAND = CountryEnum{
+	CountryIceland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ICELAND",
 		EntityCode:      "242",
 		Deleted:         "",
 	}
-	CountryPEOPLE_S_DEMOCRATIC_REP_OF_YEMEN_Deleted = CountryEnum{
+	CountryPeoplesDemocraticRepOfYemen_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PEOPLE'S DEMOCRATIC REP. OF YEMEN",
 		EntityCode:      "243",
 		Deleted:         "true",
 	}
-	CountrySOUTHERN_SUDAN_Deleted = CountryEnum{
+	CountrySouthernSudan_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SOUTHERN SUDAN",
 		EntityCode:      "244",
 		Deleted:         "true",
 	}
-	CountryIRELAND = CountryEnum{
+	CountryIreland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "IRELAND",
 		EntityCode:      "245",
 		Deleted:         "",
 	}
-	CountrySOVEREIGN_MILITARY_ORDER_OF_MALTA = CountryEnum{
+	CountrySovereignMilitaryOrderOfMalta = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SOVEREIGN MILITARY ORDER OF MALTA",
 		EntityCode:      "246",
 		Deleted:         "",
 	}
-	CountrySPRATLY_IS_ = CountryEnum{
+	CountrySpratlyIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SPRATLY IS.",
 		EntityCode:      "247",
 		Deleted:         "",
 	}
-	CountryITALY = CountryEnum{
+	CountryItaly = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ITALY",
 		EntityCode:      "248",
 		Deleted:         "",
 	}
-	CountryST_KITTS_NEVIS = CountryEnum{
+	CountryStKittsNevis = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ST. KITTS & NEVIS",
 		EntityCode:      "249",
 		Deleted:         "",
 	}
-	CountryST_HELENA = CountryEnum{
+	CountryStHelena = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ST. HELENA",
 		EntityCode:      "250",
 		Deleted:         "",
 	}
-	CountryLIECHTENSTEIN = CountryEnum{
+	CountryLiechtenstein = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "LIECHTENSTEIN",
 		EntityCode:      "251",
 		Deleted:         "",
 	}
-	CountryST_PAUL_I_ = CountryEnum{
+	CountryStPaulIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ST. PAUL I.",
 		EntityCode:      "252",
 		Deleted:         "",
 	}
-	CountryST_PETER_ST_PAUL_ROCKS = CountryEnum{
+	CountryStPeterStPaulRocks = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ST. PETER & ST. PAUL ROCKS",
 		EntityCode:      "253",
 		Deleted:         "",
 	}
-	CountryLUXEMBOURG = CountryEnum{
+	CountryLuxembourg = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "LUXEMBOURG",
 		EntityCode:      "254",
 		Deleted:         "",
 	}
-	CountryST_MAARTEN_SABA_ST_EUSTATIUS_Deleted = CountryEnum{
+	CountryStMaartenSabaStEustatius_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ST. MAARTEN, SABA, ST. EUSTATIUS",
 		EntityCode:      "255",
 		Deleted:         "true",
 	}
-	CountryMADEIRA_IS_ = CountryEnum{
+	CountryMadeiraIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MADEIRA IS.",
 		EntityCode:      "256",
 		Deleted:         "",
 	}
-	CountryMALTA = CountryEnum{
+	CountryMalta = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MALTA",
 		EntityCode:      "257",
 		Deleted:         "",
 	}
-	CountrySUMATRA_Deleted = CountryEnum{
+	CountrySumatra_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SUMATRA",
 		EntityCode:      "258",
 		Deleted:         "true",
 	}
-	CountrySVALBARD = CountryEnum{
+	CountrySvalbard = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SVALBARD",
 		EntityCode:      "259",
 		Deleted:         "",
 	}
-	CountryMONACO = CountryEnum{
+	CountryMonaco = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MONACO",
 		EntityCode:      "260",
 		Deleted:         "",
 	}
-	CountrySWAN_IS__Deleted = CountryEnum{
+	CountrySwanIslands_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SWAN IS.",
 		EntityCode:      "261",
 		Deleted:         "true",
 	}
-	CountryTAJIKISTAN = CountryEnum{
+	CountryTajikistan = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TAJIKISTAN",
 		EntityCode:      "262",
 		Deleted:         "",
 	}
-	CountryNETHERLANDS = CountryEnum{
+	CountryNetherlands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NETHERLANDS",
 		EntityCode:      "263",
 		Deleted:         "",
 	}
-	CountryTANGIER_Deleted = CountryEnum{
+	CountryTangier_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TANGIER",
 		EntityCode:      "264",
 		Deleted:         "true",
 	}
-	CountryNORTHERN_IRELAND = CountryEnum{
+	CountryNorthernIreland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NORTHERN IRELAND",
 		EntityCode:      "265",
 		Deleted:         "",
 	}
-	CountryNORWAY = CountryEnum{
+	CountryNorway = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NORWAY",
 		EntityCode:      "266",
 		Deleted:         "",
 	}
-	CountryTERRITORY_OF_NEW_GUINEA_Deleted = CountryEnum{
+	CountryTerritoryOfNewGuinea_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TERRITORY OF NEW GUINEA",
 		EntityCode:      "267",
 		Deleted:         "true",
 	}
-	CountryTIBET_Deleted = CountryEnum{
+	CountryTibet_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TIBET",
 		EntityCode:      "268",
 		Deleted:         "true",
 	}
-	CountryPOLAND = CountryEnum{
+	CountryPoland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "POLAND",
 		EntityCode:      "269",
 		Deleted:         "",
 	}
-	CountryTOKELAU_IS_ = CountryEnum{
+	CountryTokelauIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TOKELAU IS.",
 		EntityCode:      "270",
 		Deleted:         "",
 	}
-	CountryTRIESTE_Deleted = CountryEnum{
+	CountryTrieste_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TRIESTE",
 		EntityCode:      "271",
 		Deleted:         "true",
 	}
-	CountryPORTUGAL = CountryEnum{
+	CountryPortugal = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PORTUGAL",
 		EntityCode:      "272",
 		Deleted:         "",
 	}
-	CountryTRINDADE_MARTIM_VAZ_IS_ = CountryEnum{
+	CountryTrindadeMartimVazIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TRINDADE & MARTIM VAZ IS.",
 		EntityCode:      "273",
 		Deleted:         "",
 	}
-	CountryTRISTAN_DA_CUNHA_GOUGH_I_ = CountryEnum{
+	CountryTristanDaCunhaGoughIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TRISTAN DA CUNHA & GOUGH I.",
 		EntityCode:      "274",
 		Deleted:         "",
 	}
-	CountryROMANIA = CountryEnum{
+	CountryRomania = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ROMANIA",
 		EntityCode:      "275",
 		Deleted:         "",
 	}
-	CountryTROMELIN_I_ = CountryEnum{
+	CountryTromelinIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TROMELIN I.",
 		EntityCode:      "276",
 		Deleted:         "",
 	}
-	CountryST_PIERRE_MIQUELON = CountryEnum{
+	CountryStPierreMiquelon = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ST. PIERRE & MIQUELON",
 		EntityCode:      "277",
 		Deleted:         "",
 	}
-	CountrySAN_MARINO = CountryEnum{
+	CountrySanMarino = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SAN MARINO",
 		EntityCode:      "278",
 		Deleted:         "",
 	}
-	CountrySCOTLAND = CountryEnum{
+	CountryScotland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SCOTLAND",
 		EntityCode:      "279",
 		Deleted:         "",
 	}
-	CountryTURKMENISTAN = CountryEnum{
+	CountryTurkmenistan = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TURKMENISTAN",
 		EntityCode:      "280",
 		Deleted:         "",
 	}
-	CountrySPAIN = CountryEnum{
+	CountrySpain = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SPAIN",
 		EntityCode:      "281",
 		Deleted:         "",
 	}
-	CountryTUVALU = CountryEnum{
+	CountryTuvalu = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TUVALU",
 		EntityCode:      "282",
 		Deleted:         "",
 	}
-	CountryUK_SOVEREIGN_BASE_AREAS_ON_CYPRUS = CountryEnum{
+	CountryUkSovereignBaseAreasOnCyprus = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "UK SOVEREIGN BASE AREAS ON CYPRUS",
 		EntityCode:      "283",
 		Deleted:         "",
 	}
-	CountrySWEDEN = CountryEnum{
+	CountrySweden = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SWEDEN",
 		EntityCode:      "284",
 		Deleted:         "",
 	}
-	CountryVIRGIN_IS_ = CountryEnum{
+	CountryVirginIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "VIRGIN IS.",
 		EntityCode:      "285",
 		Deleted:         "",
 	}
-	CountryUGANDA = CountryEnum{
+	CountryUganda = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "UGANDA",
 		EntityCode:      "286",
 		Deleted:         "",
 	}
-	CountrySWITZERLAND = CountryEnum{
+	CountrySwitzerland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SWITZERLAND",
 		EntityCode:      "287",
 		Deleted:         "",
 	}
-	CountryUKRAINE = CountryEnum{
+	CountryUkraine = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "UKRAINE",
 		EntityCode:      "288",
 		Deleted:         "",
 	}
-	CountryUNITED_NATIONS_HQ = CountryEnum{
+	CountryUnitedNationsHq = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "UNITED NATIONS HQ",
 		EntityCode:      "289",
 		Deleted:         "",
 	}
-	CountryUNITED_STATES_OF_AMERICA = CountryEnum{
+	CountryUnitedStatesOfAmerica = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "UNITED STATES OF AMERICA",
 		EntityCode:      "291",
 		Deleted:         "",
 	}
-	CountryUZBEKISTAN = CountryEnum{
+	CountryUzbekistan = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "UZBEKISTAN",
 		EntityCode:      "292",
 		Deleted:         "",
 	}
-	CountryVIET_NAM = CountryEnum{
+	CountryVietNam = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "VIET NAM",
 		EntityCode:      "293",
 		Deleted:         "",
 	}
-	CountryWALES = CountryEnum{
+	CountryWales = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "WALES",
 		EntityCode:      "294",
 		Deleted:         "",
 	}
-	CountryVATICAN = CountryEnum{
+	CountryVatican = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "VATICAN",
 		EntityCode:      "295",
 		Deleted:         "",
 	}
-	CountrySERBIA = CountryEnum{
+	CountrySerbia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SERBIA",
 		EntityCode:      "296",
 		Deleted:         "",
 	}
-	CountryWAKE_I_ = CountryEnum{
+	CountryWakeIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "WAKE I.",
 		EntityCode:      "297",
 		Deleted:         "",
 	}
-	CountryWALLIS_FUTUNA_IS_ = CountryEnum{
+	CountryWallisFutunaIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "WALLIS & FUTUNA IS.",
 		EntityCode:      "298",
 		Deleted:         "",
 	}
-	CountryWEST_MALAYSIA = CountryEnum{
+	CountryWestMalaysia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "WEST MALAYSIA",
 		EntityCode:      "299",
 		Deleted:         "",
 	}
-	CountryW_KIRIBATI_GILBERT_IS_ = CountryEnum{
+	CountryWKiribatiGilbertIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "W. KIRIBATI (GILBERT IS. )",
 		EntityCode:      "301",
 		Deleted:         "",
 	}
-	CountryWESTERN_SAHARA = CountryEnum{
+	CountryWesternSahara = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "WESTERN SAHARA",
 		EntityCode:      "302",
 		Deleted:         "",
 	}
-	CountryWILLIS_I_ = CountryEnum{
+	CountryWillisIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "WILLIS I.",
 		EntityCode:      "303",
 		Deleted:         "",
 	}
-	CountryBAHRAIN = CountryEnum{
+	CountryBahrain = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BAHRAIN",
 		EntityCode:      "304",
 		Deleted:         "",
 	}
-	CountryBANGLADESH = CountryEnum{
+	CountryBangladesh = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BANGLADESH",
 		EntityCode:      "305",
 		Deleted:         "",
 	}
-	CountryBHUTAN = CountryEnum{
+	CountryBhutan = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BHUTAN",
 		EntityCode:      "306",
 		Deleted:         "",
 	}
-	CountryZANZIBAR_Deleted = CountryEnum{
+	CountryZanzibar_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ZANZIBAR",
 		EntityCode:      "307",
 		Deleted:         "true",
 	}
-	CountryCOSTA_RICA = CountryEnum{
+	CountryCostaRica = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "COSTA RICA",
 		EntityCode:      "308",
 		Deleted:         "",
 	}
-	CountryMYANMAR = CountryEnum{
+	CountryMyanmar = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MYANMAR",
 		EntityCode:      "309",
 		Deleted:         "",
 	}
-	CountryCAMBODIA = CountryEnum{
+	CountryCambodia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CAMBODIA",
 		EntityCode:      "312",
 		Deleted:         "",
 	}
-	CountrySRI_LANKA = CountryEnum{
+	CountrySriLanka = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SRI LANKA",
 		EntityCode:      "315",
 		Deleted:         "",
 	}
-	CountryCHINA = CountryEnum{
+	CountryChina = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CHINA",
 		EntityCode:      "318",
 		Deleted:         "",
 	}
-	CountryHONG_KONG = CountryEnum{
+	CountryHongKong = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "HONG KONG",
 		EntityCode:      "321",
 		Deleted:         "",
 	}
-	CountryINDIA = CountryEnum{
+	CountryIndia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "INDIA",
 		EntityCode:      "324",
 		Deleted:         "",
 	}
-	CountryINDONESIA = CountryEnum{
+	CountryIndonesia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "INDONESIA",
 		EntityCode:      "327",
 		Deleted:         "",
 	}
-	CountryIRAN = CountryEnum{
+	CountryIran = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "IRAN",
 		EntityCode:      "330",
 		Deleted:         "",
 	}
-	CountryIRAQ = CountryEnum{
+	CountryIraq = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "IRAQ",
 		EntityCode:      "333",
 		Deleted:         "",
 	}
-	CountryISRAEL = CountryEnum{
+	CountryIsrael = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ISRAEL",
 		EntityCode:      "336",
 		Deleted:         "",
 	}
-	CountryJAPAN = CountryEnum{
+	CountryJapan = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "JAPAN",
 		EntityCode:      "339",
 		Deleted:         "",
 	}
-	CountryJORDAN = CountryEnum{
+	CountryJordan = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "JORDAN",
 		EntityCode:      "342",
 		Deleted:         "",
 	}
-	CountryDEMOCRATIC_PEOPLE_S_REP_OF_KOREA = CountryEnum{
+	CountryDemocraticPeoplesRepOfKorea = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "DEMOCRATIC PEOPLE'S REP. OF KOREA",
 		EntityCode:      "344",
 		Deleted:         "",
 	}
-	CountryBRUNEI_DARUSSALAM = CountryEnum{
+	CountryBruneiDarussalam = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BRUNEI DARUSSALAM",
 		EntityCode:      "345",
 		Deleted:         "",
 	}
-	CountryKUWAIT = CountryEnum{
+	CountryKuwait = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "KUWAIT",
 		EntityCode:      "348",
 		Deleted:         "",
 	}
-	CountryLEBANON = CountryEnum{
+	CountryLebanon = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "LEBANON",
 		EntityCode:      "354",
 		Deleted:         "",
 	}
-	CountryMONGOLIA = CountryEnum{
+	CountryMongolia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MONGOLIA",
 		EntityCode:      "363",
 		Deleted:         "",
 	}
-	CountryNEPAL = CountryEnum{
+	CountryNepal = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NEPAL",
 		EntityCode:      "369",
 		Deleted:         "",
 	}
-	CountryOMAN = CountryEnum{
+	CountryOman = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "OMAN",
 		EntityCode:      "370",
 		Deleted:         "",
 	}
-	CountryPAKISTAN = CountryEnum{
+	CountryPakistan = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PAKISTAN",
 		EntityCode:      "372",
 		Deleted:         "",
 	}
-	CountryPHILIPPINES = CountryEnum{
+	CountryPhilippines = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PHILIPPINES",
 		EntityCode:      "375",
 		Deleted:         "",
 	}
-	CountryQATAR = CountryEnum{
+	CountryQatar = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "QATAR",
 		EntityCode:      "376",
 		Deleted:         "",
 	}
-	CountrySAUDI_ARABIA = CountryEnum{
+	CountrySaudiArabia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SAUDI ARABIA",
 		EntityCode:      "378",
 		Deleted:         "",
 	}
-	CountrySEYCHELLES = CountryEnum{
+	CountrySeychelles = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SEYCHELLES",
 		EntityCode:      "379",
 		Deleted:         "",
 	}
-	CountrySINGAPORE = CountryEnum{
+	CountrySingapore = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SINGAPORE",
 		EntityCode:      "381",
 		Deleted:         "",
 	}
-	CountryDJIBOUTI = CountryEnum{
+	CountryDjibouti = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "DJIBOUTI",
 		EntityCode:      "382",
 		Deleted:         "",
 	}
-	CountrySYRIA = CountryEnum{
+	CountrySyria = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SYRIA",
 		EntityCode:      "384",
 		Deleted:         "",
 	}
-	CountryTAIWAN = CountryEnum{
+	CountryTaiwan = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TAIWAN",
 		EntityCode:      "386",
 		Deleted:         "",
 	}
-	CountryTHAILAND = CountryEnum{
+	CountryThailand = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "THAILAND",
 		EntityCode:      "387",
 		Deleted:         "",
 	}
-	CountryTURKEY = CountryEnum{
+	CountryTurkey = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TURKEY",
 		EntityCode:      "390",
 		Deleted:         "",
 	}
-	CountryUNITED_ARAB_EMIRATES = CountryEnum{
+	CountryUnitedArabEmirates = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "UNITED ARAB EMIRATES",
 		EntityCode:      "391",
 		Deleted:         "",
 	}
-	CountryALGERIA = CountryEnum{
+	CountryAlgeria = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ALGERIA",
 		EntityCode:      "400",
 		Deleted:         "",
 	}
-	CountryANGOLA = CountryEnum{
+	CountryAngola = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ANGOLA",
 		EntityCode:      "401",
 		Deleted:         "",
 	}
-	CountryBOTSWANA = CountryEnum{
+	CountryBotswana = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BOTSWANA",
 		EntityCode:      "402",
 		Deleted:         "",
 	}
-	CountryBURUNDI = CountryEnum{
+	CountryBurundi = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BURUNDI",
 		EntityCode:      "404",
 		Deleted:         "",
 	}
-	CountryCAMEROON = CountryEnum{
+	CountryCameroon = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CAMEROON",
 		EntityCode:      "406",
 		Deleted:         "",
 	}
-	CountryCENTRAL_AFRICA = CountryEnum{
+	CountryCentralAfrica = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CENTRAL AFRICA",
 		EntityCode:      "408",
 		Deleted:         "",
 	}
-	CountryCAPE_VERDE = CountryEnum{
+	CountryCapeVerde = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CAPE VERDE",
 		EntityCode:      "409",
 		Deleted:         "",
 	}
-	CountryCHAD = CountryEnum{
+	CountryChad = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CHAD",
 		EntityCode:      "410",
 		Deleted:         "",
 	}
-	CountryCOMOROS = CountryEnum{
+	CountryComoros = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "COMOROS",
 		EntityCode:      "411",
 		Deleted:         "",
 	}
-	CountryREPUBLIC_OF_THE_CONGO = CountryEnum{
+	CountryRepublicOfTheCongo = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "REPUBLIC OF THE CONGO",
 		EntityCode:      "412",
 		Deleted:         "",
 	}
-	CountryDEMOCRATIC_REPUBLIC_OF_THE_CONGO = CountryEnum{
+	CountryDemocraticRepublicOfTheCongo = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "DEMOCRATIC REPUBLIC OF THE CONGO",
 		EntityCode:      "414",
 		Deleted:         "",
 	}
-	CountryBENIN = CountryEnum{
+	CountryBenin = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BENIN",
 		EntityCode:      "416",
 		Deleted:         "",
 	}
-	CountryGABON = CountryEnum{
+	CountryGabon = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GABON",
 		EntityCode:      "420",
 		Deleted:         "",
 	}
-	CountryTHE_GAMBIA = CountryEnum{
+	CountryTheGambia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "THE GAMBIA",
 		EntityCode:      "422",
 		Deleted:         "",
 	}
-	CountryGHANA = CountryEnum{
+	CountryGhana = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "GHANA",
 		EntityCode:      "424",
 		Deleted:         "",
 	}
-	CountryCOTE_D_IVOIRE = CountryEnum{
+	CountryCoteDIvoire = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "COTE D'IVOIRE",
 		EntityCode:      "428",
 		Deleted:         "",
 	}
-	CountryKENYA = CountryEnum{
+	CountryKenya = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "KENYA",
 		EntityCode:      "430",
 		Deleted:         "",
 	}
-	CountryLESOTHO = CountryEnum{
+	CountryLesotho = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "LESOTHO",
 		EntityCode:      "432",
 		Deleted:         "",
 	}
-	CountryLIBERIA = CountryEnum{
+	CountryLiberia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "LIBERIA",
 		EntityCode:      "434",
 		Deleted:         "",
 	}
-	CountryLIBYA = CountryEnum{
+	CountryLibya = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "LIBYA",
 		EntityCode:      "436",
 		Deleted:         "",
 	}
-	CountryMADAGASCAR = CountryEnum{
+	CountryMadagascar = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MADAGASCAR",
 		EntityCode:      "438",
 		Deleted:         "",
 	}
-	CountryMALAWI = CountryEnum{
+	CountryMalawi = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MALAWI",
 		EntityCode:      "440",
 		Deleted:         "",
 	}
-	CountryMALI = CountryEnum{
+	CountryMali = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MALI",
 		EntityCode:      "442",
 		Deleted:         "",
 	}
-	CountryMAURITANIA = CountryEnum{
+	CountryMauritania = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MAURITANIA",
 		EntityCode:      "444",
 		Deleted:         "",
 	}
-	CountryMOROCCO = CountryEnum{
+	CountryMorocco = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MOROCCO",
 		EntityCode:      "446",
 		Deleted:         "",
 	}
-	CountryNIGERIA = CountryEnum{
+	CountryNigeria = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NIGERIA",
 		EntityCode:      "450",
 		Deleted:         "",
 	}
-	CountryZIMBABWE = CountryEnum{
+	CountryZimbabwe = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ZIMBABWE",
 		EntityCode:      "452",
 		Deleted:         "",
 	}
-	CountryREUNION_I_ = CountryEnum{
+	CountryReunionIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "REUNION I.",
 		EntityCode:      "453",
 		Deleted:         "",
 	}
-	CountryRWANDA = CountryEnum{
+	CountryRwanda = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "RWANDA",
 		EntityCode:      "454",
 		Deleted:         "",
 	}
-	CountrySENEGAL = CountryEnum{
+	CountrySenegal = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SENEGAL",
 		EntityCode:      "456",
 		Deleted:         "",
 	}
-	CountrySIERRA_LEONE = CountryEnum{
+	CountrySierraLeone = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SIERRA LEONE",
 		EntityCode:      "458",
 		Deleted:         "",
 	}
-	CountryROTUMA_I_ = CountryEnum{
+	CountryRotumaIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ROTUMA I.",
 		EntityCode:      "460",
 		Deleted:         "",
 	}
-	CountrySOUTH_AFRICA = CountryEnum{
+	CountrySouthAfrica = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SOUTH AFRICA",
 		EntityCode:      "462",
 		Deleted:         "",
 	}
-	CountryNAMIBIA = CountryEnum{
+	CountryNamibia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "NAMIBIA",
 		EntityCode:      "464",
 		Deleted:         "",
 	}
-	CountrySUDAN = CountryEnum{
+	CountrySudan = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SUDAN",
 		EntityCode:      "466",
 		Deleted:         "",
 	}
-	CountrySWAZILAND = CountryEnum{
+	CountrySwaziland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SWAZILAND",
 		EntityCode:      "468",
 		Deleted:         "",
 	}
-	CountryTANZANIA = CountryEnum{
+	CountryTanzania = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TANZANIA",
 		EntityCode:      "470",
 		Deleted:         "",
 	}
-	CountryTUNISIA = CountryEnum{
+	CountryTunisia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TUNISIA",
 		EntityCode:      "474",
 		Deleted:         "",
 	}
-	CountryEGYPT = CountryEnum{
+	CountryEgypt = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "EGYPT",
 		EntityCode:      "478",
 		Deleted:         "",
 	}
-	CountryBURKINA_FASO = CountryEnum{
+	CountryBurkinaFaso = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BURKINA FASO",
 		EntityCode:      "480",
 		Deleted:         "",
 	}
-	CountryZAMBIA = CountryEnum{
+	CountryZambia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ZAMBIA",
 		EntityCode:      "482",
 		Deleted:         "",
 	}
-	CountryTOGO = CountryEnum{
+	CountryTogo = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TOGO",
 		EntityCode:      "483",
 		Deleted:         "",
 	}
-	CountryWALVIS_BAY_Deleted = CountryEnum{
+	CountryWalvisBay_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "WALVIS BAY",
 		EntityCode:      "488",
 		Deleted:         "true",
 	}
-	CountryCONWAY_REEF = CountryEnum{
+	CountryConwayReef = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CONWAY REEF",
 		EntityCode:      "489",
 		Deleted:         "",
 	}
-	CountryBANABA_I_OCEAN_I_ = CountryEnum{
+	CountryBanabaIslandOceanIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BANABA I. (OCEAN I.)",
 		EntityCode:      "490",
 		Deleted:         "",
 	}
-	CountryYEMEN = CountryEnum{
+	CountryYemen = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "YEMEN",
 		EntityCode:      "492",
 		Deleted:         "",
 	}
-	CountryPENGUIN_IS__Deleted = CountryEnum{
+	CountryPenguinIslands_deleted = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PENGUIN IS.",
 		EntityCode:      "493",
 		Deleted:         "true",
 	}
-	CountryCROATIA = CountryEnum{
+	CountryCroatia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CROATIA",
 		EntityCode:      "497",
 		Deleted:         "",
 	}
-	CountrySLOVENIA = CountryEnum{
+	CountrySlovenia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SLOVENIA",
 		EntityCode:      "499",
 		Deleted:         "",
 	}
-	CountryBOSNIA_HERZEGOVINA = CountryEnum{
+	CountryBosniaHerzegovina = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BOSNIA-HERZEGOVINA",
 		EntityCode:      "501",
 		Deleted:         "",
 	}
-	CountryMACEDONIA = CountryEnum{
+	CountryMacedonia = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MACEDONIA",
 		EntityCode:      "502",
 		Deleted:         "",
 	}
-	CountryCZECH_REPUBLIC = CountryEnum{
+	CountryCzechRepublic = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CZECH REPUBLIC",
 		EntityCode:      "503",
 		Deleted:         "",
 	}
-	CountrySLOVAK_REPUBLIC = CountryEnum{
+	CountrySlovakRepublic = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SLOVAK REPUBLIC",
 		EntityCode:      "504",
 		Deleted:         "",
 	}
-	CountryPRATAS_I_ = CountryEnum{
+	CountryPratasIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PRATAS I.",
 		EntityCode:      "505",
 		Deleted:         "",
 	}
-	CountrySCARBOROUGH_REEF = CountryEnum{
+	CountryScarboroughReef = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SCARBOROUGH REEF",
 		EntityCode:      "506",
 		Deleted:         "",
 	}
-	CountryTEMOTU_PROVINCE = CountryEnum{
+	CountryTemotuProvince = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TEMOTU PROVINCE",
 		EntityCode:      "507",
 		Deleted:         "",
 	}
-	CountryAUSTRAL_I_ = CountryEnum{
+	CountryAustralIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "AUSTRAL I.",
 		EntityCode:      "508",
 		Deleted:         "",
 	}
-	CountryMARQUESAS_IS_ = CountryEnum{
+	CountryMarquesasIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MARQUESAS IS.",
 		EntityCode:      "509",
 		Deleted:         "",
 	}
-	CountryPALESTINE = CountryEnum{
+	CountryPalestine = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "PALESTINE",
 		EntityCode:      "510",
 		Deleted:         "",
 	}
-	CountryTIMOR_LESTE = CountryEnum{
+	CountryTimorLeste = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "TIMOR-LESTE",
 		EntityCode:      "511",
 		Deleted:         "",
 	}
-	CountryCHESTERFIELD_IS_ = CountryEnum{
+	CountryChesterfieldIslands = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CHESTERFIELD IS.",
 		EntityCode:      "512",
 		Deleted:         "",
 	}
-	CountryDUCIE_I_ = CountryEnum{
+	CountryDucieIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "DUCIE I.",
 		EntityCode:      "513",
 		Deleted:         "",
 	}
-	CountryMONTENEGRO = CountryEnum{
+	CountryMontenegro = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "MONTENEGRO",
 		EntityCode:      "514",
 		Deleted:         "",
 	}
-	CountrySWAINS_I_ = CountryEnum{
+	CountrySwainsIsland = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SWAINS I.",
 		EntityCode:      "515",
 		Deleted:         "",
 	}
-	CountrySAINT_BARTHELEMY = CountryEnum{
+	CountrySaintBarthelemy = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SAINT BARTHELEMY",
 		EntityCode:      "516",
 		Deleted:         "",
 	}
-	CountryCURACAO = CountryEnum{
+	CountryCuracao = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "CURACAO",
 		EntityCode:      "517",
 		Deleted:         "",
 	}
-	CountryST_MAARTEN = CountryEnum{
+	CountryStMaarten = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "ST MAARTEN",
 		EntityCode:      "518",
 		Deleted:         "",
 	}
-	CountrySABA_ST_EUSTATIUS = CountryEnum{
+	CountrySabaStEustatius = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SABA & ST. EUSTATIUS",
 		EntityCode:      "519",
 		Deleted:         "",
 	}
-	CountryBONAIRE = CountryEnum{
+	CountryBonaire = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "BONAIRE",
 		EntityCode:      "520",
 		Deleted:         "",
 	}
-	CountrySOUTH_SUDAN_REPUBLIC_OF_ = CountryEnum{
+	CountrySouthSudanRepublicOf = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "SOUTH SUDAN (REPUBLIC OF)",
 		EntityCode:      "521",
 		Deleted:         "",
 	}
-	CountryREPUBLIC_OF_KOSOVO = CountryEnum{
+	CountryRepublicOfKosovo = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "REPUBLIC OF KOSOVO",
 		EntityCode:      "522",
@@ -26056,409 +26056,409 @@ var CountryEnumeration = Enumeration{
 		"Deleted",
 	},
 	Values: []EnumValue{
-		CountryNone_the_contacted_station_is_known_to_not_be_within_a_DXCC_entity_,
-		CountryCANADA,
-		CountryABU_AIL_IS__Deleted,
-		CountryAFGHANISTAN,
-		CountryAGALEGA_ST_BRANDON_IS_,
-		CountryALAND_IS_,
-		CountryALASKA,
-		CountryALBANIA,
-		CountryALDABRA_Deleted,
-		CountryAMERICAN_SAMOA,
-		CountryAMSTERDAM_ST_PAUL_IS_,
-		CountryANDAMAN_NICOBAR_IS_,
-		CountryANGUILLA,
-		CountryANTARCTICA,
-		CountryARMENIA,
-		CountryASIATIC_RUSSIA,
-		CountryNEW_ZEALAND_SUBANTARCTIC_ISLANDS,
-		CountryAVES_I_,
-		CountryAZERBAIJAN,
-		CountryBAJO_NUEVO_Deleted,
-		CountryBAKER_HOWLAND_IS_,
-		CountryBALEARIC_IS_,
-		CountryPALAU,
-		CountryBLENHEIM_REEF_Deleted,
-		CountryBOUVET,
-		CountryBRITISH_NORTH_BORNEO_Deleted,
-		CountryBRITISH_SOMALILAND_Deleted,
-		CountryBELARUS,
-		CountryCANAL_ZONE_Deleted,
-		CountryCANARY_IS_,
-		CountryCELEBE_MOLUCCA_IS__Deleted,
-		CountryC_KIRIBATI_BRITISH_PHOENIX_IS_,
-		CountryCEUTA_MELILLA,
-		CountryCHAGOS_IS_,
-		CountryCHATHAM_IS_,
-		CountryCHRISTMAS_I_,
-		CountryCLIPPERTON_I_,
-		CountryCOCOS_I_,
-		CountryCOCOS_KEELING_IS_,
-		CountryCOMOROS_Deleted,
-		CountryCRETE,
-		CountryCROZET_I_,
-		CountryDAMAO_DIU_Deleted,
-		CountryDESECHEO_I_,
-		CountryDESROCHES_Deleted,
-		CountryDODECANESE,
-		CountryEAST_MALAYSIA,
-		CountryEASTER_I_,
-		CountryE_KIRIBATI_LINE_IS_,
-		CountryEQUATORIAL_GUINEA,
-		CountryMEXICO,
-		CountryERITREA,
-		CountryESTONIA,
-		CountryETHIOPIA,
-		CountryEUROPEAN_RUSSIA,
-		CountryFARQUHAR_Deleted,
-		CountryFERNANDO_DE_NORONHA,
-		CountryFRENCH_EQUATORIAL_AFRICA_Deleted,
-		CountryFRENCH_INDO_CHINA_Deleted,
-		CountryFRENCH_WEST_AFRICA_Deleted,
-		CountryBAHAMAS,
-		CountryFRANZ_JOSEF_LAND,
-		CountryBARBADOS,
-		CountryFRENCH_GUIANA,
-		CountryBERMUDA,
-		CountryBRITISH_VIRGIN_IS_,
-		CountryBELIZE,
-		CountryFRENCH_INDIA_Deleted,
-		CountryKUWAIT_SAUDI_ARABIA_NEUTRAL_ZONE_Deleted,
-		CountryCAYMAN_IS_,
-		CountryCUBA,
-		CountryGALAPAGOS_IS_,
-		CountryDOMINICAN_REPUBLIC,
-		CountryEL_SALVADOR,
-		CountryGEORGIA,
-		CountryGUATEMALA,
-		CountryGRENADA,
-		CountryHAITI,
-		CountryGUADELOUPE,
-		CountryHONDURAS,
-		CountryGERMANY_Deleted,
-		CountryJAMAICA,
-		CountryMARTINIQUE,
-		CountryBONAIRE_CURACAO_Deleted,
-		CountryNICARAGUA,
-		CountryPANAMA,
-		CountryTURKS_CAICOS_IS_,
-		CountryTRINIDAD_TOBAGO,
-		CountryARUBA,
-		CountryGEYSER_REEF_Deleted,
-		CountryANTIGUA_BARBUDA,
-		CountryDOMINICA,
-		CountryMONTSERRAT,
-		CountryST_LUCIA,
-		CountryST_VINCENT,
-		CountryGLORIOSO_IS_,
-		CountryARGENTINA,
-		CountryGOA_Deleted,
-		CountryGOLD_COAST_TOGOLAND_Deleted,
-		CountryGUAM,
-		CountryBOLIVIA,
-		CountryGUANTANAMO_BAY,
-		CountryGUERNSEY,
-		CountryGUINEA,
-		CountryBRAZIL,
-		CountryGUINEA_BISSAU,
-		CountryHAWAII,
-		CountryHEARD_I_,
-		CountryCHILE,
-		CountryIFNI_Deleted,
-		CountryISLE_OF_MAN,
-		CountryITALIAN_SOMALILAND_Deleted,
-		CountryCOLOMBIA,
-		CountryITU_HQ,
-		CountryJAN_MAYEN,
-		CountryJAVA_Deleted,
-		CountryECUADOR,
-		CountryJERSEY,
-		CountryJOHNSTON_I_,
-		CountryJUAN_DE_NOVA_EUROPA,
-		CountryJUAN_FERNANDEZ_IS_,
-		CountryKALININGRAD,
-		CountryKAMARAN_IS__Deleted,
-		CountryKARELO_FINNISH_REPUBLIC_Deleted,
-		CountryGUYANA,
-		CountryKAZAKHSTAN,
-		CountryKERGUELEN_IS_,
-		CountryPARAGUAY,
-		CountryKERMADEC_IS_,
-		CountryKINGMAN_REEF_Deleted,
-		CountryKYRGYZSTAN,
-		CountryPERU,
-		CountryREPUBLIC_OF_KOREA,
-		CountryKURE_I_,
-		CountryKURIA_MURIA_I__Deleted,
-		CountrySURINAME,
-		CountryFALKLAND_IS_,
-		CountryLAKSHADWEEP_IS_,
-		CountryLAOS,
-		CountryURUGUAY,
-		CountryLATVIA,
-		CountryLITHUANIA,
-		CountryLORD_HOWE_I_,
-		CountryVENEZUELA,
-		CountryAZORES,
-		CountryAUSTRALIA,
-		CountryMALYJ_VYSOTSKIJ_I__Deleted,
-		CountryMACAO,
-		CountryMACQUARIE_I_,
-		CountryYEMEN_ARAB_REPUBLIC_Deleted,
-		CountryMALAYA_Deleted,
-		CountryNAURU,
-		CountryVANUATU,
-		CountryMALDIVES,
-		CountryTONGA,
-		CountryMALPELO_I_,
-		CountryNEW_CALEDONIA,
-		CountryPAPUA_NEW_GUINEA,
-		CountryMANCHURIA_Deleted,
-		CountryMAURITIUS,
-		CountryMARIANA_IS_,
-		CountryMARKET_REEF,
-		CountryMARSHALL_IS_,
-		CountryMAYOTTE,
-		CountryNEW_ZEALAND,
-		CountryMELLISH_REEF,
-		CountryPITCAIRN_I_,
-		CountryMICRONESIA,
-		CountryMIDWAY_I_,
-		CountryFRENCH_POLYNESIA,
-		CountryFIJI,
-		CountryMINAMI_TORISHIMA,
-		CountryMINERVA_REEF_Deleted,
-		CountryMOLDOVA,
-		CountryMOUNT_ATHOS,
-		CountryMOZAMBIQUE,
-		CountryNAVASSA_I_,
-		CountryNETHERLANDS_BORNEO_Deleted,
-		CountryNETHERLANDS_NEW_GUINEA_Deleted,
-		CountrySOLOMON_IS_,
-		CountryNEWFOUNDLAND_LABRADOR_Deleted,
-		CountryNIGER,
-		CountryNIUE,
-		CountryNORFOLK_I_,
-		CountrySAMOA,
-		CountryNORTH_COOK_IS_,
-		CountryOGASAWARA,
-		CountryOKINAWA_RYUKYU_IS__Deleted,
-		CountryOKINO_TORI_SHIMA_Deleted,
-		CountryANNOBON_I_,
-		CountryPALESTINE_Deleted,
-		CountryPALMYRA_JARVIS_IS_,
-		CountryPAPUA_TERRITORY_Deleted,
-		CountryPETER_1_I_,
-		CountryPORTUGUESE_TIMOR_Deleted,
-		CountryPRINCE_EDWARD_MARION_IS_,
-		CountryPUERTO_RICO,
-		CountryANDORRA,
-		CountryREVILLAGIGEDO,
-		CountryASCENSION_I_,
-		CountryAUSTRIA,
-		CountryRODRIGUEZ_I_,
-		CountryRUANDA_URUNDI_Deleted,
-		CountryBELGIUM,
-		CountrySAAR_Deleted,
-		CountrySABLE_I_,
-		CountryBULGARIA,
-		CountrySAINT_MARTIN,
-		CountryCORSICA,
-		CountryCYPRUS,
-		CountrySAN_ANDRES_PROVIDENCIA,
-		CountrySAN_FELIX_SAN_AMBROSIO,
-		CountryCZECHOSLOVAKIA_Deleted,
-		CountrySAO_TOME_PRINCIPE,
-		CountrySARAWAK_Deleted,
-		CountryDENMARK,
-		CountryFAROE_IS_,
-		CountryENGLAND,
-		CountryFINLAND,
-		CountrySARDINIA,
-		CountrySAUDI_ARABIA_IRAQ_NEUTRAL_ZONE_Deleted,
-		CountryFRANCE,
-		CountrySERRANA_BANK_RONCADOR_CAY_Deleted,
-		CountryGERMAN_DEMOCRATIC_REPUBLIC_Deleted,
-		CountryFEDERAL_REPUBLIC_OF_GERMANY,
-		CountrySIKKIM_Deleted,
-		CountrySOMALIA,
-		CountryGIBRALTAR,
-		CountrySOUTH_COOK_IS_,
-		CountrySOUTH_GEORGIA_I_,
-		CountryGREECE,
-		CountryGREENLAND,
-		CountrySOUTH_ORKNEY_IS_,
-		CountryHUNGARY,
-		CountrySOUTH_SANDWICH_IS_,
-		CountrySOUTH_SHETLAND_IS_,
-		CountryICELAND,
-		CountryPEOPLE_S_DEMOCRATIC_REP_OF_YEMEN_Deleted,
-		CountrySOUTHERN_SUDAN_Deleted,
-		CountryIRELAND,
-		CountrySOVEREIGN_MILITARY_ORDER_OF_MALTA,
-		CountrySPRATLY_IS_,
-		CountryITALY,
-		CountryST_KITTS_NEVIS,
-		CountryST_HELENA,
-		CountryLIECHTENSTEIN,
-		CountryST_PAUL_I_,
-		CountryST_PETER_ST_PAUL_ROCKS,
-		CountryLUXEMBOURG,
-		CountryST_MAARTEN_SABA_ST_EUSTATIUS_Deleted,
-		CountryMADEIRA_IS_,
-		CountryMALTA,
-		CountrySUMATRA_Deleted,
-		CountrySVALBARD,
-		CountryMONACO,
-		CountrySWAN_IS__Deleted,
-		CountryTAJIKISTAN,
-		CountryNETHERLANDS,
-		CountryTANGIER_Deleted,
-		CountryNORTHERN_IRELAND,
-		CountryNORWAY,
-		CountryTERRITORY_OF_NEW_GUINEA_Deleted,
-		CountryTIBET_Deleted,
-		CountryPOLAND,
-		CountryTOKELAU_IS_,
-		CountryTRIESTE_Deleted,
-		CountryPORTUGAL,
-		CountryTRINDADE_MARTIM_VAZ_IS_,
-		CountryTRISTAN_DA_CUNHA_GOUGH_I_,
-		CountryROMANIA,
-		CountryTROMELIN_I_,
-		CountryST_PIERRE_MIQUELON,
-		CountrySAN_MARINO,
-		CountrySCOTLAND,
-		CountryTURKMENISTAN,
-		CountrySPAIN,
-		CountryTUVALU,
-		CountryUK_SOVEREIGN_BASE_AREAS_ON_CYPRUS,
-		CountrySWEDEN,
-		CountryVIRGIN_IS_,
-		CountryUGANDA,
-		CountrySWITZERLAND,
-		CountryUKRAINE,
-		CountryUNITED_NATIONS_HQ,
-		CountryUNITED_STATES_OF_AMERICA,
-		CountryUZBEKISTAN,
-		CountryVIET_NAM,
-		CountryWALES,
-		CountryVATICAN,
-		CountrySERBIA,
-		CountryWAKE_I_,
-		CountryWALLIS_FUTUNA_IS_,
-		CountryWEST_MALAYSIA,
-		CountryW_KIRIBATI_GILBERT_IS_,
-		CountryWESTERN_SAHARA,
-		CountryWILLIS_I_,
-		CountryBAHRAIN,
-		CountryBANGLADESH,
-		CountryBHUTAN,
-		CountryZANZIBAR_Deleted,
-		CountryCOSTA_RICA,
-		CountryMYANMAR,
-		CountryCAMBODIA,
-		CountrySRI_LANKA,
-		CountryCHINA,
-		CountryHONG_KONG,
-		CountryINDIA,
-		CountryINDONESIA,
-		CountryIRAN,
-		CountryIRAQ,
-		CountryISRAEL,
-		CountryJAPAN,
-		CountryJORDAN,
-		CountryDEMOCRATIC_PEOPLE_S_REP_OF_KOREA,
-		CountryBRUNEI_DARUSSALAM,
-		CountryKUWAIT,
-		CountryLEBANON,
-		CountryMONGOLIA,
-		CountryNEPAL,
-		CountryOMAN,
-		CountryPAKISTAN,
-		CountryPHILIPPINES,
-		CountryQATAR,
-		CountrySAUDI_ARABIA,
-		CountrySEYCHELLES,
-		CountrySINGAPORE,
-		CountryDJIBOUTI,
-		CountrySYRIA,
-		CountryTAIWAN,
-		CountryTHAILAND,
-		CountryTURKEY,
-		CountryUNITED_ARAB_EMIRATES,
-		CountryALGERIA,
-		CountryANGOLA,
-		CountryBOTSWANA,
-		CountryBURUNDI,
-		CountryCAMEROON,
-		CountryCENTRAL_AFRICA,
-		CountryCAPE_VERDE,
-		CountryCHAD,
-		CountryCOMOROS,
-		CountryREPUBLIC_OF_THE_CONGO,
-		CountryDEMOCRATIC_REPUBLIC_OF_THE_CONGO,
-		CountryBENIN,
-		CountryGABON,
-		CountryTHE_GAMBIA,
-		CountryGHANA,
-		CountryCOTE_D_IVOIRE,
-		CountryKENYA,
-		CountryLESOTHO,
-		CountryLIBERIA,
-		CountryLIBYA,
-		CountryMADAGASCAR,
-		CountryMALAWI,
-		CountryMALI,
-		CountryMAURITANIA,
-		CountryMOROCCO,
-		CountryNIGERIA,
-		CountryZIMBABWE,
-		CountryREUNION_I_,
-		CountryRWANDA,
-		CountrySENEGAL,
-		CountrySIERRA_LEONE,
-		CountryROTUMA_I_,
-		CountrySOUTH_AFRICA,
-		CountryNAMIBIA,
-		CountrySUDAN,
-		CountrySWAZILAND,
-		CountryTANZANIA,
-		CountryTUNISIA,
-		CountryEGYPT,
-		CountryBURKINA_FASO,
-		CountryZAMBIA,
-		CountryTOGO,
-		CountryWALVIS_BAY_Deleted,
-		CountryCONWAY_REEF,
-		CountryBANABA_I_OCEAN_I_,
-		CountryYEMEN,
-		CountryPENGUIN_IS__Deleted,
-		CountryCROATIA,
-		CountrySLOVENIA,
-		CountryBOSNIA_HERZEGOVINA,
-		CountryMACEDONIA,
-		CountryCZECH_REPUBLIC,
-		CountrySLOVAK_REPUBLIC,
-		CountryPRATAS_I_,
-		CountrySCARBOROUGH_REEF,
-		CountryTEMOTU_PROVINCE,
-		CountryAUSTRAL_I_,
-		CountryMARQUESAS_IS_,
-		CountryPALESTINE,
-		CountryTIMOR_LESTE,
-		CountryCHESTERFIELD_IS_,
-		CountryDUCIE_I_,
-		CountryMONTENEGRO,
-		CountrySWAINS_I_,
-		CountrySAINT_BARTHELEMY,
-		CountryCURACAO,
-		CountryST_MAARTEN,
-		CountrySABA_ST_EUSTATIUS,
-		CountryBONAIRE,
-		CountrySOUTH_SUDAN_REPUBLIC_OF_,
-		CountryREPUBLIC_OF_KOSOVO,
+		CountryNoneTheContactedStationIsKnownToNotBeWithinADxccEntity,
+		CountryCanada,
+		CountryAbuAilIslands_deleted,
+		CountryAfghanistan,
+		CountryAgalegaStBrandonIslands,
+		CountryAlandIslands,
+		CountryAlaska,
+		CountryAlbania,
+		CountryAldabra_deleted,
+		CountryAmericanSamoa,
+		CountryAmsterdamStPaulIslands,
+		CountryAndamanNicobarIslands,
+		CountryAnguilla,
+		CountryAntarctica,
+		CountryArmenia,
+		CountryAsiaticRussia,
+		CountryNewZealandSubantarcticIslands,
+		CountryAvesIsland,
+		CountryAzerbaijan,
+		CountryBajoNuevo_deleted,
+		CountryBakerHowlandIslands,
+		CountryBalearicIslands,
+		CountryPalau,
+		CountryBlenheimReef_deleted,
+		CountryBouvet,
+		CountryBritishNorthBorneo_deleted,
+		CountryBritishSomaliland_deleted,
+		CountryBelarus,
+		CountryCanalZone_deleted,
+		CountryCanaryIslands,
+		CountryCelebeMoluccaIslands_deleted,
+		CountryCKiribatiBritishPhoenixIslands,
+		CountryCeutaMelilla,
+		CountryChagosIslands,
+		CountryChathamIslands,
+		CountryChristmasIsland,
+		CountryClippertonIsland,
+		CountryCocosIsland,
+		CountryCocosKeelingIslands,
+		CountryComoros_deleted,
+		CountryCrete,
+		CountryCrozetIsland,
+		CountryDamaoDiu_deleted,
+		CountryDesecheoIsland,
+		CountryDesroches_deleted,
+		CountryDodecanese,
+		CountryEastMalaysia,
+		CountryEasterIsland,
+		CountryEKiribatiLineIslands,
+		CountryEquatorialGuinea,
+		CountryMexico,
+		CountryEritrea,
+		CountryEstonia,
+		CountryEthiopia,
+		CountryEuropeanRussia,
+		CountryFarquhar_deleted,
+		CountryFernandoDeNoronha,
+		CountryFrenchEquatorialAfrica_deleted,
+		CountryFrenchIndoChina_deleted,
+		CountryFrenchWestAfrica_deleted,
+		CountryBahamas,
+		CountryFranzJosefLand,
+		CountryBarbados,
+		CountryFrenchGuiana,
+		CountryBermuda,
+		CountryBritishVirginIslands,
+		CountryBelize,
+		CountryFrenchIndia_deleted,
+		CountryKuwaitSaudiArabiaNeutralZone_deleted,
+		CountryCaymanIslands,
+		CountryCuba,
+		CountryGalapagosIslands,
+		CountryDominicanRepublic,
+		CountryElSalvador,
+		CountryGeorgia,
+		CountryGuatemala,
+		CountryGrenada,
+		CountryHaiti,
+		CountryGuadeloupe,
+		CountryHonduras,
+		CountryGermany_deleted,
+		CountryJamaica,
+		CountryMartinique,
+		CountryBonaireCuracao_deleted,
+		CountryNicaragua,
+		CountryPanama,
+		CountryTurksCaicosIslands,
+		CountryTrinidadTobago,
+		CountryAruba,
+		CountryGeyserReef_deleted,
+		CountryAntiguaBarbuda,
+		CountryDominica,
+		CountryMontserrat,
+		CountryStLucia,
+		CountryStVincent,
+		CountryGloriosoIslands,
+		CountryArgentina,
+		CountryGoa_deleted,
+		CountryGoldCoastTogoland_deleted,
+		CountryGuam,
+		CountryBolivia,
+		CountryGuantanamoBay,
+		CountryGuernsey,
+		CountryGuinea,
+		CountryBrazil,
+		CountryGuineaBissau,
+		CountryHawaii,
+		CountryHeardIsland,
+		CountryChile,
+		CountryIfni_deleted,
+		CountryIsleOfMan,
+		CountryItalianSomaliland_deleted,
+		CountryColombia,
+		CountryItuHq,
+		CountryJanMayen,
+		CountryJava_deleted,
+		CountryEcuador,
+		CountryJersey,
+		CountryJohnstonIsland,
+		CountryJuanDeNovaEuropa,
+		CountryJuanFernandezIslands,
+		CountryKaliningrad,
+		CountryKamaranIslands_deleted,
+		CountryKareloFinnishRepublic_deleted,
+		CountryGuyana,
+		CountryKazakhstan,
+		CountryKerguelenIslands,
+		CountryParaguay,
+		CountryKermadecIslands,
+		CountryKingmanReef_deleted,
+		CountryKyrgyzstan,
+		CountryPeru,
+		CountryRepublicOfKorea,
+		CountryKureIsland,
+		CountryKuriaMuriaIsland_deleted,
+		CountrySuriname,
+		CountryFalklandIslands,
+		CountryLakshadweepIslands,
+		CountryLaos,
+		CountryUruguay,
+		CountryLatvia,
+		CountryLithuania,
+		CountryLordHoweIsland,
+		CountryVenezuela,
+		CountryAzores,
+		CountryAustralia,
+		CountryMalyjVysotskijIsland_deleted,
+		CountryMacao,
+		CountryMacquarieIsland,
+		CountryYemenArabRepublic_deleted,
+		CountryMalaya_deleted,
+		CountryNauru,
+		CountryVanuatu,
+		CountryMaldives,
+		CountryTonga,
+		CountryMalpeloIsland,
+		CountryNewCaledonia,
+		CountryPapuaNewGuinea,
+		CountryManchuria_deleted,
+		CountryMauritius,
+		CountryMarianaIslands,
+		CountryMarketReef,
+		CountryMarshallIslands,
+		CountryMayotte,
+		CountryNewZealand,
+		CountryMellishReef,
+		CountryPitcairnIsland,
+		CountryMicronesia,
+		CountryMidwayIsland,
+		CountryFrenchPolynesia,
+		CountryFiji,
+		CountryMinamiTorishima,
+		CountryMinervaReef_deleted,
+		CountryMoldova,
+		CountryMountAthos,
+		CountryMozambique,
+		CountryNavassaIsland,
+		CountryNetherlandsBorneo_deleted,
+		CountryNetherlandsNewGuinea_deleted,
+		CountrySolomonIslands,
+		CountryNewfoundlandLabrador_deleted,
+		CountryNiger,
+		CountryNiue,
+		CountryNorfolkIsland,
+		CountrySamoa,
+		CountryNorthCookIslands,
+		CountryOgasawara,
+		CountryOkinawaRyukyuIslands_deleted,
+		CountryOkinoToriShima_deleted,
+		CountryAnnobonIsland,
+		CountryPalestine_deleted,
+		CountryPalmyraJarvisIslands,
+		CountryPapuaTerritory_deleted,
+		CountryPeter1Island,
+		CountryPortugueseTimor_deleted,
+		CountryPrinceEdwardMarionIslands,
+		CountryPuertoRico,
+		CountryAndorra,
+		CountryRevillagigedo,
+		CountryAscensionIsland,
+		CountryAustria,
+		CountryRodriguezIsland,
+		CountryRuandaUrundi_deleted,
+		CountryBelgium,
+		CountrySaar_deleted,
+		CountrySableIsland,
+		CountryBulgaria,
+		CountrySaintMartin,
+		CountryCorsica,
+		CountryCyprus,
+		CountrySanAndresProvidencia,
+		CountrySanFelixSanAmbrosio,
+		CountryCzechoslovakia_deleted,
+		CountrySaoTomePrincipe,
+		CountrySarawak_deleted,
+		CountryDenmark,
+		CountryFaroeIslands,
+		CountryEngland,
+		CountryFinland,
+		CountrySardinia,
+		CountrySaudiArabiaIraqNeutralZone_deleted,
+		CountryFrance,
+		CountrySerranaBankRoncadorCay_deleted,
+		CountryGermanDemocraticRepublic_deleted,
+		CountryFederalRepublicOfGermany,
+		CountrySikkim_deleted,
+		CountrySomalia,
+		CountryGibraltar,
+		CountrySouthCookIslands,
+		CountrySouthGeorgiaIsland,
+		CountryGreece,
+		CountryGreenland,
+		CountrySouthOrkneyIslands,
+		CountryHungary,
+		CountrySouthSandwichIslands,
+		CountrySouthShetlandIslands,
+		CountryIceland,
+		CountryPeoplesDemocraticRepOfYemen_deleted,
+		CountrySouthernSudan_deleted,
+		CountryIreland,
+		CountrySovereignMilitaryOrderOfMalta,
+		CountrySpratlyIslands,
+		CountryItaly,
+		CountryStKittsNevis,
+		CountryStHelena,
+		CountryLiechtenstein,
+		CountryStPaulIsland,
+		CountryStPeterStPaulRocks,
+		CountryLuxembourg,
+		CountryStMaartenSabaStEustatius_deleted,
+		CountryMadeiraIslands,
+		CountryMalta,
+		CountrySumatra_deleted,
+		CountrySvalbard,
+		CountryMonaco,
+		CountrySwanIslands_deleted,
+		CountryTajikistan,
+		CountryNetherlands,
+		CountryTangier_deleted,
+		CountryNorthernIreland,
+		CountryNorway,
+		CountryTerritoryOfNewGuinea_deleted,
+		CountryTibet_deleted,
+		CountryPoland,
+		CountryTokelauIslands,
+		CountryTrieste_deleted,
+		CountryPortugal,
+		CountryTrindadeMartimVazIslands,
+		CountryTristanDaCunhaGoughIsland,
+		CountryRomania,
+		CountryTromelinIsland,
+		CountryStPierreMiquelon,
+		CountrySanMarino,
+		CountryScotland,
+		CountryTurkmenistan,
+		CountrySpain,
+		CountryTuvalu,
+		CountryUkSovereignBaseAreasOnCyprus,
+		CountrySweden,
+		CountryVirginIslands,
+		CountryUganda,
+		CountrySwitzerland,
+		CountryUkraine,
+		CountryUnitedNationsHq,
+		CountryUnitedStatesOfAmerica,
+		CountryUzbekistan,
+		CountryVietNam,
+		CountryWales,
+		CountryVatican,
+		CountrySerbia,
+		CountryWakeIsland,
+		CountryWallisFutunaIslands,
+		CountryWestMalaysia,
+		CountryWKiribatiGilbertIslands,
+		CountryWesternSahara,
+		CountryWillisIsland,
+		CountryBahrain,
+		CountryBangladesh,
+		CountryBhutan,
+		CountryZanzibar_deleted,
+		CountryCostaRica,
+		CountryMyanmar,
+		CountryCambodia,
+		CountrySriLanka,
+		CountryChina,
+		CountryHongKong,
+		CountryIndia,
+		CountryIndonesia,
+		CountryIran,
+		CountryIraq,
+		CountryIsrael,
+		CountryJapan,
+		CountryJordan,
+		CountryDemocraticPeoplesRepOfKorea,
+		CountryBruneiDarussalam,
+		CountryKuwait,
+		CountryLebanon,
+		CountryMongolia,
+		CountryNepal,
+		CountryOman,
+		CountryPakistan,
+		CountryPhilippines,
+		CountryQatar,
+		CountrySaudiArabia,
+		CountrySeychelles,
+		CountrySingapore,
+		CountryDjibouti,
+		CountrySyria,
+		CountryTaiwan,
+		CountryThailand,
+		CountryTurkey,
+		CountryUnitedArabEmirates,
+		CountryAlgeria,
+		CountryAngola,
+		CountryBotswana,
+		CountryBurundi,
+		CountryCameroon,
+		CountryCentralAfrica,
+		CountryCapeVerde,
+		CountryChad,
+		CountryComoros,
+		CountryRepublicOfTheCongo,
+		CountryDemocraticRepublicOfTheCongo,
+		CountryBenin,
+		CountryGabon,
+		CountryTheGambia,
+		CountryGhana,
+		CountryCoteDIvoire,
+		CountryKenya,
+		CountryLesotho,
+		CountryLiberia,
+		CountryLibya,
+		CountryMadagascar,
+		CountryMalawi,
+		CountryMali,
+		CountryMauritania,
+		CountryMorocco,
+		CountryNigeria,
+		CountryZimbabwe,
+		CountryReunionIsland,
+		CountryRwanda,
+		CountrySenegal,
+		CountrySierraLeone,
+		CountryRotumaIsland,
+		CountrySouthAfrica,
+		CountryNamibia,
+		CountrySudan,
+		CountrySwaziland,
+		CountryTanzania,
+		CountryTunisia,
+		CountryEgypt,
+		CountryBurkinaFaso,
+		CountryZambia,
+		CountryTogo,
+		CountryWalvisBay_deleted,
+		CountryConwayReef,
+		CountryBanabaIslandOceanIsland,
+		CountryYemen,
+		CountryPenguinIslands_deleted,
+		CountryCroatia,
+		CountrySlovenia,
+		CountryBosniaHerzegovina,
+		CountryMacedonia,
+		CountryCzechRepublic,
+		CountrySlovakRepublic,
+		CountryPratasIsland,
+		CountryScarboroughReef,
+		CountryTemotuProvince,
+		CountryAustralIsland,
+		CountryMarquesasIslands,
+		CountryPalestine,
+		CountryTimorLeste,
+		CountryChesterfieldIslands,
+		CountryDucieIsland,
+		CountryMontenegro,
+		CountrySwainsIsland,
+		CountrySaintBarthelemy,
+		CountryCuracao,
+		CountryStMaarten,
+		CountrySabaStEustatius,
+		CountryBonaire,
+		CountrySouthSudanRepublicOf,
+		CountryRepublicOfKosovo,
 	},
 }
 
