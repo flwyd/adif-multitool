@@ -148,7 +148,7 @@ func runInfer(ctx *Context, args []string) error {
 					r.SetComment(r.GetComment() + "\n" + c)
 				}
 			}
-			out.Records = append(out.Records, r)
+			out.AddRecord(r)
 		}
 	}
 	if err := acc.prepare(); err != nil {

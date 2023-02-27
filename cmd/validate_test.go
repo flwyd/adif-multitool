@@ -126,7 +126,7 @@ func TestValidateErrors(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			inlog := adif.NewLogfile()
-			inlog.Records = append(inlog.Records, adif.NewRecord(tc.record...))
+			inlog.AddRecord(adif.NewRecord(tc.record...))
 			for _, u := range tc.userdef {
 				if err := inlog.AddUserdef(u); err != nil {
 					t.Fatalf("could not add userdef field %s: %v", u, err)

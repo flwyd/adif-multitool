@@ -152,24 +152,21 @@ Inverted L antenna, 70' above ground
 func TestWriteADX(t *testing.T) {
 	l := NewLogfile()
 	l.Comment = "The <last> word."
-	l.Records = append(l.Records, NewRecord(
+	l.AddRecord(NewRecord(
 		Field{Name: "QSO_DATE", Value: "19901031", Type: TypeDate},
 		Field{Name: "TIME_ON", Value: "1234", Type: TypeTime},
 		Field{Name: "BAND", Value: "40M"},
 		Field{Name: "CALLSIGN", Value: "W1AW"},
 		Field{Name: "NAME", Value: "Hiram Percy Maxim", Type: TypeString},
 		Field{Name: "APP_MONOLOG_birth_day", Value: "18690902", Type: TypeDate},
-	))
-	l.Records = append(l.Records, NewRecord(
+	)).AddRecord(NewRecord(
 		Field{Name: "QSO_DATE", Value: "20221224"},
 		Field{Name: "TIME_ON", Value: "095846"},
 		Field{Name: "BAND", Value: "1.25cm", Type: TypeEnumeration},
 		Field{Name: "CALLSIGN", Value: "N0P", Type: TypeString},
 		Field{Name: "NAME", Value: "Santa Claus"},
 		Field{Name: "My Field", Value: "{!@#}, ($%^)"},
-	))
-	l.Records[len(l.Records)-1].SetComment("Record comment")
-	l.Records = append(l.Records, NewRecord(
+	)).AddRecord(NewRecord(
 		Field{Name: "QSO_DATE", Value: "19190219", Type: TypeDate},
 		Field{Name: "APP_monolog_BIRTH_DAY", Value: "18960815"},
 		Field{Name: "APP_adifmt_BIRTH_DAY", Value: "August 15, 1896", Type: TypeString},
@@ -183,6 +180,7 @@ Inverted L antenna, 70' above ground
 		Field{Name: "SweaterSize", Value: "L"},
 		Field{Name: "SHOESIZE", Value: "12"},
 	))
+	l.Records[1].SetComment("Record comment")
 	l.Header.Set(Field{Name: "ADIF_VER", Value: "3.1.4"})
 	l.Header.Set(Field{Name: "PROGRAMID", Value: "adx_test"})
 	l.Header.Set(Field{Name: "PROGRAMVERSION", Value: "1.2.3"})

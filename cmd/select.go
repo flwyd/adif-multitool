@@ -55,7 +55,7 @@ func runSelect(ctx *Context, args []string) error {
 				}
 			}
 			if len(fields) > 0 {
-				out.Records = append(out.Records, adif.NewRecord(fields...))
+				out.AddRecord(adif.NewRecord(fields...))
 			}
 		}
 	}

@@ -87,7 +87,7 @@ func (o *ADIIO) Read(in io.Reader) (*Logfile, error) {
 			case "EOR":
 				sawRecord = true
 				cur.SetComment(strings.Join(comments, o.RecordSep.Val()))
-				l.Records = append(l.Records, cur)
+				l.AddRecord(cur)
 				cur = NewRecord()
 				comments = nil
 			default:

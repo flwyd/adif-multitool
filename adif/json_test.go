@@ -108,22 +108,20 @@ Inverted L antenna, 70' above ground
 func TestWriteJSON(t *testing.T) {
 	l := NewLogfile()
 	l.Comment = "JSON ignores comments"
-	l.Records = append(l.Records, NewRecord(
+	l.AddRecord(NewRecord(
 		Field{Name: "QSO_DATE", Value: "19901031", Type: TypeDate},
 		Field{Name: "TIME_ON", Value: "1234", Type: TypeTime},
 		Field{Name: "BAND", Value: "40M"},
 		Field{Name: "CALLSIGN", Value: "W1AW"},
 		Field{Name: "NAME", Value: "Hiram Percy Maxim", Type: TypeString},
-	))
-	l.Records = append(l.Records, NewRecord(
+	)).AddRecord(NewRecord(
 		Field{Name: "QSO_DATE", Value: "20221224"},
 		Field{Name: "TIME_ON", Value: "095846"},
 		Field{Name: "BAND", Value: "1.25cm", Type: TypeEnumeration},
 		Field{Name: "QSO_RANDOM", Value: "N", Type: TypeBoolean},
 		Field{Name: "CALLSIGN", Value: "N0P", Type: TypeString},
 		Field{Name: "NAME", Value: "Santa Claus"},
-	))
-	l.Records = append(l.Records, NewRecord(
+	)).AddRecord(NewRecord(
 		Field{Name: "QsO_dAtE", Value: "19190219", Type: TypeDate},
 		Field{Name: "RIG", Value: `100 watt C.W.
 Armstrong regenerative circuit
@@ -134,6 +132,7 @@ Inverted L antenna, < 70' above ground
 		Field{Name: "callsign", Value: "1AY", Type: TypeString},
 		Field{Name: "NAME", Value: `"C.G." Tuska`, Type: TypeString},
 	))
+	l.Records[1].SetComment("Record comment")
 	l.Header.Set(Field{Name: "adif_ver", Value: "3.1.4"})
 	l.Header.Set(Field{Name: "PROGRAMID", Value: "adx_test"})
 	l.Header.Set(Field{Name: "PROGRAMVERSION", Value: "1.2.3"})

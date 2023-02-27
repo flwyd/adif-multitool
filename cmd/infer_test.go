@@ -320,7 +320,7 @@ func TestInfer(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			in := &bytes.Buffer{}
 			lin := adif.NewLogfile()
-			lin.Records = append(lin.Records, adif.NewRecord(tc.start...))
+			lin.AddRecord(adif.NewRecord(tc.start...))
 			if err := adi.Write(lin, in); err != nil {
 				t.Fatalf("Error writing fields %v: %v", tc.start, err)
 			}

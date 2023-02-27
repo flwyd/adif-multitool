@@ -69,7 +69,7 @@ func (o *CSVIO) Read(in io.Reader) (*Logfile, error) {
 				return nil, fmt.Errorf("could not set field %s to %s: %w", h[i], v, err)
 			}
 		}
-		l.Records = append(l.Records, r)
+		l.AddRecord(r)
 	}
 	return l, nil
 }

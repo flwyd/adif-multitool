@@ -48,6 +48,11 @@ func (f *Logfile) String() string {
 	return f.Filename
 }
 
+func (f *Logfile) AddRecord(r *Record) *Logfile {
+	f.Records = append(f.Records, r)
+	return f
+}
+
 func (f *Logfile) AddUserdef(u UserdefField) error {
 	for _, x := range f.Userdef {
 		if strings.EqualFold(u.Name, x.Name) {

@@ -73,20 +73,20 @@ func TestReadCSV(t *testing.T) {
 func TestWriteCSV(t *testing.T) {
 	l := NewLogfile()
 	l.Comment = "CSV ignores comments"
-	l.Records = append(l.Records, NewRecord(
+	l.AddRecord(NewRecord(
 		Field{Name: "QSO_DATE", Value: "19901031", Type: TypeDate},
 		Field{Name: "TIME_ON", Value: "1234", Type: TypeTime},
 		Field{Name: "BAND", Value: "40M"},
 		Field{Name: "CALLSIGN", Value: "W1AW"},
 		Field{Name: "NAME", Value: "Hiram Percy Maxim", Type: TypeString},
-	))
-	l.Records = append(l.Records, NewRecord(
+	)).AddRecord(NewRecord(
 		Field{Name: "QSO_DATE", Value: "20221224"},
 		Field{Name: "TIME_ON", Value: "095846"},
 		Field{Name: "BAND", Value: "1.25cm", Type: TypeEnumeration},
 		Field{Name: "CALLSIGN", Value: "N0P", Type: TypeString},
 		Field{Name: "NAME", Value: "Santa Claus"},
 	))
+	l.Records[1].SetComment("Record comment")
 	want := `QSO_DATE,TIME_ON,BAND,CALLSIGN,NAME
 19901031,1234,40M,W1AW,Hiram Percy Maxim
 20221224,095846,1.25cm,N0P,Santa Claus

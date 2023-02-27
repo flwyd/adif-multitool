@@ -51,7 +51,7 @@ func runFix(ctx *Context, args []string) error {
 		}
 		updateFieldOrder(out, l.FieldOrder)
 		for _, rec := range l.Records {
-			out.Records = append(out.Records, fixRecord(rec, l))
+			out.AddRecord(fixRecord(rec, l))
 		}
 	}
 	if err := acc.prepare(); err != nil {

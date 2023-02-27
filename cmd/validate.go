@@ -93,7 +93,7 @@ func runValidate(ctx *Context, args []string) error {
 					r.SetComment("adif-multitool: validate warnings: " + strings.Join(msgs, "; "))
 				}
 			}
-			out.Records = append(out.Records, r)
+			out.AddRecord(r)
 		}
 	}
 	if errors > 0 {

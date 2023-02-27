@@ -216,7 +216,7 @@ func (o *ADXIO) Read(in io.Reader) (*Logfile, error) {
 		l.AddUserdef(u)
 	}
 	for _, r := range f.Records {
-		l.Records = append(l.Records, r.Record(false))
+		l.AddRecord(r.Record(false))
 	}
 	return l, nil
 }

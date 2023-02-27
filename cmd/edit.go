@@ -113,7 +113,7 @@ func runEdit(ctx *Context, args []string) error {
 						return fmt.Errorf("could not adjust time zone: %w", err)
 					}
 				}
-				out.Records = append(out.Records, rec)
+				out.AddRecord(rec)
 			}
 		}
 	}
