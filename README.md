@@ -4,14 +4,18 @@ Validate, modify, and convert ham radio log files with a handy command-line
 tool. 📻🌳🪓
 
 `adifmt` provides a suite of commands for working with
-[ADIF](https://adif.org/) logs from ham radio software.  Each `adifmt`
-invocation reads log files from the command line or standard input and prints
-an ADIF log to standard output, allowing multiple commands to be chained
-together in a pipeline.  For example, to add a `BAND` field based on the `FREQ`
-(radio frequency) field, add your station's maidenhead locator (`MY_GRIDSQURE`)
-to all entries, automatically fix some incorrectly formatted fields, validate
-that all fields are properly formatted, and save a log file containing only SSB
-voice contacts, a pipeline might look like
+[ADIF](https://adif.org/) logs from ham radio software.  It is run from a
+shell, via [Terminal](https://en.wikipedia.org/wiki/Terminal_(macOS)) on macOS
+and [PowerShell](https://en.wikipedia.org/wiki/PowerShell),
+[cmd.exe](https://en.wikipedia.org/wiki/Cmd.exe), or
+[Windows Terminal](https://en.wikipedia.org/wiki/Windows_Terminal)  on Windows.
+Each `adifmt` invocation reads log files from the command line or standard
+input and prints an ADIF log to standard output, allowing multiple commands to
+be chained together in a pipeline.  For example, to add a `BAND` field based on
+the `FREQ` (radio frequency) field, add your station's maidenhead locator
+(`MY_GRIDSQURE`) to all entries, automatically fix some incorrectly formatted
+fields, validate that all fields are properly formatted, and save a log file
+containing only SSB voice contacts, a pipeline might look like
 
 ```sh
 adifmt infer --fields band my_original_log.adi \
@@ -23,6 +27,11 @@ adifmt infer --fields band my_original_log.adi \
 ```
 
 *(The `filter` command is not yet implemented.)*
+
+On Windows, PowerShell uses the backtick character (```) and Command Prompt uses
+carat (`^`)  instead of backslash (`\`) for multi-line pipelines.  You can also
+put the whole pipeline on a single line; they are presented as multiple lines
+here for readability.
 
 *Note*: `adifmt` is pronounced “ADIF M T” or “ADIF multitool”, not “adi fmt” nor
 ”addy format”.
@@ -80,7 +89,7 @@ adifmt cat --input=csv --output=adi log2.csv > log2.adi
 `--input` need not be specified if it’s implied by the file name or can be
 inferred from the structure of the data.  `--ouput=adi` is the default for
 output format.  `adifmt save` infers the output format from the file’s
-extension  Input files can be in different formats:
+extension.  Input files can be in different formats:
 
 ```sh
 adifmt cat log1.adi log2.adx log3.csv log4.json > combined.adi
@@ -100,7 +109,9 @@ The `select` command prints only a subset of fields.  The `save` command writes
 the input data to a file.  These can be combined:
 
 ```sh
-adifmt fix log1.adi | adifmt select --fields qso_date,time_on,call | adifmt save minimal.csv
+adifmt fix log1.adi \
+  | adifmt select --fields qso_date,time_on,call \
+  | adifmt save minimal.csv
 ```
 
 creates a file named `minimal.csv` with just the date, time, and callsign from
@@ -144,7 +155,7 @@ optional.
    "more_fields": "record fields"
   },
   {
-   "CALL": "NA1SSS",
+   "CALL": "NA1SS",
    "more_fields": "additional record fields"
   }
  ]
@@ -156,6 +167,10 @@ to output.  Details of comment handling are subject to change and should not be
 depended upon.
 
 ### Commands
+
+ADIF Multitool behavior is organized into _commands_; each `adifmt` invocation
+runs one command.  Commands are the first program argument, before any options
+or file names: `adifmt command --some-option --other=value file1.adi file2.csv`
 
 Name       | Description |
 ---------- | ----------- |
@@ -252,9 +267,9 @@ Inferable fields:
 * `OPERATOR` from `GUEST_OP`
 * `STATION_CALLSIGN` from `OPERATOR` or `GUEST_OP`
 * `OWNER_CALLSIGN` from `STATION_CALLSIGN`, `OPERATOR`, or `GUEST_OP`
-* `SIG_INFO` from one of `IOTA`, `POTA_REF`, `SOTA_REF`, `WWFF_REF` based on
+* `SIG_INFO` from one of `IOTA`, `POTA_REF`, `SOTA_REF`, or `WWFF_REF` based on
   `SIG` (sets `SIG` if unset and only one of the others is set)
-* `MY_SIG_INFO` from one of `MY_IOTA`, `MY_POTA_REF`, `MY_SOTA_REF`,
+* `MY_SIG_INFO` from one of `MY_IOTA`, `MY_POTA_REF`, `MY_SOTA_REF`, or
   `MY_WWFF_REF` based on `MY_SIG` (sets `MY_SIG` if unset and only one of the
   others is set)
 * `IOTA`, `POTA_REF`, `SOTA_REF`, and `WWFF_REF` from `SIG_INFO` if `SIG` is
@@ -355,18 +370,23 @@ Features I plan to add:
     to split a large log file into one log file for each (callsign, park, date)
     group, matching the expected POTA filename format.
 *   Option for `save` to append records to an existing ADIF file.
+*   Expand [ISO 3166-1 alpha codes](https://en.wikipedia.org/wiki/ISO_3166-1)
+    to full DXCC entity names, e.g. `BA` → `BOSNIA-HERZEGOVINA`.  Expanding
+    `USA` is a big win here.
 *   Count the total number of records or the number of distinct values of a
     field.  (The total number of records can currently be counted with
     `--output=csv`, piping the output to `wc -l`, and subtracting 1 for the
     header row.)  This could match the format of the “Report” comment in the
     test QSOs file produced with the ADIF spec.
-*   Maybe convert to and from Cabrillo format for contests?
-*   TSV as a file format (without support for multi-line strings)?
+*   TSV as a file format (without support for multi-line strings).
+*   Maybe convert to and from Cabrillo format for contests.  Cabrillo has header
+    fields that don’t clearly map to ADIF header fields.  Fields like expected
+    contest score would need per-contest configuration.
 
 ### Non-goals
 
-I don't expect `adifmt` to support the following use cases. A different piece of
-software will be needed.
+I don't expect ADIF Multitool to support the following use cases. A different
+piece of software will be needed.
 
 *   Upload logs to any service like QRZ, eQSL, or LotW.
 *   Log-editing GUI. `adifmt` is a command-line tool; a GUI could be built which
@@ -396,11 +416,15 @@ The `adif` and `cmd` packages should be considered “less stable” than the CL
 during the v0 phase and may undergo significant change.  Use of those packages
 in your own program should only be done with significant tolerance to churn.
 
-The v1 and future releases will follow [Semantic Versioning](https:///semver.org/)
-and any breaking changes to the CLI or public Go APIs will need to wait for v2.
-ADIF spec updates and new features will lead to a new minor version and bug
-fixes will increment the patch number.  If you find this useful as a library,
-please let me know.
+The v1 and future releases will follow
+[Semantic Versioning](https:///semver.org/) and any breaking changes to the CLI
+or public Go APIs will need to wait for v2.  ADIF spec updates and new features
+will lead to a new minor version and bug fixes will increment the patch number.
+If you find this useful as a library, please let me know.
+
+I have not yet tested this on Windows; please
+[report issues](https://github.com/flwyd/adif-multitool/issues) if anything does
+not work, or is particularly awkward.
 
 ## Contributions welcome
 
