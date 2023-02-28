@@ -28,8 +28,8 @@ adifmt infer --fields band my_original_log.adi \
 
 *(The `filter` command is not yet implemented.)*
 
-On Windows, PowerShell uses the backtick character (`\``) and Command Prompt
-uses caret (`^`)  instead of backslash (`\\`) for multi-line pipelines.  You
+On Windows, PowerShell uses the backtick character (`` ` ``) and Command Prompt
+uses caret (`^`)  instead of backslash (`\`) for multi-line pipelines.  You
 can also put the whole pipeline on a single line; they are presented as
 multiple lines here for readability.
 
