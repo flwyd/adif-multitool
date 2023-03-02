@@ -1,0 +1,61 @@
+name: Go
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+          cache: true
+
+      - name: Build RPi
+        run: go build -v -o adif-multitool-rpi ./adifmt
+        env:
+          GOOS: linux
+          GOARCH: arm
+          GOARM: 5
+
+      - name: Build OSX-amd64
+        run: go build -v -o adif-multitool-osx ./adifmt
+        env:
+          GOOS: darwin
+          GOARCH: amd64
+
+      - name: Build OSX-arm64
+        run: go build -v -o adif-multitool-osx-arm ./adifmt
+        env:
+          GOOS: darwin
+          GOARCH: arm64
+
+      - name: Build Windows
+        run: go build -v -o adif-multitool-windows ./adifmt
+        env:
+          GOOS: windows
+          GOARCH: 386
+
+      - name: Build Windows-arm
+        run: go build -v -o adif-multitool-windows-arm ./adifmt
+        env:
+          GOOS: windows
+          GOARCH: amd64
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: false
+          title: "Latest Build"
+          files: |
+            adif-multitool-rpi
+            adif-multitool-osx
+            adif-multitool-osx-arm
+            adif-multitool-windows
+            adif-multitool-windows-arm
