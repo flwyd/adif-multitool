@@ -22,6 +22,7 @@ package adif
 
 import (
 	"fmt"
+	"math"
 	"strings"
 )
 
@@ -88,8 +89,8 @@ func (f *Logfile) AddUserdef(u UserdefField) error {
 					}
 				}
 			}
-			x.Min = minFloat(x.Min, u.Min)
-			x.Max = maxFloat(x.Max, u.Max)
+			x.Min = math.Min(x.Min, u.Min)
+			x.Max = math.Max(x.Max, u.Max)
 			if x.Type == TypeUnspecified {
 				x.Type = u.Type
 			}
@@ -108,18 +109,4 @@ func (f *Logfile) GetUserdef(name string) (UserdefField, bool) {
 		}
 	}
 	return UserdefField{}, false
-}
-
-func maxFloat(a, b float64) float64 {
-	if a < b {
-		return b
-	}
-	return a
-}
-
-func minFloat(a, b float64) float64 {
-	if a > b {
-		return b
-	}
-	return a
 }
