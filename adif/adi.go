@@ -236,14 +236,15 @@ func (o *ADIIO) Write(l *Logfile, out io.Writer) error {
 }
 
 func (o *ADIIO) writeField(f Field, b *bufio.Writer) error {
+	val := ensureCRLF(f.Value)
 	var tag string
 	// TODO error if IntlString/non-ASCII, unless a flag allows
 	if f.Type == TypeUnspecified {
-		tag = fmt.Sprintf("<%s:%d>", o.fixCase(f.Name), len(f.Value))
+		tag = fmt.Sprintf("<%s:%d>", o.fixCase(f.Name), len(val))
 	} else {
-		tag = fmt.Sprintf("<%s:%d:%s>", o.fixCase(f.Name), len(f.Value), o.fixCase(f.Type.Indicator()))
+		tag = fmt.Sprintf("<%s:%d:%s>", o.fixCase(f.Name), len(val), o.fixCase(f.Type.Indicator()))
 	}
-	if _, err := b.WriteString(fmt.Sprintf("%s%s%s", tag, f.Value, o.FieldSep.Val())); err != nil {
+	if _, err := b.WriteString(fmt.Sprintf("%s%s%s", tag, val, o.FieldSep.Val())); err != nil {
 		return fmt.Errorf("error writing %s: %w", f, err)
 	}
 	return nil

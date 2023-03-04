@@ -90,12 +90,12 @@ func newAdxField(f Field) adxField {
 			ProgramID: s[1],
 			FieldName: s[2],
 			Type:      f.Type.Indicator(),
-			Value:     f.Value,
+			Value:     ensureCRLF(f.Value),
 		}
 	}
 	return adxField{
 		XMLName: xml.Name{Local: f.Name},
-		Value:   f.Value,
+		Value:   ensureCRLF(f.Value),
 		Type:    f.Type.Indicator(),
 	}
 }
@@ -104,7 +104,7 @@ func newAdxUserdefField(f Field) adxField { // for use in records
 	return adxField{
 		XMLName:   xml.Name{Local: "USERDEF"},
 		FieldName: f.Name,
-		Value:     f.Value,
+		Value:     ensureCRLF(f.Value),
 		Type:      f.Type.Indicator()}
 }
 

@@ -166,12 +166,15 @@ Inverted L antenna, 70' above ground
 <ADIF_VER:5>3.1.4 <PROGRAMID:8>adi_test <PROGRAMVERSION:5>1.2.3 <CREATED_TIMESTAMP:15>20220102 153456 <USERDEF1:8:S>MY FIELD <USERDEF2:19:E>sweatersize,{S,M,L} <USERDEF3:15:N>ShoeSize,{5:20} <EOH>
 <QSO_DATE:8:D>19901031 <TIME_ON:4:T>1234 <BAND:3>40M <CALLSIGN:4>W1AW <NAME:17:S>Hiram Percy Maxim <APP_MONOLOG_BIRTH_DAY:8:D>18690902 <EOR>
 Record comment <QSO_DATE:8>20221224 <TIME_ON:6>095846 <BAND:6:E>1.25cm <CALLSIGN:3:S>N0P <NAME:11>Santa Claus <MY FIELD:12>{!@#}, ($%^) <EOR>
-<QSO_DATE:8:D>19190219 <APP_MONOLOG_BIRTH_DAY:8>18960815 <APP_ADIFMT_BIRTH_DAY:15:S>August 15, 1896 <RIG:82:M>100 watt C.W.
+<QSO_DATE:8:D>19190219 <APP_MONOLOG_BIRTH_DAY:8>18960815 <APP_ADIFMT_BIRTH_DAY:15:S>August 15, 1896 <RIG:85:M>100 watt C.W.
 Armstrong regenerative circuit
 Inverted L antenna, 70' above ground
  <FREQ:5:N>7.654 <CALLSIGN:3:S>1AY <NAME:12:S>"C.G." Tuska <SWEATERSIZE:1>L <SHOESIZE:2>12 <EOR>
 The &lt;last&gt; word.
 `
+	for _, r := range []string{"watt C.W.", "regenerative circuit", "above ground"} {
+		want = strings.Replace(want, r+"\n", r+"\r\n", 1)
+	}
 	adi := NewADIIO()
 	adi.RecordSep = SeparatorNewline
 	adi.FieldSep = SeparatorSpace

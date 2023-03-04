@@ -224,7 +224,7 @@ Inverted L antenna, 70' above ground
       <QSO_DATE TYPE="D">19190219</QSO_DATE>
       <APP FIELDNAME="BIRTH_DAY" PROGRAMID="MONOLOG">18960815</APP>
       <APP TYPE="S" FIELDNAME="BIRTH_DAY" PROGRAMID="ADIFMT">August 15, 1896</APP>
-      <RIG TYPE="M">100 watt C.W.&#xA;Armstrong regenerative circuit&#xA;Inverted L antenna, 70&#39; above ground&#xA;</RIG>
+      <RIG TYPE="M">100 watt C.W.&#xD;&#xA;Armstrong regenerative circuit&#xD;&#xA;Inverted L antenna, 70&#39; above ground&#xD;&#xA;</RIG>
       <FREQ TYPE="N">7.654</FREQ>
       <CALLSIGN TYPE="S">1AY</CALLSIGN>
       <NAME TYPE="S">&#34;C.G.&#34; Tuska</NAME>
