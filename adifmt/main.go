@@ -158,6 +158,8 @@ func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
 		fmt.Sprintf("define a USERDEF `field` name and optional type, range, or enum (multi)\nfield formats: STRING_F:S NUMBER_F{0:360} ENUM_F:{A,B,C}\ntype indicators: %s#Data_Types", spec.ADIFSpecURL))
 
 	// ADI flags
+	fs.BoolVar(&adiio.ASCIIOnly, "adi-ascii-only", false,
+		"ADI files: error on any non-ASCII characters, instead of writing UTF-8")
 	fs.BoolVar(&adiio.LowerCase, "adi-lower-case", false,
 		"ADI files: print tags in lower case instead of upper case")
 	sepHelp := "options: " + strings.Join(adif.SeparatorNames(), ", ")

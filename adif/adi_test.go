@@ -188,3 +188,28 @@ The &lt;last&gt; word.
 		}
 	}
 }
+
+func TestADIASCIIOnly(t *testing.T) {
+	adi := NewADIIO()
+	adi.ASCIIOnly = true
+	tests := []string{"\t", "\x00", "\x7F", "\x80", "Baño", "Baþ", "नहाना", "욕조"}
+	for _, s := range tests {
+		l := NewLogfile()
+		l.AddRecord(NewRecord(Field{Name: "CALL", Value: "N0P"},
+			Field{Name: "APP_TEST_ASCII", Value: s, Type: TypeString}))
+		out := &strings.Builder{}
+		if err := adi.Write(l, out); err == nil {
+			t.Errorf("adi.Write with field value %q got %q, want error", s, out)
+		} else if out.String() != "" {
+			t.Errorf("adi.Write with non-ASCII character wrote partial output %q", out)
+		}
+		lh := NewLogfile()
+		lh.Header = NewRecord(Field{Name: "APP_TEST_HEADER", Value: s})
+		out = &strings.Builder{}
+		if err := adi.Write(l, out); err == nil {
+			t.Errorf("adi.Write with header value %q got %s, want error", s, out)
+		} else if out.String() != "" {
+			t.Errorf("adi.Write with non-ASCII character in header wrote partial output %q", out)
+		}
+	}
+}

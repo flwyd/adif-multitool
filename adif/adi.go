@@ -24,9 +24,9 @@ import (
 )
 
 type ADIIO struct {
-	LowerCase bool // TODO consider a case enum: keep, upper, lower, or just get rid of this option
-	FieldSep  Separator
-	RecordSep Separator
+	LowerCase           bool // TODO consider a case enum: keep, upper, lower, or just get rid of this option
+	ASCIIOnly           bool
+	FieldSep, RecordSep Separator
 }
 
 func NewADIIO() *ADIIO {
@@ -166,6 +166,9 @@ func (o *ADIIO) Read(in io.Reader) (*Logfile, error) {
 const defaultAdiComment = "ADI format, see https://adif.org.uk/"
 
 func (o *ADIIO) Write(l *Logfile, out io.Writer) error {
+	if err := o.validate(l); err != nil {
+		return err
+	}
 	b := bufio.NewWriter(out)
 	defer b.Flush()
 
@@ -287,4 +290,32 @@ func (o *ADIIO) fixCase(s string) string {
 		return strings.ToLower(s)
 	}
 	return strings.ToUpper(s)
+}
+
+func (o *ADIIO) validate(l *Logfile) error {
+	check := func(r *Record) error {
+		if r == nil { // in case l.Header is nil
+			return nil
+		}
+		for _, f := range r.Fields() {
+			if o.ASCIIOnly {
+				for _, r := range f.Value {
+					// spec limits Character to ASCII 32 to 126; MultilineString also allows CR/LF
+					if (r < 32 || r > 126) && (r != '\r' && r != '\n') {
+						return fmt.Errorf("non-ASCII character in %v", f)
+					}
+				}
+			}
+		}
+		return nil
+	}
+	if err := check(l.Header); err != nil {
+		return err
+	}
+	for _, r := range l.Records {
+		if err := check(r); err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -37,8 +37,7 @@ func write(ctx *Context, l *adif.Logfile) error {
 	if !ok {
 		return fmt.Errorf("unknown output format %q", format)
 	}
-	w.Write(l, ctx.Out)
-	return nil
+	return w.Write(l, ctx.Out)
 }
 
 func filesOrStdin(args []string) []string {

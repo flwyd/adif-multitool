@@ -136,7 +136,7 @@ JSON  | `.json`   | Can parse number and boolean typed data, to write these set 
 
 Input files can have fields with any names, even if they’re not part of the
 ADIF spec.  The `--userdef` option will add user-defined field metadata to ADI
-and ADX output specifing type, range, or valid enumeration values.  ADX XML
+and ADX output specifying type, range, or valid enumeration values.  ADX XML
 tags must be upper case; other formats accept any case field names in input
 files and use `UPPER_SNAKE_CASE` for output by default.  Application-defined
 fields in CSV and JSON should use the `APP_PROGRAMNAME_FIELD_NAME` syntax used
@@ -165,6 +165,28 @@ optional.
 Some (but not all) comments found in ADI and ADX files are preserved from input
 to output.  Details of comment handling are subject to change and should not be
 depended upon.
+
+#### International text and Unicode
+
+`adifmt` currently assumes all input files are encoded in
+[UTF-8](https://en.wikipedia.org/wiki/UTF-8), which includes ASCII-only files.
+
+For backwards-compatibility with ASCII-only software, the
+[ADIF specification](https://adif.org.uk/314/ADIF_314.htm#Data_Types_Enumerations_and_Fields)
+defines `Character` and `String` types as
+[ASCII](https://en.wikipedia.org/wiki/ASCII)-only, with `IntlCharacter` and
+`IntlString` as allowing any Unicode character (except line breaks unless in a
+`IntlMultilineString` field).  Additionally, as of ADIF version 3.1.4, ADI
+files are supposed to be ASCII-only and may not have `Intl*` fields.  ADIF
+Multitool deviates from the spec by passing through Intl fields in ADI files
+and writing Unicode characters in UTF-8.  (This allows ADI to be the default
+output format in a pipeline of several commands, then save to a format which
+allows Unicode.)  Unicode characters can be rejected in ADI files with the
+`--adi-ascii-only` option, though if used with
+`adifmt save --overwrite-existing` the file may be deleted before the program
+aborts with an error; this will still output Intl fields if they contain only
+ASCII characters.  `adifmt validate` ensures that “non-intl” fields are
+ASCII-only; other commands pass through Unicode strings untouched.
 
 ### Commands
 
@@ -431,7 +453,8 @@ not work, or is particularly awkward.
 ADIF Multitool is open source, using the Apache 2.0 license.  It is written in
 the [Go programming language](https://go.dev/).  Bug fixes, new features, and
 other contributions are welcome; please read the [contributing](CONTRIBUTING.md)
-and [code of conduct](CODE_OF_CONDUCT.md) pages.
+and [code of conduct](CODE_OF_CONDUCT.md) pages.  The primary author is Trevor
+Stone, WT0RJ, @flwyd.
 
 ### Source Code Headers
 
