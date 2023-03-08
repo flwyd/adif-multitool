@@ -203,3 +203,53 @@ func TestFixLocation(t *testing.T) {
 		}
 	}
 }
+
+func TestFixCountry(t *testing.T) {
+	adi := adif.NewADIIO()
+	csv := adif.NewCSVIO()
+	header := "My Comment\n<ADIF_VER:5>3.1.4 <PROGRAMID:8>fix test <PROGRAMVERSION:5>1.2.3 <EOH>\n"
+	fields := []string{"COUNTRY", "MY_COUNTRY"}
+	tests := []struct{ source, want string }{
+		{source: "", want: ""},
+		{source: "CANADA", want: "CANADA"},
+		{source: "El Salvador", want: "El Salvador"},
+		{source: "REPUBLIC OF THE CONGO", want: "REPUBLIC OF THE CONGO"},
+		{source: "IT", want: "ITALY"},
+		{source: "USA", want: "UNITED STATES OF AMERICA"},
+		{source: "ci", want: "COTE D'IVOIRE"},
+		{source: "prk", want: "DEMOCRATIC PEOPLE'S REP. OF KOREA"},
+		{source: "Pn", want: "PITCAIRN I."},
+		{source: "iMn", want: "ISLE OF MAN"},
+		{source: "GB", want: "GB"},               // United Kingdom doesn't have a DXCC code, just England/Wales/Scotland/Northern Ireland
+		{source: "RU", want: "RU"},               // European Russia, Asiatic Russia, and Kaliningrad are separate DXCC entities
+		{source: "KIR", want: "KIR"},             // Kiribati has several DXCC codes, no top-level one
+		{source: "894", want: "894"},             // ISO numeric codes not supported, to avoid DXCC code confusion
+		{source: "XZ", want: "XZ"},               // not a code
+		{source: "XYZ", want: "XYZ"},             // not a code
+		{source: "U.S.A.", want: "U.S.A."},       // punctuation not supported
+		{source: "U S A", want: "U S A"},         // spaces not supported
+		{source: "FREEDONIA", want: "FREEDONIA"}, // not actually a country
+	}
+	for _, tc := range tests {
+		for _, f := range fields {
+			out := &bytes.Buffer{}
+			file1 := fmt.Sprintf("OTHER_FIELD,%s\nJP,%s\n", f, tc.source)
+			ctx := &Context{
+				OutputFormat: adif.FormatADI,
+				Readers:      readers(adi, csv),
+				Writers:      writers(adi, csv),
+				Out:          out,
+				Prepare:      testPrepare("My Comment", "3.1.4", "fix test", "1.2.3"),
+				fs:           fakeFilesystem{map[string]string{"foo.csv": file1}}}
+			if err := Fix.Run(ctx, []string{"foo.csv"}); err != nil {
+				t.Errorf("Fix.Run(ctx, foo.csv) got error %v", err)
+			} else {
+				got := out.String()
+				want := fmt.Sprintf("%s<OTHER_FIELD:2>JP <%s:%d>%s <EOR>\n", header, f, len(tc.want), tc.want)
+				if diff := cmp.Diff(want, got); diff != "" {
+					t.Errorf("fix %s=%s want %s got diff %s", f, tc.source, tc.want, diff)
+				}
+			}
+		}
+	}
+}

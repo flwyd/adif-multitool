@@ -250,12 +250,27 @@ specification.  The rule of thumb for default fixes is that they should be
 unsurprising to almost anyone, like converting `3:45 PM` to `1545` for a time
 field.  Currently only date, time, and location fields are coerced.  Dates must
 already be in year, month, day order.  Location fields can be converted from
-decimal (GPS) coordinates to degrees/minutes.  In the future, other formats may
-be fixable, including varieties of the Boolean data types, forcing some string
-fields to upper case, and perhaps correcting some common variations on enum
-fields, e.g. `USA` → `UNITED STATES OF AMERICA`.  A future update will also
-provide options like date formats so that day/month/year or month/day/year
-input data can be unambiguously fixed.
+decimal (GPS) coordinates to degrees/minutes.
+
+`fix` also changes [ISO 3166-1 alpha-2 and alpha-3](https://en.wikipedia.org/wiki/ISO_3166-1)
+codes in the `COUNTRY` and `MY_COUNTRY` to
+[DXCC entity names](https://adif.org.uk/314/ADIF_314.htm#DXCC_Entity_Code_Enumeration)
+if a match is found.  This can save a lot of typing for `BA` -> `BOSNIA-HERZEGOVINA`
+or `USA` → `UNITED STATES OF AMERICA`  Note that some DXCC entities like
+Alaska, Hawaii, Crete, Corsica, Sardinia, many other remote islands, and
+international organizations do not have ISO 3166 codes.  A few countries do not
+have a single DXCC entity for “the mainland”, including the United Kingdom
+(separated into England, Wales, Scotland, and Northern Ireland), Russia
+(European Russia, Asiatic Russia, and Kaliningrad), Kiribati (separated into
+island chains), and a few dependent island territories.  Country code
+translations will not be applied for those since it’s not obvious which DXCC
+entity was contacted.
+
+In the future, other formats may be fixable, including varieties of the Boolean
+data types, forcing some string fields to upper case, and perhaps correcting
+some other common variations on enum fields as is done with countries.  A
+future update will also provide options like date formats so that
+day/month/year or month/day/year input data can be unambiguously fixed.
 
 #### infer
 
@@ -392,9 +407,6 @@ Features I plan to add:
     to split a large log file into one log file for each (callsign, park, date)
     group, matching the expected POTA filename format.
 *   Option for `save` to append records to an existing ADIF file.
-*   Expand [ISO 3166-1 alpha codes](https://en.wikipedia.org/wiki/ISO_3166-1)
-    to full DXCC entity names, e.g. `BA` → `BOSNIA-HERZEGOVINA`.  Expanding
-    `USA` is a big win here.
 *   Count the total number of records or the number of distinct values of a
     field.  (The total number of records can currently be counted with
     `--output=csv`, piping the output to `wc -l`, and subtracting 1 for the

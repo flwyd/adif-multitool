@@ -37,6 +37,7 @@ func helpFix() string {
   Time fields (seconds): 15:04:05, 3:04:05 PM, 3:04:05pm
   Time fields (no seconds): 15:04, 3:04 PM, 3:04pm
   Location fields: decimal degrees (GPS coordinates)
+  Country fields: ISO 3166-1 alpha-2 and alpha-3 codes
 `
 }
 
@@ -85,6 +86,8 @@ func fixField(f adif.Field, l *adif.Logfile) adif.Field {
 		f.Value = fixTime(f.Value)
 	} else if t == spec.LocationDataType {
 		f.Value = fixLocation(f.Value, f.Name)
+	} else if f.Name == spec.CountryField.Name || f.Name == spec.MyCountryField.Name {
+		f.Value = fixCountry(f.Value)
 	}
 	return f
 }
@@ -150,6 +153,18 @@ func fixTime(t string) string {
 		}
 	}
 	return t
+}
+
+func fixCountry(c string) string {
+	if e := spec.CountryEnumeration.Value(c); len(e) > 0 {
+		return c
+	}
+	if cc, ok := spec.ISO3166Alpha[strings.ToUpper(c)]; ok {
+		if len(cc.DXCC) == 1 {
+			return cc.DXCC[0].EntityName
+		}
+	}
+	return c
 }
 
 var gpsPattern = regexp.MustCompile(`^[-+]?\d{1,3}\.\d+$`)
