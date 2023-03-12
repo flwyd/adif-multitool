@@ -20,6 +20,8 @@ const (
 	FormatCSV Format = "CSV"
 	// FormatJSON is a Format of type JSON.
 	FormatJSON Format = "JSON"
+	// FormatTSV is a Format of type TSV.
+	FormatTSV Format = "TSV"
 )
 
 var ErrInvalidFormat = fmt.Errorf("not a valid Format, try [%s]", strings.Join(_FormatNames, ", "))
@@ -29,6 +31,7 @@ var _FormatNames = []string{
 	string(FormatADX),
 	string(FormatCSV),
 	string(FormatJSON),
+	string(FormatTSV),
 }
 
 // FormatNames returns a list of possible string values of Format.
@@ -58,6 +61,8 @@ var _FormatValue = map[string]Format{
 	"csv":  FormatCSV,
 	"JSON": FormatJSON,
 	"json": FormatJSON,
+	"TSV":  FormatTSV,
+	"tsv":  FormatTSV,
 }
 
 // ParseFormat attempts to convert a string to a Format.

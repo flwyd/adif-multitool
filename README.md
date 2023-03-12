@@ -92,7 +92,7 @@ output format.  `adifmt save` infers the output format from the file’s
 extension.  Input files can be in different formats:
 
 ```sh
-adifmt cat log1.adi log2.adx log3.csv log4.json > combined.adi
+adifmt cat log1.adi log2.adx log3.csv log4.json log5.tsv > combined.adi
 ```
 
 If no file names are given, input is read from standard input:
@@ -131,16 +131,17 @@ Name  | Extension | Notes
 ----- | --------- | -----
 ADI   | `.adi`    | Outputs `IntlString` (Unicode fields) in UTF-8
 ADX   | `.adx`    |
-CSV   | `.csv`    | Comma-separated values; other delimiters like tab supported via the `--csv-field-separator` option
+CSV   | `.csv`    | Comma-separated values; other delimiters supported via the `--csv-field-separator` option
 JSON  | `.json`   | Can parse number and boolean typed data, to write these set the `--json-typed-output` option
+TSV   | `.tsv`    | Tab-separated values, tabs and line breaks escaped if `--tsv-escape-special` is set
 
 Input files can have fields with any names, even if they’re not part of the
 ADIF spec.  The `--userdef` option will add user-defined field metadata to ADI
 and ADX output specifying type, range, or valid enumeration values.  ADX XML
 tags must be upper case; other formats accept any case field names in input
 files and use `UPPER_SNAKE_CASE` for output by default.  Application-defined
-fields in CSV and JSON should use the `APP_PROGRAMNAME_FIELD_NAME` syntax used
-in ADI files. JSON input files should be structured as follows; `HEADER` is
+fields in CSV, TSV, and JSON should use the `APP_PROGRAMNAME_FIELD_NAME` syntax
+used in ADI files. JSON input files should be structured as follows; `HEADER` is
 optional.
 
 ```json
@@ -409,10 +410,9 @@ Features I plan to add:
 *   Option for `save` to append records to an existing ADIF file.
 *   Count the total number of records or the number of distinct values of a
     field.  (The total number of records can currently be counted with
-    `--output=csv`, piping the output to `wc -l`, and subtracting 1 for the
+    `--output=tsv`, piping the output to `wc -l`, and subtracting 1 for the
     header row.)  This could match the format of the “Report” comment in the
     test QSOs file produced with the ADIF spec.
-*   TSV as a file format (without support for multi-line strings).
 *   Maybe convert to and from Cabrillo format for contests.  Cabrillo has header
     fields that don’t clearly map to ADIF header fields.  Fields like expected
     contest score would need per-contest configuration.

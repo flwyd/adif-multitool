@@ -74,17 +74,28 @@ func (r *Record) String() string {
 	return fmt.Sprint(r.fields)
 }
 
-// Equal compares to records for equality of fields, ignoring order.
+// Equal compares two records for equality of fields, ignoring order.
+// Records are considered equal even if one has assigned empty fields while the
+// other does not have a field of that name set.
 func (r *Record) Equal(o *Record) bool {
-	if len(r.fields) != len(o.fields) {
-		return false
-	}
 	for _, f := range r.fields {
 		ff, ok := o.Get(f.Name)
-		if !ok {
+		if ok {
+			if ff != f { // TODO add Field.Equal with handling for unknown vs. known type
+				return false
+			}
+		} else if f.Value != "" { // treat empty and missing as equal
 			return false
 		}
-		if ff != f {
+	}
+	// check both directions in case o has fields r lacks
+	for _, ff := range o.fields {
+		f, ok := r.Get(ff.Name)
+		if ok {
+			if f != ff {
+				return false
+			}
+		} else if ff.Value != "" {
 			return false
 		}
 	}

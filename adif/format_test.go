@@ -31,14 +31,17 @@ func TestGuessFormatFromName(t *testing.T) {
 		{name: "foo.adx", want: FormatADX},
 		{name: "foo.csv", want: FormatCSV},
 		{name: "foo.json", want: FormatJSON},
+		{name: "foo.tsv", want: FormatTSV},
 		{name: "bar.ADI", want: FormatADI},
 		{name: "bar.ADX", want: FormatADX},
 		{name: "bar.CSV", want: FormatCSV},
 		{name: "bar.JSON", want: FormatJSON},
+		{name: "bar.TSV", want: FormatTSV},
 		{name: "BAZ.tmp.adx", want: FormatADX},
 		{name: "/path/to/file.csv", want: FormatCSV},
 		{name: "nodotcsv", wantErr: true},
 		{name: "log.txt", wantErr: true},
+		{name: "file.tsv.data", wantErr: true},
 		{name: "compressed.adx.gz", wantErr: true},
 		{name: "/path/to/files.adi/noext", wantErr: true},
 	}
@@ -180,6 +183,29 @@ func TestGuessFormatFromContent(t *testing.T) {
 			text: `{}`,
 		},
 		{
+			name:    "TSV basic",
+			want:    FormatTSV,
+			records: 1,
+			text:    "CALL\tMODE\nW1AW\tCW\n",
+		},
+		{
+			name:    "TSV Windows",
+			want:    FormatTSV,
+			records: 1,
+			text:    "CALL\tMODE\r\nW1AW\tCW\r\n",
+		},
+		{
+			name: "TSV header only",
+			want: FormatTSV,
+			text: "CALL\tMODE\n",
+		},
+		{
+			name:    "TSV leading space",
+			want:    FormatTSV,
+			records: 1,
+			text:    "  CALL\tMODE\nW1AW\tCW\n",
+		},
+		{
 			name:    "ADI looks like CSV",
 			want:    FormatADI,
 			records: 1,
@@ -190,6 +216,12 @@ func TestGuessFormatFromContent(t *testing.T) {
 			want:    FormatADI,
 			records: 1,
 			text:    `{"RECORDS": []} Comment <PROGRAMID:11>format test <EOH> <CALL:4>W1AW <MODE:2>CW <EOR>`,
+		},
+		{
+			name:    "ADI looks like TSV",
+			want:    FormatADI,
+			records: 1,
+			text:    "Comment\tText\n<PROGRAMID:11>format test <EOH>\n<CALL:4>W1AW <MODE:2>CW <EOR>\n",
 		},
 		{
 			name:    "HTML",
@@ -253,6 +285,8 @@ func TestGuessFormatFromContent(t *testing.T) {
 					fr = NewCSVIO()
 				case FormatJSON:
 					fr = NewJSONIO()
+				case FormatTSV:
+					fr = NewTSVIO()
 				}
 				if l, err := fr.Read(r); err != nil {
 					t.Errorf("GuessFormatFromContent left Reader in an unsuitable state, %s.Read() got error %v, text:\n%s", fr, err, tc.text)

@@ -27,7 +27,7 @@ import (
 	"unicode"
 )
 
-// ENUM(ADI, ADX, CSV, JSON)
+// ENUM(ADI, ADX, CSV, JSON, TSV)
 type Format string
 
 // GuessFormatFromName guesses a file's Format based on its extension.
@@ -44,8 +44,9 @@ func GuessFormatFromName(filename string) (Format, error) {
 var (
 	// ADI files can start with an arbitrary-length comment
 	firstADITagPat = regexp.MustCompile(`^[^<]*<\w+:\d+(:\w)?>`)
-	// Require CSV files to have a header with purely alphanumeric columns
-	csvHeaderPat = regexp.MustCompile(`^\w+(,\w+)*[\r\n]`)
+	// Require CSV and TSV files to have a header with purely alphanumeric columns
+	csvHeaderPat = regexp.MustCompile(`^\w+(,\w+)+[\r\n]`)
+	tsvHeaderPat = regexp.MustCompile(`^\w+(\t\w+)+[\r\n]`)
 )
 
 const contentPeekSize = 4096
@@ -73,6 +74,9 @@ func GuessFormatFromContent(r *bufio.Reader) (Format, error) {
 	}
 	if csvHeaderPat.Find(start) != nil {
 		return FormatCSV, nil
+	}
+	if tsvHeaderPat.Find(start) != nil {
+		return FormatTSV, nil
 	}
 	return Format(""), fmt.Errorf("could not determine data format, use the -input option")
 }

@@ -132,11 +132,12 @@ func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
 	adxio := adif.NewADXIO()
 	csvio := adif.NewCSVIO()
 	jsonio := adif.NewJSONIO()
+	tsvio := adif.NewTSVIO()
 	ctx.Readers = map[adif.Format]adif.Reader{
-		adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio,
+		adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio, adif.FormatTSV: tsvio,
 	}
 	ctx.Writers = map[adif.Format]adif.Writer{
-		adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio,
+		adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio, adif.FormatTSV: tsvio,
 	}
 	ctx.Out = os.Stdout
 	ctx.Prepare = func(l *adif.Logfile) {
@@ -169,10 +170,10 @@ func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
 		"ADI files: record `separator`\n"+sepHelp)
 
 	// ADX flags
-	fs.IntVar(&adxio.Indent, "adx-indent", 1, "Indent nested ADX structures `n` spaces, 0 for no whitespace")
+	fs.IntVar(&adxio.Indent, "adx-indent", 1, "ADX files: indent nested XML structures `n` spaces, 0 for no whitespace")
 
 	// CSV flags
-	// ToDO csv-lower-case
+	// TODO csv-lower-case
 	// TODO separate comma values for input and output?
 	fs.Var(&runeValue{&csvio.Comma}, "csv-field-separator", "CSV files: field separator `character` if not comma")
 	fs.Var(&runeValue{&csvio.Comment}, "csv-comment", "CSV files: ignore lines beginnig with `character`")
@@ -182,9 +183,14 @@ func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
 
 	// JSON flags
 	// TODO json-lower-case
-	fs.BoolVar(&jsonio.HTMLSafe, "json-html-safe", false, "Escape characters including < > & for use in HTML")
-	fs.IntVar(&jsonio.Indent, "json-indent", 1, "Indent nested JSON structures `n` spaces, 0 for no whitespace")
-	fs.BoolVar(&jsonio.TypedOutput, "json-typed-output", false, "Output JSON numbers and booleans instead of strings")
+	fs.BoolVar(&jsonio.HTMLSafe, "json-html-safe", false, "JSON files: escape characters including < > & for use in HTML")
+	fs.IntVar(&jsonio.Indent, "json-indent", 1, "JSON files: indent nested JSON structures `n` spaces, 0 for no whitespace")
+	fs.BoolVar(&jsonio.TypedOutput, "json-typed-output", false, "JSON files: output numbers and booleans instead of strings")
+
+	// TSV flags
+	fs.BoolVar(&tsvio.CRLF, "tsv-crlf", false, "TSV files: output MS Windows line endings")
+	fs.BoolVar(&tsvio.EscapeSpecial, "tsv-escape-special", false, "TSV files: accept and produce \\t \\r \\n and \\\\ escapes in fields")
+	fs.BoolVar(&tsvio.IgnoreEmptyHeaders, "tsv-ignore-empty-headers", false, "TSV files: do not return error if a TSV file has an empty header field")
 }
 
 func usage(fs *flag.FlagSet, command string) func() {
