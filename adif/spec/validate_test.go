@@ -380,6 +380,40 @@ func TestValidateEnumScope(t *testing.T) {
 			validateTest: validateTest{field: StateField, value: "ПМ", want: InvalidError},
 			values:       map[string]string{"DXCC": "15", "STATE": "ПМ"},
 		},
+
+		// Submode is a string, with warnings for missing values
+		{
+			validateTest: validateTest{field: SubmodeField, value: "FREEDV", want: Valid},
+			values:       map[string]string{"MODE": "DIGITALVOICE", "SUBMODE": "FREEDV"},
+		},
+		{
+			validateTest: validateTest{field: SubmodeField, value: "OLIVIA 32/1000", want: Valid},
+			values:       map[string]string{"MODE": "OLIVIA", "SUBMODE": "OLIVIA 32/1000"},
+		},
+		{
+			validateTest: validateTest{field: SubmodeField, value: "lsb", want: Valid},
+			values:       map[string]string{"MODE": "sSb", "SUBMODE": "lsb"},
+		},
+		// only submode set, fine
+		{
+			validateTest: validateTest{field: SubmodeField, value: "PSK31", want: Valid},
+			values:       map[string]string{"SUBMODE": "PSK31"},
+		},
+		// mode/submode mismatch
+		{
+			validateTest: validateTest{field: SubmodeField, value: "USB", want: InvalidWarning},
+			values:       map[string]string{"MODE": "CW", "SUBMODE": "USB"},
+		},
+		// submode entirely unknown, submode is string so only warning
+		{
+			validateTest: validateTest{field: SubmodeField, value: "TotalJunk", want: InvalidWarning},
+			values:       map[string]string{"MODE": "RTTY", "SUBMODE": "TotalJunk"},
+		},
+		// mode/submode swapped, submode is string so only warning
+		{
+			validateTest: validateTest{field: SubmodeField, value: "SSB", want: InvalidWarning},
+			values:       map[string]string{"MODE": "USB", "SUBMODE": "SSB"},
+		},
 	}
 	for _, tc := range tests {
 		ctx := ValidationContext{FieldValue: func(name string) string { return tc.values[name] }}

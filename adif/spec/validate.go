@@ -365,7 +365,7 @@ func ValidateEnumScope(val string, f Field, ctx ValidationContext) Validation {
 			return warningf("%s config error! %s doesn't have a ScopeProperty", f.Name, e.Name)
 		}
 		for _, v := range vals {
-			if v.Property(prop) == sval {
+			if strings.EqualFold(v.Property(prop), sval) {
 				match = true
 				break
 			}
