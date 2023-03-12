@@ -44,7 +44,10 @@ func runValidate(ctx *Context, args []string) error {
 		}
 		updateFieldOrder(out, l.FieldOrder)
 		for i, r := range l.Records {
-			vctx := spec.ValidationContext{}
+			vctx := spec.ValidationContext{FieldValue: func(name string) string {
+				f, _ := r.Get(name)
+				return f.Value
+			}}
 			var msgs []string
 			for _, f := range r.Fields() {
 				name := strings.ToUpper(f.Name)
