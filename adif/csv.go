@@ -22,11 +22,12 @@ import (
 )
 
 type CSVIO struct {
-	Comma            rune
-	Comment          rune
-	LazyQuotes       bool
-	TrimLeadingSpace bool
-	UseCRLF          bool
+	Comma             rune
+	Comment           rune
+	CRLF              bool
+	LazyQuotes        bool
+	RequireFullRecord bool
+	TrimLeadingSpace  bool
 }
 
 func NewCSVIO() *CSVIO {
@@ -38,17 +39,26 @@ func (o *CSVIO) String() string { return "csv" }
 func (o *CSVIO) Read(in io.Reader) (*Logfile, error) {
 	l := NewLogfile()
 	c := csv.NewReader(in)
+	c.ReuseRecord = true
 	c.Comma = o.Comma
 	c.Comment = o.Comment
 	c.LazyQuotes = o.LazyQuotes
 	c.TrimLeadingSpace = o.TrimLeadingSpace
-	h, err := c.Read()
+	if o.RequireFullRecord {
+		c.FieldsPerRecord = 0
+	} else {
+		c.FieldsPerRecord = -1
+	}
+	header, err := c.Read()
 	if err == io.EOF {
 		return nil, fmt.Errorf("got EOF reading CSV header row")
 	}
 	if err != nil {
 		return nil, fmt.Errorf("error reading CSV header row: %w", err)
 	}
+	// copy header, since array will be reused
+	h := make([]string, len(header))
+	copy(h, header)
 	l.FieldOrder = make([]string, len(h))
 	for i, n := range h {
 		l.FieldOrder[i] = strings.ToUpper(n)
@@ -57,16 +67,21 @@ func (o *CSVIO) Read(in io.Reader) (*Logfile, error) {
 	for line, err := c.Read(); err != io.EOF; line, err = c.Read() {
 		lnum, _ := c.FieldPos(0)
 		if err != nil {
-			return nil, fmt.Errorf("error reading CSV line %d: %w", lnum, err)
+			return nil, fmt.Errorf("error reading CSV: %w", err)
 		}
 		r := NewRecord()
 		for i, v := range line {
+			// if RequreFullRecord, c.Read already returned an error for under/overflow, but catch overflow even if it's false
 			if i >= len(h) {
-				// CONSIDER ignoring this column and logging a warning
-				return nil, fmt.Errorf("extra field value %s at line %d column %d", v, lnum, i)
+				return nil, fmt.Errorf("extra field value %q at line %d field %d", v, lnum, i)
 			}
 			if err := r.Set(Field{Name: h[i], Value: v}); err != nil {
-				return nil, fmt.Errorf("could not set field %s to %s: %w", h[i], v, err)
+				return nil, fmt.Errorf("could not set field %s to %q: %w", h[i], v, err)
+			}
+		}
+		for i := len(line); i < len(h); i++ {
+			if err := r.Set(Field{Name: h[i], Value: ""}); err != nil {
+				return nil, fmt.Errorf("could not set field %s to empty: %w", h[i], err)
 			}
 		}
 		l.AddRecord(r)
@@ -95,25 +110,25 @@ func (o *CSVIO) Write(l *Logfile, out io.Writer) error {
 		return nil
 	}
 	c := csv.NewWriter(out)
-	defer c.Flush()
 	c.Comma = o.Comma
-	c.UseCRLF = o.UseCRLF
+	c.UseCRLF = o.CRLF
 	// CSV header row
 	if err := c.Write(order); err != nil {
-		return fmt.Errorf("error writing CSV header to %s: %w", l, err)
+		return fmt.Errorf("writing CSV header to %s: %w", l, err)
 	}
+	row := make([]string, len(order))
 	for i, r := range l.Records {
-		row := make([]string, 0, len(r.fields))
-		for _, n := range order {
+		for i, n := range order {
 			if f, ok := r.Get(n); !ok {
-				row = append(row, "")
+				row[i] = ""
 			} else {
-				row = append(row, f.Value)
+				row[i] = f.Value
 			}
 		}
 		if err := c.Write(row); err != nil {
-			return fmt.Errorf("error writing CSV record %d to %s: %w", i, l, err)
+			return fmt.Errorf("writing CSV record %d to %s: %w", i, l, err)
 		}
 	}
-	return nil
+	c.Flush()
+	return c.Error()
 }

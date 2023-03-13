@@ -34,9 +34,10 @@ func TestEmptyCSV(t *testing.T) {
 }
 
 func TestReadCSV(t *testing.T) {
-	input := `QSO_DATE,TIME_ON,BAND,CALLSIGN,NAME
-19901031,1234,40M,W1AW,Hiram Percy Maxim
-20221224,095846,1.25cm,N0P,Santa Claus
+	// first record doesn't have trraiiling comma for notes
+	input := `QSO_DATE,TIME_ON,BAND,CALLSIGN,NAME,FREQ,NOTES_INTL
+19901031,1234,40M,W1AW,Hiram Percy Maxim,7.054
+20221224,095846,1.25cm,N0P,Santa Claus,,Þhrough the /❄\ bringing 🎁 \to the child\re\n
 `
 	wantFields := [][]Field{
 		{
@@ -45,6 +46,8 @@ func TestReadCSV(t *testing.T) {
 			{Name: "BAND", Value: "40M"},
 			{Name: "CALLSIGN", Value: "W1AW"},
 			{Name: "NAME", Value: "Hiram Percy Maxim"},
+			{Name: "FREQ", Value: "7.054"},
+			{Name: "NOTES_INTL", Value: ""},
 		},
 		{
 			{Name: "QSO_DATE", Value: "20221224"},
@@ -52,6 +55,8 @@ func TestReadCSV(t *testing.T) {
 			{Name: "BAND", Value: "1.25cm"},
 			{Name: "CALLSIGN", Value: "N0P"},
 			{Name: "NAME", Value: "Santa Claus"},
+			{Name: "FREQ", Value: ""},
+			{Name: "NOTES_INTL", Value: `Þhrough the /❄\ bringing 🎁 \to the child\re\n`},
 		},
 	}
 	csv := NewCSVIO()
@@ -79,17 +84,19 @@ func TestWriteCSV(t *testing.T) {
 		Field{Name: "BAND", Value: "40M"},
 		Field{Name: "CALLSIGN", Value: "W1AW"},
 		Field{Name: "NAME", Value: "Hiram Percy Maxim", Type: TypeString},
+		Field{Name: "FREQ", Value: "7.054"},
 	)).AddRecord(NewRecord(
 		Field{Name: "QSO_DATE", Value: "20221224"},
 		Field{Name: "TIME_ON", Value: "095846"},
 		Field{Name: "BAND", Value: "1.25cm", Type: TypeEnumeration},
 		Field{Name: "CALLSIGN", Value: "N0P", Type: TypeString},
 		Field{Name: "NAME", Value: "Santa Claus"},
+		Field{Name: "NOTES_INTL", Value: `Þhrough the /❄\ bringing 🎁 \to the child\re\n`},
 	))
 	l.Records[1].SetComment("Record comment")
-	want := `QSO_DATE,TIME_ON,BAND,CALLSIGN,NAME
-19901031,1234,40M,W1AW,Hiram Percy Maxim
-20221224,095846,1.25cm,N0P,Santa Claus
+	want := `QSO_DATE,TIME_ON,BAND,CALLSIGN,NAME,FREQ,NOTES_INTL
+19901031,1234,40M,W1AW,Hiram Percy Maxim,7.054,
+20221224,095846,1.25cm,N0P,Santa Claus,,Þhrough the /❄\ bringing 🎁 \to the child\re\n
 `
 	csv := NewCSVIO()
 	out := &strings.Builder{}
@@ -99,6 +106,62 @@ func TestWriteCSV(t *testing.T) {
 		got := out.String()
 		if diff := cmp.Diff(want, got); diff != "" {
 			t.Errorf("Write(%v) had diff with expected:\n%s", l, diff)
+		}
+	}
+}
+
+func TestCSVQuotes(t *testing.T) {
+	input := `QSO_DATE,NAME,VUCC_GRIDS,ADDRESS_INTL,NOTES
+19990101,"""C.G."" Tuska","FN31,FN21","225 Main St.
+Newington, CT 06111",Unquoted note field
+19990202,,AA00,"000 ""The South Pole"", Antarctica","
+ leading newline and trailing newline
+"
+19990303,"Maxim, Hiram Percy,","DN00,DN01,DM90,DM91","Pl. des Nations 1211
+1202 Genève
+Switzerland",",comma notes,,,"
+`
+	wantFields := [][]Field{
+		{
+			{Name: "QSO_DATE", Value: "19990101"},
+			{Name: "NAME", Value: `"C.G." Tuska`},
+			{Name: "VUCC_GRIDS", Value: "FN31,FN21"},
+			{Name: "ADDRESS_INTL", Value: "225 Main St.\nNewington, CT 06111"},
+			{Name: "NOTES", Value: "Unquoted note field"},
+		},
+		{
+			{Name: "QSO_DATE", Value: "19990202"},
+			{Name: "NAME", Value: ""},
+			{Name: "VUCC_GRIDS", Value: "AA00"},
+			{Name: "ADDRESS_INTL", Value: `000 "The South Pole", Antarctica`},
+			{Name: "NOTES", Value: "\n leading newline and trailing newline\n"},
+		},
+		{
+			{Name: "QSO_DATE", Value: "19990303"},
+			{Name: "NAME", Value: "Maxim, Hiram Percy,"},
+			{Name: "VUCC_GRIDS", Value: "DN00,DN01,DM90,DM91"},
+			{Name: "ADDRESS_INTL", Value: "Pl. des Nations 1211\n1202 Genève\nSwitzerland"},
+			{Name: "NOTES", Value: ",comma notes,,,"},
+		},
+	}
+	csv := NewCSVIO()
+	if parsed, err := csv.Read(strings.NewReader(input)); err != nil {
+		t.Errorf("Read(%q) got error %v", input, err)
+	} else {
+		for i, r := range parsed.Records {
+			fields := r.Fields()
+			if diff := cmp.Diff(wantFields[i], fields); diff != "" {
+				t.Errorf("Read(%q) record %d did not match expected, diff:\n%s", input, i, diff)
+			}
+		}
+		if gotlen := len(parsed.Records); gotlen != len(wantFields) {
+			t.Errorf("Read(%q) got %d records:\n%v\nwant %d\n%v", input, gotlen, parsed.Records[len(wantFields):], len(wantFields), wantFields)
+		}
+		out := &strings.Builder{}
+		if err := csv.Write(parsed, out); err != nil {
+			t.Errorf("Write after Read(%q) got error %v", input, err)
+		} else if diff := cmp.Diff(input, out.String()); diff != "" {
+			t.Errorf("CSV round trip got diff:\n%s", diff)
 		}
 	}
 }

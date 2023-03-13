@@ -178,8 +178,9 @@ func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
 	fs.Var(&runeValue{&csvio.Comma}, "csv-field-separator", "CSV files: field separator `character` if not comma")
 	fs.Var(&runeValue{&csvio.Comment}, "csv-comment", "CSV files: ignore lines beginnig with `character`")
 	fs.BoolVar(&csvio.LazyQuotes, "csv-lazy-quotes", false, "CSV files: be relaxed about quoting rules")
+	fs.BoolVar(&csvio.RequireFullRecord, "csv-require-all-fields", false, "CSV files: error if fewer fields in a record than in header")
 	fs.BoolVar(&csvio.TrimLeadingSpace, "csv-trim-space", false, "CSV files: ignore leading space in fields")
-	fs.BoolVar(&csvio.UseCRLF, "csv-crlf", false, "CSV files: output MS Windows line endings")
+	fs.BoolVar(&csvio.CRLF, "csv-crlf", false, "CSV files: output MS Windows line endings")
 
 	// JSON flags
 	// TODO json-lower-case
