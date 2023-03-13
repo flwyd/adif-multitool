@@ -170,50 +170,48 @@ func (o *ADIIO) Write(l *Logfile, out io.Writer) error {
 		return err
 	}
 	b := bufio.NewWriter(out)
-	defer b.Flush()
-
 	if !l.Header.Empty() {
 		c := l.Header.GetComment()
 		if c == "" {
 			c = defaultAdiComment
 		}
 		if err := o.writeComment(b, c, o.RecordSep.Val()); err != nil {
-			return fmt.Errorf("error writing ADI header: %w", err)
+			return fmt.Errorf("writing ADI header: %w", err)
 		}
 		for _, f := range l.Header.Fields() {
 			if err := o.writeField(f, b); err != nil {
-				return fmt.Errorf("error writing ADI header: %w", err)
+				return fmt.Errorf("writing ADI header: %w", err)
 			}
 		}
 		if err := o.writeUserdef(l.Userdef, b); err != nil {
-			return fmt.Errorf("error writing ADI header: %w", err)
+			return fmt.Errorf("writing ADI header: %w", err)
 		}
 		if _, err := b.WriteString(fmt.Sprintf("<%s>%s", o.fixCase("EOH"), o.RecordSep.Val())); err != nil {
-			return fmt.Errorf("error writing ADI header: %w", err)
+			return fmt.Errorf("writing ADI header: %w", err)
 		}
 	} else if len(l.Userdef) > 0 { // add a header for the userdef fields
 		if err := o.writeComment(b, defaultAdiComment, o.RecordSep.Val()); err != nil {
-			return fmt.Errorf("error writing ADI header: %w", err)
+			return fmt.Errorf("writing ADI header: %w", err)
 		}
 		if err := o.writeUserdef(l.Userdef, b); err != nil {
-			return fmt.Errorf("error writing ADI header: %w", err)
+			return fmt.Errorf("writing ADI header: %w", err)
 		}
 		if _, err := b.WriteString(fmt.Sprintf("<%s>%s", o.fixCase("EOH"), o.RecordSep.Val())); err != nil {
-			return fmt.Errorf("error writing ADI header: %w", err)
+			return fmt.Errorf("writing ADI header: %w", err)
 		}
 	}
 
 	for i, r := range l.Records {
 		if c := r.GetComment(); c != "" {
 			if err := o.writeComment(b, c, o.FieldSep.Val()); err != nil {
-				return fmt.Errorf("error writing ADI record comment: %w", err)
+				return fmt.Errorf("writing ADI record comment: %w", err)
 			}
 		}
 		seen := make(map[string]bool)
 		for _, n := range l.FieldOrder {
 			if f, ok := r.Get(n); ok {
 				if err := o.writeField(f, b); err != nil {
-					return fmt.Errorf("error writing ADI record #%d: %w", i, err)
+					return fmt.Errorf("writing ADI record #%d: %w", i, err)
 				}
 				seen[f.Name] = true
 			}
@@ -221,21 +219,21 @@ func (o *ADIIO) Write(l *Logfile, out io.Writer) error {
 		for _, f := range r.Fields() {
 			if !seen[f.Name] {
 				if err := o.writeField(f, b); err != nil {
-					return fmt.Errorf("error writing ADI record #%d: %w", i, err)
+					return fmt.Errorf("writing ADI record #%d: %w", i, err)
 				}
 			}
 		}
 		if _, err := b.WriteString(fmt.Sprintf("<%s>%s", o.fixCase("EOR"), o.RecordSep.Val())); err != nil {
-			return fmt.Errorf("error writing ADI record #%d: %w", i, err)
+			return fmt.Errorf("writing ADI record #%d: %w", i, err)
 		}
 	}
 
 	if l.Comment != "" {
 		if err := o.writeComment(b, l.Comment, "\n"); err != nil {
-			return fmt.Errorf("error writing ADI comment: %w", err)
+			return fmt.Errorf("writing ADI comment: %w", err)
 		}
 	}
-	return nil
+	return b.Flush()
 }
 
 func (o *ADIIO) writeField(f Field, b *bufio.Writer) error {

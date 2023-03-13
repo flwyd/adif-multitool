@@ -108,7 +108,6 @@ func (o *TSVIO) Write(l *Logfile, w io.Writer) error {
 		return nil
 	}
 	out := bufio.NewWriter(w)
-	defer out.Flush()
 	writeDelim := func(i int) error {
 		if i < len(order)-1 {
 			if err := out.WriteByte('\t'); err != nil {
@@ -127,17 +126,25 @@ func (o *TSVIO) Write(l *Logfile, w io.Writer) error {
 		return nil
 	}
 	for i, h := range order {
-		out.WriteString(o.escape(h))
-		writeDelim(i)
+		if _, err := out.WriteString(o.escape(h)); err != nil {
+			return fmt.Errorf("writing TSV header: %w", err)
+		}
+		if err := writeDelim(i); err != nil {
+			return fmt.Errorf("writing TSV header: %w", err)
+		}
 	}
 	for _, r := range l.Records {
 		for i, h := range order {
 			f, _ := r.Get(h)
-			out.WriteString(o.escape(f.Value))
-			writeDelim(i)
+			if _, err := out.WriteString(o.escape(f.Value)); err != nil {
+				return fmt.Errorf("writing TSV record: %w", err)
+			}
+			if err := writeDelim(i); err != nil {
+				return fmt.Errorf("writing TSV header: %w", err)
+			}
 		}
 	}
-	return nil
+	return out.Flush()
 }
 
 func (o *TSVIO) escape(s string) string {
