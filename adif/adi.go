@@ -16,6 +16,7 @@ package adif
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -40,7 +41,7 @@ func (o *ADIIO) Read(in io.Reader) (*Logfile, error) {
 	l := NewLogfile()
 	r := bufio.NewReader(in)
 	s, err := r.ReadString('<')
-	if err == io.EOF {
+	if errors.Is(err, io.EOF) {
 		if s != "" {
 			l.Comment = s
 		}
@@ -59,7 +60,7 @@ func (o *ADIIO) Read(in io.Reader) (*Logfile, error) {
 	var sawHeader, sawRecord bool
 	for { // invariant: last byte read was '<'
 		s, err = r.ReadString('>')
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			return nil, fmt.Errorf("unfinished ADI tag at end: %q", s)
 		}
 		if err != nil {
@@ -148,7 +149,7 @@ func (o *ADIIO) Read(in io.Reader) (*Logfile, error) {
 		if c != "" {
 			comments = append(comments, c)
 		}
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			if len(cur.fields) != 0 {
 				return nil, fmt.Errorf("final record missing <EOR>: %s", cur)
 			}

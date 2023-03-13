@@ -16,6 +16,7 @@ package adif
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -50,7 +51,7 @@ func (o *CSVIO) Read(in io.Reader) (*Logfile, error) {
 		c.FieldsPerRecord = -1
 	}
 	header, err := c.Read()
-	if err == io.EOF {
+	if errors.Is(err, io.EOF) {
 		return nil, fmt.Errorf("got EOF reading CSV header row")
 	}
 	if err != nil {
