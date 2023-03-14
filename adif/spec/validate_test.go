@@ -380,40 +380,6 @@ func TestValidateEnumScope(t *testing.T) {
 			validateTest: validateTest{field: StateField, value: "ПМ", want: InvalidError},
 			values:       map[string]string{"DXCC": "15", "STATE": "ПМ"},
 		},
-
-		// Submode is a string, with warnings for missing values
-		{
-			validateTest: validateTest{field: SubmodeField, value: "FREEDV", want: Valid},
-			values:       map[string]string{"MODE": "DIGITALVOICE", "SUBMODE": "FREEDV"},
-		},
-		{
-			validateTest: validateTest{field: SubmodeField, value: "OLIVIA 32/1000", want: Valid},
-			values:       map[string]string{"MODE": "OLIVIA", "SUBMODE": "OLIVIA 32/1000"},
-		},
-		{
-			validateTest: validateTest{field: SubmodeField, value: "lsb", want: Valid},
-			values:       map[string]string{"MODE": "sSb", "SUBMODE": "lsb"},
-		},
-		// only submode set, fine
-		{
-			validateTest: validateTest{field: SubmodeField, value: "PSK31", want: Valid},
-			values:       map[string]string{"SUBMODE": "PSK31"},
-		},
-		// mode/submode mismatch
-		{
-			validateTest: validateTest{field: SubmodeField, value: "USB", want: InvalidWarning},
-			values:       map[string]string{"MODE": "CW", "SUBMODE": "USB"},
-		},
-		// submode entirely unknown, submode is string so only warning
-		{
-			validateTest: validateTest{field: SubmodeField, value: "TotalJunk", want: InvalidWarning},
-			values:       map[string]string{"MODE": "RTTY", "SUBMODE": "TotalJunk"},
-		},
-		// mode/submode swapped, submode is string so only warning
-		{
-			validateTest: validateTest{field: SubmodeField, value: "SSB", want: InvalidWarning},
-			values:       map[string]string{"MODE": "USB", "SUBMODE": "SSB"},
-		},
 	}
 	for _, tc := range tests {
 		ctx := ValidationContext{FieldValue: func(name string) string { return tc.values[name] }}
@@ -444,6 +410,10 @@ func TestValidateStringEnumScope(t *testing.T) {
 			values:       map[string]string{"MODE": "SSB", "SUBMOE": "LSB"},
 		},
 		{
+			validateTest: validateTest{field: SubmodeField, value: "lsb", want: Valid},
+			values:       map[string]string{"MODE": "sSb", "SUBMODE": "lsb"},
+		},
+		{
 			validateTest: validateTest{field: SubmodeField, value: "PSK31", want: Valid},
 			values:       map[string]string{"MODE": "PSK", "SUBMOE": "PSK31"},
 		},
@@ -455,6 +425,11 @@ func TestValidateStringEnumScope(t *testing.T) {
 			validateTest: validateTest{field: SubmodeField, value: "OLIVIA 16/500", want: Valid},
 			values:       map[string]string{"MODE": "OLIVIA", "SUBMOE": "OLIVIA 16/500"},
 		},
+		// only submode set, fine
+		{
+			validateTest: validateTest{field: SubmodeField, value: "PSK31", want: Valid},
+			values:       map[string]string{"SUBMODE": "PSK31"},
+		},
 
 		{
 			validateTest: validateTest{field: SubmodeField, value: "NOTAMODE", want: InvalidWarning},
@@ -464,6 +439,7 @@ func TestValidateStringEnumScope(t *testing.T) {
 			validateTest: validateTest{field: SubmodeField, value: "lower", want: InvalidWarning},
 			values:       map[string]string{"MODE": "SSB", "SUBMOE": "lower"},
 		},
+		// mode/submode mismatch
 		{
 			validateTest: validateTest{field: SubmodeField, value: "LSB", want: InvalidWarning},
 			values:       map[string]string{"MODE": "FM", "SUBMOE": "LSB"},
@@ -475,6 +451,21 @@ func TestValidateStringEnumScope(t *testing.T) {
 		{
 			validateTest: validateTest{field: SubmodeField, value: "VOCODER", want: InvalidWarning},
 			values:       map[string]string{"MODE": "DIGITALVOICE", "SUBMOE": "VOCODER"},
+		},
+
+		{
+			validateTest: validateTest{field: SubmodeField, value: "USB", want: InvalidWarning},
+			values:       map[string]string{"MODE": "CW", "SUBMODE": "USB"},
+		},
+		// submode entirely unknown, submode is string so only warning
+		{
+			validateTest: validateTest{field: SubmodeField, value: "TotalJunk", want: InvalidWarning},
+			values:       map[string]string{"MODE": "RTTY", "SUBMODE": "TotalJunk"},
+		},
+		// mode/submode swapped
+		{
+			validateTest: validateTest{field: SubmodeField, value: "SSB", want: InvalidWarning},
+			values:       map[string]string{"MODE": "USB", "SUBMODE": "SSB"},
 		},
 	}
 	for _, tc := range tests {
