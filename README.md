@@ -327,6 +327,20 @@ allows a chain like `adifmt fix log.adi | adifmt validate | adifmt save
 and save back to the same file, but which won’t clobber it if validation still
 fails.  Writing a zero-record file can be forced with `--write-if-empty`.
 
+`save` can split the input into multiple files based on a filename template.
+The template uses field names in curly braces: `{FIELD_NAME}`, which is not
+case-sensitive.  Enclose the template in quotes to avoid shell metacharacters.
+For example, `adifmt cat log.adi | adifmt save '{BAND}-{MODE}.adi'` writes each
+band/mode pair to a separate file, perhaps producing `10M-SSB.adi 10M-FM.adi
+20M-CW.adi 20M-DIGITAL.adi 20M-SSB.adi 40M-CW.adi 80M-SSB.adi`.  Another example
+using the [Parks on the Air filename format](https://docs.pota.app/docs/activator_reference/submitting_logs.html)
+is `adifmt save '{station_callsign}@{my_sig_info}-{qso_date}.adi'`.  All field
+values will be converted to upper case and special file system characters are
+replaced by `-` (so `{CALL}.csv` with `W1AW/2` becomes `W1AW-2.csv`).  Fields
+without a value are replaced with `FIELD_NAME-EMPTY`.  Special characters in the
+template itself are not replaced, and can be used to split a log into separate
+directories: `adifmt save --create-dirs '{operator}/{band}.adx`.
+
 #### select
 
 `adifmt select` outputs only the specified fields.  Currently each field must
@@ -403,10 +417,6 @@ Features I plan to add:
 *   Identify duplicate records using flexible criteria, e.g., two contacts with
     the same callsign on the same band with the same mode on the same Zulu day
     and the same `MY_SIG_INFO` value.
-*   Specify a file name template for `save` to group records by a set of fields:
-    `adifmt cat all.csv | adifmt save '{MY_CALL}@{MY_POTA_REF}-{QSO_DATE}.adi'`
-    to split a large log file into one log file for each (callsign, park, date)
-    group, matching the expected POTA filename format.
 *   Option for `save` to append records to an existing ADIF file.
 *   Count the total number of records or the number of distinct values of a
     field.  (The total number of records can currently be counted with

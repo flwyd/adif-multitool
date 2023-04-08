@@ -65,6 +65,8 @@ var (
 	saveConf = cmdConfig{Command: cmd.Save,
 		Configure: func(ctx *cmd.Context, fs *flag.FlagSet) {
 			cctx := cmd.SaveContext{}
+			fs.BoolVar(&cctx.CreateDirectory, "create-dirs", false, "Create any needed parent directories of the output file(s)")
+			fs.BoolVar(&cctx.Quiet, "quiet", false, "Do not print record counts and file names to stderr")
 			fs.BoolVar(&cctx.OverwriteExisting, "overwrite-existing", false, "Overwrite output file if it already exists")
 			fs.BoolVar(&cctx.WriteIfEmpty, "write-if-empty", false, "Write output file even if standard input has no records")
 			ctx.CommandCtx = &cctx

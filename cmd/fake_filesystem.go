@@ -50,7 +50,7 @@ func (fs fakeFilesystem) Open(name string) (NamedReader, error) {
 	f, ok := fs.files[name]
 	if !ok {
 		names := make([]string, 0, len(fs.files))
-		for k, _ := range fs.files {
+		for k := range fs.files {
 			names = append(names, k)
 		}
 		return nil, fmt.Errorf("%s does not exist, not one of %v", name, names)
@@ -64,4 +64,9 @@ func (fs fakeFilesystem) Create(name string) (io.WriteCloser, error) {
 		fs.files[name] = w.String()
 		return nil
 	}}, nil
+}
+
+func (fs fakeFilesystem) MkdirAll(dir string) error {
+	// currently not worying about enforcing directories
+	return nil
 }

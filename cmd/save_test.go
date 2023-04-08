@@ -21,6 +21,7 @@ import (
 
 	"github.com/flwyd/adif-multitool/adif"
 	"github.com/google/go-cmp/cmp"
+	"golang.org/x/exp/maps"
 )
 
 func TestSaveInferFormat(t *testing.T) {
@@ -87,8 +88,8 @@ N0P,20221224,2m
 	}
 
 	for _, tc := range tests {
-		fs := fakeFilesystem{files: map[string]string{os.Stdin.Name(): input}}
 		t.Run(tc.name, func(t *testing.T) {
+			fs := fakeFilesystem{files: map[string]string{os.Stdin.Name(): input}}
 			ctx := &Context{
 				Readers:    map[adif.Format]adif.Reader{adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio},
 				Writers:    map[adif.Format]adif.Writer{adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio},
@@ -105,6 +106,72 @@ N0P,20221224,2m
 				t.Errorf("runSave didn't write to file %s", tc.filename)
 			} else if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("runSave(%q) got diff\n%s", tc.filename, diff)
+			}
+		})
+	}
+}
+
+func TestSaveFileTemplate(t *testing.T) {
+	adiio := adif.NewADIIO()
+	adiio.FieldSep = adif.SeparatorSpace
+	adiio.RecordSep = adif.SeparatorNewline
+	adxio := adif.NewADXIO()
+	csvio := adif.NewCSVIO()
+	jsonio := adif.NewJSONIO()
+	header := "QSO_DATE,TIME_ON,BAND,MODE,COUNTRY,OPERATOR,NOTES\n"
+	w1aw := "19870605,0830,40m,CW,UNITED STATES OF AMERICA,1AY,\n"
+	rs0iss := "20200317,1951,2m,FM,,KH9ELF,Hams:in*space?\n"
+	n0p := "20221224,1234,2m,FM,United States of America,KH9ELF/P,Asked for presents!\n"
+	ve0b := "19450701,1345,1.25m,CW,Canada,1AY,\"tab\tnewline\nslash/symbol‽greek(γράμμα)emoji📻Ge'ez<ደብዳቤ>\"\n"
+	input := header + w1aw + rs0iss + n0p + ve0b
+	tests := []struct {
+		template string
+		files    map[string]string
+	}{
+		{template: "{MODE}on{BAND}.csv",
+			files: map[string]string{
+				"FMon2M.csv":    header + rs0iss + n0p,
+				"CWon40M.csv":   header + w1aw,
+				"CWon1.25M.csv": header + ve0b,
+			},
+		},
+		{template: "{operator}:{country}.csv",
+			files: map[string]string{
+				"1AY:UNITED STATES OF AMERICA.csv":      header + w1aw,
+				"KH9ELF-P:UNITED STATES OF AMERICA.csv": header + n0p,
+				"KH9ELF:COUNTRY-EMPTY.csv":              header + rs0iss,
+				"1AY:CANADA.csv":                        header + ve0b,
+			},
+		},
+		{template: "dir/{NoTeS}.csv",
+			files: map[string]string{
+				"dir/NOTES-EMPTY.csv":         header + w1aw,
+				"dir/HAMS-IN-SPACE-.csv":      header + rs0iss,
+				"dir/ASKED FOR PRESENTS!.csv": header + n0p,
+				"dir/TAB_NEWLINE_SLASH-SYMBOL‽GREEK-ΓΡΆΜΜΑ-EMOJI📻GE-EZ-ደብዳቤ-.csv": header + ve0b,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.template, func(t *testing.T) {
+			fs := fakeFilesystem{files: map[string]string{os.Stdin.Name(): input}}
+			ctx := &Context{
+				Readers:    map[adif.Format]adif.Reader{adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio},
+				Writers:    map[adif.Format]adif.Writer{adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio},
+				Out:        os.Stdout,
+				CommandCtx: &SaveContext{},
+				fs:         fs,
+			}
+			if err := runSave(ctx, []string{tc.template}); err != nil {
+				t.Fatalf("runSave(%q) got error: %v", tc.template, err)
+			}
+			for name, want := range tc.files {
+				if got, ok := fs.files[name]; !ok {
+					t.Errorf("runSave(%q) did not create %q, files are %v", tc.template, name, maps.Keys(fs.files))
+				} else if diff := cmp.Diff(want, got); diff != "" {
+					t.Errorf("runSave(%q) got diff on %q:\n%s", tc.template, name, diff)
+				}
 			}
 		})
 	}

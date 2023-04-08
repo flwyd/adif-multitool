@@ -92,6 +92,8 @@ type filesystem interface {
 	// Create creates a file and opens it for writing, truncating the file if it
 	// alrready exists.  See os.Create for more details.
 	Create(name string) (io.WriteCloser, error)
+	// MkdirAll creates a directory for path and any needed parents
+	MkdirAll(dir string) error
 }
 
 type osFilesystem struct{}
@@ -109,6 +111,8 @@ func (_ osFilesystem) Open(name string) (NamedReader, error) {
 }
 
 func (_ osFilesystem) Create(name string) (io.WriteCloser, error) { return os.Create(name) }
+
+func (_ osFilesystem) MkdirAll(dir string) error { return os.MkdirAll(dir, 0777) }
 
 func updateFieldOrder(l *adif.Logfile, fields []string) {
 	seen := make(map[string]bool)
