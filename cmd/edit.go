@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/flwyd/adif-multitool/adif"
@@ -30,6 +31,7 @@ type EditContext struct {
 	Set         FieldAssignments
 	Remove      FieldList
 	RemoveBlank bool
+	If          FieldAssignments
 	FromZone    TimeZone
 	ToZone      TimeZone
 }
@@ -78,6 +80,19 @@ func runEdit(ctx *Context, args []string) error {
 		updateFieldOrder(out, l.FieldOrder)
 		// TODO merge headers
 		for _, r := range l.Records {
+			if len(cctx.If.values) > 0 {
+				var skip bool
+				for _, f := range cctx.If.values {
+					if v, ok := r.Get(f.Name); !ok || !strings.EqualFold(v.Value, f.Value) {
+						skip = true
+						break
+					}
+				}
+				if skip {
+					out.AddRecord(r)
+					continue
+				}
+			}
 			seen := make(map[string]bool)
 			old := r.Fields()
 			fields := make([]adif.Field, 0, len(old))

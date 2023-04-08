@@ -87,6 +87,48 @@ func TestEditAddSetRemove(t *testing.T) {
 	}
 }
 
+func TestEditIf(t *testing.T) {
+	adi := adif.NewADIIO()
+	out := &bytes.Buffer{}
+	file1 := `<FOO:7>old foo <BAR:7>old bar <CALL:4>W1AW <BAND:3>20M <MODE:2>CW <EOR>
+<FOO:7>old foo <BAR:7>old bar <CALL:4>W1AW <BAND:3>40M <MODE:2>CW <EOR>
+<BAZ:7>old baz <CALL:3>N0P <APP_MONOLOG_FOO:7>monofoo <BAND:3>40m <MODE:3>SSB <EOR>
+<BAZ:7>old baz <CALL:3>N0P <APP_MONOLOG_FOO:7>monofoo <BAND:3>40M <MODE:2>cw <EOR>
+<foo:4>foo2 <bar:4>bar2 <baz:4>baz2 <app_monolog_bar:7>monobar <BAND:3>40M <eor>
+<foo:4>foo2 <bar:4>bar2 <baz:4>baz2 <app_monolog_bar:7>monobar <BAND:3>40m <MODE:2>CW <eor>
+`
+	ctx := &Context{
+		OutputFormat: adif.FormatADI,
+		Readers:      readers(adi),
+		Writers:      writers(adi),
+		Out:          out,
+		Prepare:      testPrepare("My Comment", "3.1.4", "edit test", "1.2.3"),
+		fs:           fakeFilesystem{map[string]string{"foo.adi": file1}},
+		CommandCtx: &EditContext{
+			If:     FieldAssignments{values: []adif.Field{{Name: "MODE", Value: "CW"}, {Name: "band", Value: "40m"}}, validate: ValidateAlphanumName},
+			Add:    FieldAssignments{values: []adif.Field{{Name: "BAZ", Value: "Baz value"}}, validate: ValidateAlphanumName},
+			Set:    FieldAssignments{values: []adif.Field{{Name: "FOO", Value: "Foo value"}}, validate: ValidateAlphanumName},
+			Remove: []string{"BAR"},
+		}}
+	if err := Edit.Run(ctx, []string{"foo.adi"}); err != nil {
+		t.Errorf("Edit.Run(ctx) got error %v", err)
+	} else {
+		got := out.String()
+		want := `My Comment
+<ADIF_VER:5>3.1.4 <PROGRAMID:9>edit test <PROGRAMVERSION:5>1.2.3 <EOH>
+<FOO:7>old foo <BAR:7>old bar <CALL:4>W1AW <BAND:3>20M <MODE:2>CW <EOR>
+<FOO:9>Foo value <CALL:4>W1AW <BAND:3>40M <MODE:2>CW <BAZ:9>Baz value <EOR>
+<BAZ:7>old baz <CALL:3>N0P <APP_MONOLOG_FOO:7>monofoo <BAND:3>40m <MODE:3>SSB <EOR>
+<BAZ:7>old baz <CALL:3>N0P <APP_MONOLOG_FOO:7>monofoo <BAND:3>40M <MODE:2>cw <FOO:9>Foo value <EOR>
+<FOO:4>foo2 <BAR:4>bar2 <BAZ:4>baz2 <APP_MONOLOG_BAR:7>monobar <BAND:3>40M <EOR>
+<FOO:9>Foo value <BAZ:4>baz2 <APP_MONOLOG_BAR:7>monobar <BAND:3>40m <MODE:2>CW <EOR>
+`
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("Edit.Run(ctx, foo.adi) unexpected output, diff:\n%s", diff)
+		}
+	}
+}
+
 func TestEditRemoveEmpty(t *testing.T) {
 	adi := adif.NewADIIO()
 	csv := adif.NewCSVIO()

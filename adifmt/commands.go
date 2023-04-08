@@ -36,6 +36,7 @@ var (
 				Add:    cmd.NewFieldAssignments(cmd.ValidateAlphanumName),
 				Set:    cmd.NewFieldAssignments(cmd.ValidateAlphanumName),
 				Remove: make(cmd.FieldList, 0)}
+			fs.Var(&cctx.If, "if", "Only edit records where `field=value` is already set (repeatable)")
 			fs.Var(&cctx.Add, "add", "Add `field=value` if field is not already in a record (repeatable)")
 			fs.Var(&cctx.Set, "set", "Set `field=value` for all records (repeatable)")
 			fs.Var(&cctx.Remove, "remove", "Remove `fields` from all records (comma-separated, repeatable)")
