@@ -412,6 +412,7 @@ might work.
 Features I plan to add:
 
 *   Validate more fields.
+*   `sort` command which orders by a list of fields.
 *   Filter a log to only records matching some criteria, similar to a SQL
     `WHERE` clause.
 *   Identify duplicate records using flexible criteria, e.g., two contacts with
