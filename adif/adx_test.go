@@ -131,10 +131,10 @@ Inverted L antenna, 70' above ground
 		for i, r := range parsed.Records {
 			fields := r.Fields()
 			if diff := cmp.Diff(wantFields[i], fields); diff != "" {
-				t.Errorf("Read(%q) record %d did not match expected, diff:\n%s", input, i, diff)
+				t.Errorf("Read(%q) record %d did not match expected, diff:\n%s", input, i+1, diff)
 			}
 			if got := r.GetComment(); got != wantComments[i] {
-				t.Errorf("Read(%q) record %d got comment %q want %q", input, i, got, wantComments[i])
+				t.Errorf("Read(%q) record %d got comment %q want %q", input, i+1, got, wantComments[i])
 			}
 		}
 		if gotlen := len(parsed.Records); gotlen != len(wantFields) {

@@ -127,7 +127,7 @@ func (o *CSVIO) Write(l *Logfile, out io.Writer) error {
 			}
 		}
 		if err := c.Write(row); err != nil {
-			return fmt.Errorf("writing CSV record %d to %s: %w", i, l, err)
+			return fmt.Errorf("writing CSV record %d to %s: %w", i+1, l, err)
 		}
 	}
 	c.Flush()

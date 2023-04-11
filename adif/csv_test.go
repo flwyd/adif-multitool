@@ -66,7 +66,7 @@ func TestReadCSV(t *testing.T) {
 		for i, r := range parsed.Records {
 			fields := r.Fields()
 			if diff := cmp.Diff(wantFields[i], fields); diff != "" {
-				t.Errorf("Read(%q) record %d did not match expected, diff:\n%s", input, i, diff)
+				t.Errorf("Read(%q) record %d did not match expected, diff:\n%s", input, i+1, diff)
 			}
 		}
 		if gotlen := len(parsed.Records); gotlen != len(wantFields) {
@@ -151,7 +151,7 @@ Switzerland",",comma notes,,,"
 		for i, r := range parsed.Records {
 			fields := r.Fields()
 			if diff := cmp.Diff(wantFields[i], fields); diff != "" {
-				t.Errorf("Read(%q) record %d did not match expected, diff:\n%s", input, i, diff)
+				t.Errorf("Read(%q) record %d did not match expected, diff:\n%s", input, i+1, diff)
 			}
 		}
 		if gotlen := len(parsed.Records); gotlen != len(wantFields) {
