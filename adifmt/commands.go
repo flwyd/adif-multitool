@@ -36,13 +36,27 @@ var (
 				Add:    cmd.NewFieldAssignments(cmd.ValidateAlphanumName),
 				Set:    cmd.NewFieldAssignments(cmd.ValidateAlphanumName),
 				Remove: make(cmd.FieldList, 0)}
-			fs.Var(&cctx.If, "if", "Only edit records where `field=value` is already set (repeatable)")
+			// fs.Var(&cctx.If, "if", "Only edit records where `field=value` is already set (repeatable)")
+			fs.Var(cctx.Cond.IfFlag(), "if", "Only edit records where `condition` is true (repeatable)")
+			fs.Var(cctx.Cond.IfNotFlag(), "if-not", "Only edit records where `condition` is false (repeatable)")
+			fs.Var(cctx.Cond.OrIfFlag(), "or-if", "Only edit records where `condition` is true or any previous --if group is true (repeatable)")
+			fs.Var(cctx.Cond.OrIfNotFlag(), "or-if-not", "Only edit records where `condition` is false or any previous --if group is true (repeatable)")
 			fs.Var(&cctx.Add, "add", "Add `field=value` if field is not already in a record (repeatable)")
 			fs.Var(&cctx.Set, "set", "Set `field=value` for all records (repeatable)")
 			fs.Var(&cctx.Remove, "remove", "Remove `fields` from all records (comma-separated, repeatable)")
 			fs.BoolVar(&cctx.RemoveBlank, "remove-blank", false, "Remove all blank fields")
 			fs.Var(&cctx.FromZone, "time-zone-from", "Adjust times and dates from this time `zone` into -time-zone-to (default UTC)")
 			fs.Var(&cctx.ToZone, "time-zone-to", "Adjust times and dates into this time `zone` from -time-zone-from (default UTC)")
+			ctx.CommandCtx = &cctx
+		}}
+
+	findConf = cmdConfig{Command: cmd.Find,
+		Configure: func(ctx *cmd.Context, fs *flag.FlagSet) {
+			cctx := cmd.FindContext{}
+			fs.Var(cctx.Cond.IfFlag(), "if", "Include records where `condition` is true (repeatable)")
+			fs.Var(cctx.Cond.IfNotFlag(), "if-not", "Include records where `condition` is false (repeatable)")
+			fs.Var(cctx.Cond.OrIfFlag(), "or-if", "Include records where `condition` is true or any previous --if group is true (repeatable)")
+			fs.Var(cctx.Cond.OrIfNotFlag(), "or-if-not", "Include records where `condition` is false or any previous --if group is true (repeatable)")
 			ctx.CommandCtx = &cctx
 		}}
 
@@ -80,6 +94,13 @@ var (
 			ctx.CommandCtx = &cctx
 		}}
 
+	sortConf = cmdConfig{Command: cmd.Sort,
+		Configure: func(ctx *cmd.Context, fs *flag.FlagSet) {
+			cctx := cmd.SortContext{Fields: make(cmd.FieldList, 0, 16)}
+			fs.Var(&cctx.Fields, "fields", "Comma-separated or multiple instance field `names` to sort by")
+			ctx.CommandCtx = &cctx
+		}}
+
 	validateConf = cmdConfig{Command: cmd.Validate}
 
 	versionConf = cmdConfig{Command: cmd.Command{
@@ -91,7 +112,19 @@ var (
 			return nil
 		}}}
 
-	cmds = []cmdConfig{catConf, editConf, fixConf, helpConf, inferConf, saveConf, selectConf, validateConf, versionConf}
+	cmds = []cmdConfig{
+		catConf,
+		editConf,
+		findConf,
+		fixConf,
+		helpConf,
+		inferConf,
+		saveConf,
+		selectConf,
+		sortConf,
+		validateConf,
+		versionConf,
+	}
 )
 
 func commandNamed(name string) (cmdConfig, bool) {

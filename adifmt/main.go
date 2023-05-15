@@ -30,6 +30,7 @@ import (
 	"github.com/flwyd/adif-multitool/adif"
 	"github.com/flwyd/adif-multitool/adif/spec"
 	"github.com/flwyd/adif-multitool/cmd"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -155,6 +156,8 @@ func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
 		"input `format` when it cannot be inferred from file extension\n"+fmtopts)
 	fs.Var(&ctx.OutputFormat, "output",
 		"output `format` written to stdout\n"+fmtopts)
+	fs.Var(&languageValue{Tag: &ctx.Locale}, "locale",
+		"BCP-47 `language` code for IntlString comparisons e.g. da, pt-BR, zh-Hant")
 	fs.Var(&ctx.UserdefFields, "userdef",
 		fmt.Sprintf("define a USERDEF `field` name and optional type, range, or enum (multi)\nfield formats: STRING_F:S NUMBER_F{0:360} ENUM_F:{A,B,C}\ntype indicators: %s#Data_Types", spec.ADIFSpecURL))
 
@@ -225,4 +228,24 @@ func usage(fs *flag.FlagSet, command string) func() {
 			fmt.Fprintf(out, "To see options specific to a particular command, run\n%s help command\n", fs.Name())
 		}
 	}
+}
+
+type languageValue struct{ *language.Tag }
+
+func (v *languageValue) Set(s string) error {
+	t, err := language.Parse(s)
+	if err != nil {
+		return err
+	}
+	*v.Tag = t
+	return nil
+}
+
+func (v *languageValue) Get() any { return v.Tag }
+
+func (v *languageValue) String() string {
+	if v.Tag == nil {
+		return language.Und.String()
+	}
+	return v.Tag.String()
 }

@@ -97,6 +97,9 @@ func TestEditIf(t *testing.T) {
 <foo:4>foo2 <bar:4>bar2 <baz:4>baz2 <app_monolog_bar:7>monobar <BAND:3>40M <eor>
 <foo:4>foo2 <bar:4>bar2 <baz:4>baz2 <app_monolog_bar:7>monobar <BAND:3>40m <MODE:2>CW <eor>
 `
+	cond := ConditionValue{}
+	cond.IfFlag().Set("MODE=CW")
+	cond.IfFlag().Set("band=40m")
 	ctx := &Context{
 		OutputFormat: adif.FormatADI,
 		Readers:      readers(adi),
@@ -105,7 +108,7 @@ func TestEditIf(t *testing.T) {
 		Prepare:      testPrepare("My Comment", "3.1.4", "edit test", "1.2.3"),
 		fs:           fakeFilesystem{map[string]string{"foo.adi": file1}},
 		CommandCtx: &EditContext{
-			If:     FieldAssignments{values: []adif.Field{{Name: "MODE", Value: "CW"}, {Name: "band", Value: "40m"}}, validate: ValidateAlphanumName},
+			Cond:   cond,
 			Add:    FieldAssignments{values: []adif.Field{{Name: "BAZ", Value: "Baz value"}}, validate: ValidateAlphanumName},
 			Set:    FieldAssignments{values: []adif.Field{{Name: "FOO", Value: "Foo value"}}, validate: ValidateAlphanumName},
 			Remove: []string{"BAR"},

@@ -8,7 +8,7 @@ tool. 📻🌳🪓
 shell, via [Terminal](https://en.wikipedia.org/wiki/Terminal_(macOS)) on macOS
 and [PowerShell](https://en.wikipedia.org/wiki/PowerShell),
 [cmd.exe](https://en.wikipedia.org/wiki/Cmd.exe), or
-[Windows Terminal](https://en.wikipedia.org/wiki/Windows_Terminal)  on Windows.
+[Windows Terminal](https://en.wikipedia.org/wiki/Windows_Terminal) on Windows.
 Each `adifmt` invocation reads log files from the command line or standard
 input and prints an ADIF log to standard output, allowing multiple commands to
 be chained together in a pipeline.  For example, to add a `BAND` field based on
@@ -22,11 +22,9 @@ adifmt infer --fields band my_original_log.adi \
   | adifmt edit --add my_gridsquare=FN31pr \
   | adifmt fix \
   | adifmt validate \
-  | adifmt filter --field mode=SSB \
+  | adifmt find --if mode=SSB \
   | adifmt save my_ssb_log.adx
 ```
-
-*(The `filter` command is not yet implemented.)*
 
 On Windows, PowerShell uses the backtick character (`` ` ``) and Command Prompt
 uses caret (`^`)  instead of backslash (`\`) for multi-line pipelines.  You
@@ -65,7 +63,7 @@ file.
 
 Flags control input and output options.  For example, to print records with
 a UNIX newline between fields, two newlines between records, use lower case for
-all field names, and user defined fields `gain_db` (range ±100) and
+all field names, and add user defined fields `gain_db` (range ±100) and
 `radio_color` (values black, white, or gray):
 
 ```sh
@@ -73,7 +71,7 @@ adifmt cat --adi-field-separator=newline \
   --adi-record-separator=2newline \
   --adi-lower-case \
   --userdef='GAIN_DB,{-100:100}' \
-  --userdef='radio_color,{black,white,gray' \
+  --userdef='radio_color,{black,white,gray}' \
   log1.csv
 ```
 
@@ -189,6 +187,95 @@ aborts with an error; this will still output Intl fields if they contain only
 ASCII characters.  `adifmt validate` ensures that “non-intl” fields are
 ASCII-only; other commands pass through Unicode strings untouched.
 
+The `--locale` flag indicates the language to use for string comparisons, using
+the [BCP-47 format](https://en.wikipedia.org/wiki/IETF_language_tag).
+
+### Conditions and Comparisons
+
+Several `adifmt` commands can produce output only if a record matches one or
+more conditions.  For example, `adifmt find` can be used to filter a larger log
+file to a subset of records, like only CW contacts, or only QSOs on the 20
+meter band.  Conditions are specified with one or more flag options, e.g. `--if
+mode=CW` to match records where the `MODE` field is set to `CW`.  Conditions
+can be negated, e.g. `--if-not mode=CW` to match all records *except* CW.  If
+more than one condition is given, a record must match *all* of the `--if` and
+`--if-not` conditions (boolean AND logic).  The `--or-if` and `--or-if-not`
+flags introduce a boolean OR, matching if either all conditions before the flag
+*or* all of the conditions after the flag are met.  A contrived example:
+`adifmt find --if mode=CW --if-not band=20m --or-if tx_pwr=5 --if-not band=20m --or-if call=W1AW`
+will filter a logfile, producing only records which are _either_ (a) CW contacts
+_not_ on the 20 meter band, (b) 5 watt contacts (any mode) _not_ on the 20 meter
+band, or (c) contacts with W1AW (any band, any mode).
+
+In addition to equality checks, greater than and less than comparisons can be
+used in a condition.  Comparisons use the type of the field, so numeric fields
+like frequency and power sort numerically while digits in string fields sort
+alphabetically.  For example, `FREQ>21` will match the frequency `146.52` but
+`ADDRESS>21` will _not_ match someone whose address is `146 Main St` since `1`
+comes before `2` in a string field.  Available comparisons are
+
+* `field = value`: Case-insensitive equality, e.g. `contest_id=ARRL-field-day`
+* `field < value`: Less than, `freq<29.701`
+* `field <= value`: Less than or equal, `band<=10m`
+* `field > value`: Greater than, `tx_pwr>100`
+* `field >= value`: Greater than or equal, `qso_date>=20200101`
+
+Fields can be compared to other fields by enclosing in `{` and `}`:
+
+* `gridsquare={my_gridsquare}`: Contact with a station the same maidenhead grid
+* `freq<{freq_rx}`: Operating split, with transmit below other station.
+
+Conditions can match multiple values separated by `|` characters:
+
+* `mode=SSB|FM|AM|DIGITALVOICE`: Any phone mode was used
+* `arrl_sect={my_arrl_sect}|ENY|NLI|NNY|WNY` : Contact in the same ARRL section,
+  or in New York
+
+Conditions match fields with a list type if any value in the list matches.
+If the `POTA_REF` field has value `K-0034,K-4556` then the record will match the
+condition `--if pota_ref=K-4556` even though it doesn’t specify all the parks.
+
+Empty or absent fields can be matched by omitting value:
+
+* `operator=`: `OPERATOR` field not set
+* `my_sig_info>`: `MY_SIG_INFO` field is set ("greater than empty")
+
+Make sure to use quotes around conditions so that operators are not treated as
+special shell characters:
+  `adifmt find --if 'freq>=7' --if-not 'mode=CW' --or-if 'tx_pwr<=5'`
+
+The `--if`, `--if-not`, `--or-if`, and `--or-if-not` options are used by the
+`edit` and `find` commands.  Field comparison rules are also used by `sort`.
+
+“International” fields like `NAME_INTL` use Unicode sorting rules with a
+language given by the `--locale` option, e.g. `--locale=da` for Danish or
+`--locale=fr-CA` for Canadian French.  Non-international String fields like
+`NAME` and `CALL` use basic ASCII sorting, regardless of locale.
+
+Boolean fields sort false before true.  Integer and number fields compare by
+numeric order.
+
+Date and time fields are compared in chronological order.  In particular, the
+time `123456` (4 seconds before 12:35 pm) is less than time `2030` (8:30 pm),
+which would not be true if they were compared as numbers.
+
+Latitude and longitude location fields are sorted west-to-east and
+south-to-north so that string sorting by gridsquare has the same results as
+sorting by latitude and then longitude.
+
+Most enumeration fields use string sorting, but the `BAND` enum sorts
+numerically by frequency ranges (so `40m`, `10m`, `70cm` are in order) and the
+`DXCC Entity Code` enum sorts numerically, so DXCC code `7` (Albania) sorts
+before `63` (French Guiana), which in turn sorts before `305` (Bangladesh).  To
+sort alphabetically by country name, use the `COUNTRY` or `MY_COUNTRY` string
+fields.
+
+Several comparisons, including date, time, and location, are strict about field
+format, so consider using `adifmt fix` and/or `adifmt validate` before
+`adifmt find`, `adifmt edit`, or `adifmt sort`.  Missing or empty fields compare
+as less than non-empty fields, and incorrectly formatted fields generally compare
+as less than correctly formatted fields.
+
 ### Commands
 
 ADIF Multitool behavior is organized into _commands_; each `adifmt` invocation
@@ -199,11 +286,13 @@ Name       | Description |
 ---------- | ----------- |
 `cat`      | Concatenate all input files to standard output |
 `edit`     | Add, change, remove, or adjust field values |
+`find`     | Include only records matching a condition |
 `fix`      | Correct field formats to match the ADIF specification |
 `help`     | Print program or command usage information |
 `infer`    | Add missing fields based on present fields |
 `save`     | Save standard input to file with format inferred by extension |
 `select`   | Print only specific fields from the input |
+`sort`     | Sort records by a list of fields |
 `validate` | Validate field values; non-zero exit and no stdout if invalid |
 `version`  | Print program version information |
 
@@ -243,6 +332,31 @@ The `--time-zone-from` and `--time-zone-to` options will shift the `TIME_ON` and
 one time zone to another, defaulting to UTC.  For example, if you have a CSV
 file with contact times in your local QTH in New South Wales you can convert it
 to UTC (Zulu time) with `adifmt edit --time-zone-from Australia/Sydney file.csv`.
+
+Edits can be applied to only records matching a condition, using the
+[Conditions and Comparisons](#conditions-and-comparisons) options.  Records
+which do not match the conditions will be output unchanged.  If different edits
+should be applied based on different conditions, multiple edit commands should
+be chained together in a pipeline.  For example, to set the `SUBMODE` for SSB
+contacts to upper sideband on the 20 meter and higher bands and to lower
+sideband for the 40, 80, and 160 meter bands, express each edit as a condition
+and a change:
+
+```sh
+adifmt cat mylog.adi \
+  | adifmt edit --if 'mode=SSB' --if 'band>=20m' --add 'submode=USB' \
+  | adifmt edit --if 'mode=SSB' --if 'band=40m|80m|160m' --add 'submode=LSB' \
+  | adifmt save fixed_sideband.adi
+```
+
+#### find
+
+`adifmt find` filters the input, outputting only records which match one or more
+conditions.  For details on condition syntax, see
+[Conditions and Comparisons](#conditions-and-comparisons) above.  An example
+which finds all records where the contest ID is set to ARRL Field Day but
+ignoring records on the WARC bands (60, 30, 17, and 12 meters) is
+`adifmt find --if 'contest_id=ARRL-FIELD-DAY' --if-not 'band=60m|30m|17m|12m'`
 
 #### fix
 
@@ -365,6 +479,25 @@ adifmt select --fields call,qso_date,band,mode --output csv mylog.adi \
 This is similar to a SQL `SELECT` clause, except it cannot (yet?) transform the
 values it selects.
 
+#### sort
+
+`adifmt sort` sorts records by one or more fields, specified by the `--fields`
+option.  A field name can be prefixed with a minus sign (`-`) to sort that field
+in descending order.  See the [Conditions and Comparisons](#conditions-and-comparisons)
+section for details about data type ordering.  For example, to sort a log by
+callsign of the contacted station (ascending) in reverse chronological order:
+
+```sh
+adifmt sort --fields call,-qso_date,-time_on mylog.adi
+```
+
+The `--locale` option will use language-specific rules for sorting international
+strings, e.g. `adifmt sort --locale=da --fields QTH_INTL` will use the
+alphabetic order for Danish and Norwegian, producing
+`Arendal, Bergen, Oslo, Trondheim, Ænes, Østfold, Ålgård` while using
+`--locale=en` will use an English sort order which treats Æ, Ø, and Å as
+accented letters, sorted as AE, O, and A respectively.
+
 #### validate
 
 `adifmt validate` checks that field values match the format and enumeration
@@ -412,9 +545,6 @@ might work.
 Features I plan to add:
 
 *   Validate more fields.
-*   `sort` command which orders by a list of fields.
-*   Filter a log to only records matching some criteria, similar to a SQL
-    `WHERE` clause.
 *   Identify duplicate records using flexible criteria, e.g., two contacts with
     the same callsign on the same band with the same mode on the same Zulu day
     and the same `MY_SIG_INFO` value.
@@ -445,7 +575,7 @@ piece of software will be needed.
 
 ## Scripting and compatibility
 
-ADIF Multitool  is designed to be easy to include in scripts.  If you have a
+ADIF Multitool is designed to be easy to include in scripts.  If you have a
 workflow for dealing with ham radio logs, such as converting from CSV, adding
 fields, and validating field syntax before uploading to the POTA or SOTA
 websites, consider automating that process with `adifmt`.

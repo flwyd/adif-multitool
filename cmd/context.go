@@ -24,6 +24,7 @@ import (
 
 	"github.com/flwyd/adif-multitool/adif"
 	"github.com/flwyd/adif-multitool/adif/spec"
+	"golang.org/x/text/language"
 )
 
 type Context struct {
@@ -32,6 +33,7 @@ type Context struct {
 	Readers       map[adif.Format]adif.Reader
 	Writers       map[adif.Format]adif.Writer
 	Out           io.Writer
+	Locale        language.Tag
 	CommandCtx    any
 	UserdefFields UserdefFieldList
 	Prepare       func(*adif.Logfile)
