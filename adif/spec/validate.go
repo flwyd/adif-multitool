@@ -276,7 +276,7 @@ func ValidateTime(val string, f Field, ctx ValidationContext) Validation {
 			return errorf("%s time out of HH:MM range %q", f.Name, val)
 		}
 	case 6:
-		_, err := time.Parse("150406", val)
+		_, err := time.Parse("150405", val)
 		if err != nil {
 			return errorf("%s time out of HH:MM:SS range %q", f.Name, val)
 		}
