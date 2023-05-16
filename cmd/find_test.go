@@ -16,7 +16,6 @@ package cmd
 
 import (
 	"bytes"
-	"errors"
 	"testing"
 
 	"github.com/flwyd/adif-multitool/adif"
@@ -221,7 +220,7 @@ func TestFindCondition(t *testing.T) {
 		{
 			name: "between numbers",
 			setup: func(c *ConditionValue) error {
-				return errors.Join(c.IfFlag().Set("FREQ>7"), c.IfFlag().Set("FREQ<20"))
+				return errorsJoin(c.IfFlag().Set("FREQ>7"), c.IfFlag().Set("FREQ<20"))
 			},
 			want: []string{"W3C", "W4D", "N5E", "KH6F"},
 		},
@@ -233,21 +232,21 @@ func TestFindCondition(t *testing.T) {
 		{
 			name: "equal or equal",
 			setup: func(c *ConditionValue) error {
-				return errors.Join(c.IfFlag().Set("CALL=W3C"), c.OrIfFlag().Set("CALL=N5E"))
+				return errorsJoin(c.IfFlag().Set("CALL=W3C"), c.OrIfFlag().Set("CALL=N5E"))
 			},
 			want: []string{"W3C", "N5E"},
 		},
 		{
 			name: "equal or not equal",
 			setup: func(c *ConditionValue) error {
-				return errors.Join(c.IfFlag().Set("CALL=K0J"), c.OrIfNotFlag().Set("MODE=SSB"))
+				return errorsJoin(c.IfFlag().Set("CALL=K0J"), c.OrIfNotFlag().Set("MODE=SSB"))
 			},
 			want: []string{"N2B", "W4D", "N5E", "KH6F", "W8H", "N9I", "K0J"},
 		},
 		{
 			name: "or and",
 			setup: func(c *ConditionValue) error {
-				return errors.Join(c.IfFlag().Set("MODE=CW"), c.OrIfFlag().Set("mode=SSB"), c.IfFlag().Set("submode=LSB"))
+				return errorsJoin(c.IfFlag().Set("MODE=CW"), c.OrIfFlag().Set("mode=SSB"), c.IfFlag().Set("submode=LSB"))
 			},
 			want: []string{"K1A", "N2B", "W3C", "W8H"},
 		},

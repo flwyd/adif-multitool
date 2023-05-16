@@ -147,7 +147,7 @@ func runSave(ctx *Context, args []string) error {
 	for i, f := range files {
 		errs[i] = saveLog(logs[f], f)
 	}
-	return errors.Join(errs...)
+	return errorsJoin(errs...)
 }
 
 type saveTemplate struct {
