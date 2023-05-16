@@ -107,24 +107,22 @@ func (o *ADIIO) Read(in io.Reader) (*Logfile, error) {
 				if len(tag) != 3 {
 					return nil, fmt.Errorf("missing type for %s field %q", tag[0], v)
 				}
-				udparts := strings.SplitN(string(v), ",", 2)
-				u := UserdefField{Name: udparts[0]}
+				fname, extra, hasextra := strings.Cut(string(v), ",")
+				u := UserdefField{Name: fname}
 				u.Type, err = DataTypeFromIndicator(tag[2])
 				if err != nil {
 					return nil, fmt.Errorf("%v from <%s", err, s)
 				}
-				if len(udparts) == 2 {
+				if hasextra {
 					if u.Type == TypeNumber {
-						if n, err := fmt.Sscanf(udparts[1], "{%f:%f}", &u.Min, &u.Max); err != nil || n != 2 {
-							return nil, fmt.Errorf("invalid %s range %q", tag[0], udparts[1])
+						if n, err := fmt.Sscanf(extra, "{%f:%f}", &u.Min, &u.Max); err != nil || n != 2 {
+							return nil, fmt.Errorf("invalid %s range %q", tag[0], extra)
 						}
 					} else {
-						ev := udparts[1]
-						if !strings.HasPrefix(ev, "{") || !strings.HasSuffix(ev, "}") {
-							return nil, fmt.Errorf("invalid %s enumeration list %q", tag[0], ev)
+						if !strings.HasPrefix(extra, "{") || !strings.HasSuffix(extra, "}") {
+							return nil, fmt.Errorf("invalid %s enumeration list %q", tag[0], extra)
 						}
-						ev = ev[1 : len(ev)-1]
-						u.EnumValues = strings.Split(ev, ",")
+						u.EnumValues = strings.Split(extra[1:len(extra)-1], ",")
 					}
 				}
 				l.AddUserdef(u)

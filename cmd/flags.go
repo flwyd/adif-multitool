@@ -141,11 +141,11 @@ func (f *FieldAssignments) Set(s string) error {
 	a := NewFieldAssignments(ValidateAlphanumName)
 	for _, c := range chunks {
 		c = strings.TrimSpace(c)
-		kv := strings.SplitN(c, "=", 2)
-		if len(kv) == 1 || len(kv[0]) == 0 {
+		key, val, found := strings.Cut(c, "=")
+		if !found || key == "" {
 			return fmt.Errorf(`expected "name=value", got %q`, c)
 		}
-		if err := a.add(kv[0], kv[1]); err != nil {
+		if err := a.add(key, val); err != nil {
 			return fmt.Errorf("validation error on %q: %v", c, err)
 		}
 	}
