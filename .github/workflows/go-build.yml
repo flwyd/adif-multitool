@@ -28,6 +28,9 @@ jobs:
         exclude:
           - goarch: "386"
             goos: darwin
+        include:
+          - goarch: arm
+            goos: linux
 
     steps:
       - uses: actions/checkout@v3
