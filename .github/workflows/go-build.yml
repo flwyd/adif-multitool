@@ -5,57 +5,50 @@ on:
     branches: ["main"]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.18
+          go-version: ">=1.18"
           cache: true
 
-      - name: Build RPi
-        run: go build -v -o adif-multitool-rpi ./adifmt
-        env:
-          GOOS: linux
-          GOARCH: arm
-          GOARM: 5
+      - name: Test
+        run: go test ./...
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: ["386", amd64, arm64]
+        exclude:
+          - goarch: "386"
+            goos: darwin
 
-      - name: Build OSX-amd64
-        run: go build -v -o adif-multitool-osx ./adifmt
-        env:
-          GOOS: darwin
-          GOARCH: amd64
+    steps:
+      - uses: actions/checkout@v3
 
-      - name: Build OSX-arm64
-        run: go build -v -o adif-multitool-osx-arm ./adifmt
-        env:
-          GOOS: darwin
-          GOARCH: arm64
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ">=1.18"
+          cache: true
 
-      - name: Build Windows
-        run: go build -v -o adif-multitool-windows ./adifmt
+      - name: Build ${{ matrix.goos }} ${{ matrix.goarch }}
+        run: go build -v -o adif-multitool-${{ matrix.goos }}-${{ matrix.goarch}} ./adifmt
         env:
-          GOOS: windows
-          GOARCH: 386
-
-      - name: Build Windows-arm
-        run: go build -v -o adif-multitool-windows-arm ./adifmt
-        env:
-          GOOS: windows
-          GOARCH: amd64
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
+          automatic_release_tag: "${{ matrix.goos }}-${{ matrix.goarch }}"
           prerelease: false
-          title: "Latest Build"
+          title: "${{ matrix.goos }}-${{ matrix.goarch }}"
           files: |
-            adif-multitool-rpi
-            adif-multitool-osx
-            adif-multitool-osx-arm
-            adif-multitool-windows
-            adif-multitool-windows-arm
+            adif-multitool-${{ matrix.goos }}-${{ matrix.goarch }}
