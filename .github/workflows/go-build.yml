@@ -43,11 +43,25 @@ jobs:
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-      # - uses: "marvinpinto/action-automatic-releases@latest"
-      #   with:
-      #     repo_token: "${{ secrets.GITHUB_TOKEN }}"
-      #     automatic_release_tag: "${{ matrix.goos }}-${{ matrix.goarch }}"
-      #     prerelease: false
-      #     title: "${{ matrix.goos }}-${{ matrix.goarch }}"
-      #     files: |
-      #       adif-multitool-${{ matrix.goos }}-${{ matrix.goarch }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: adif-multitool-${{ matrix.goos }}-${{ matrix.goarch}}
+          path: adif-multitool-${{ matrix.goos }}-${{ matrix.goarch}}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: false
+          title: "Latest Build"
+          files: |
+            adif-multitool-*
