@@ -43,12 +43,11 @@ jobs:
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "${{ matrix.goos }}-${{ matrix.goarch }}"
-          prerelease: false
-          title: "${{ matrix.goos }}-${{ matrix.goarch }}"
-          files: |
-            adif-multitool-${{ matrix.goos }}-${{ matrix.goarch }}
+      # - uses: "marvinpinto/action-automatic-releases@latest"
+      #   with:
+      #     repo_token: "${{ secrets.GITHUB_TOKEN }}"
+      #     automatic_release_tag: "${{ matrix.goos }}-${{ matrix.goarch }}"
+      #     prerelease: false
+      #     title: "${{ matrix.goos }}-${{ matrix.goarch }}"
+      #     files: |
+      #       adif-multitool-${{ matrix.goos }}-${{ matrix.goarch }}
