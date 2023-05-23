@@ -1,5 +1,9 @@
 name: Go
 
+env:
+  ACTIONS_RUNNER_DEBUG: true
+  ACTIONS_STEP_LOG: true
+
 on:
   push:
     branches: ["main"]
