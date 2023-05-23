@@ -46,7 +46,7 @@ jobs:
           cache: true
 
       - name: Build ${{ matrix.goos }} ${{ matrix.goarch }}
-        run: go build -v -o ${{ matrix.goos }}-${{ matrix.goarch }}/adifmt ./adifmt
+        run: go build -v -o adifmt-${{ matrix.goos }}-${{ matrix.goarch }} ./adifmt
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
@@ -54,8 +54,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.goos }}-${{ matrix.goarch }}/adifmt
-          path: ${{ matrix.goos }}-${{ matrix.goarch }}/adifmt
+          name: adifmt-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: adifmt-${{ matrix.goos }}-${{ matrix.goarch }}
 
   release:
     needs: build
