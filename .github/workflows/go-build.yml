@@ -46,7 +46,7 @@ jobs:
           cache: true
 
       - name: Build ${{ matrix.goos }} ${{ matrix.goarch }}
-        run: go build -v -o adif-multitool-${{ matrix.goos }}-${{ matrix.goarch}} ./adifmt
+        run: go build -v -o ${{ matrix.goos }}-${{ matrix.goarch }}/adifmt ./adifmt
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
@@ -54,8 +54,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: adif-multitool-${{ matrix.goos }}-${{ matrix.goarch}}
-          path: adif-multitool-${{ matrix.goos }}-${{ matrix.goarch}}
+          name: ${{ matrix.goos }}-${{ matrix.goarch }}/adifmt
+          path: ${{ matrix.goos }}-${{ matrix.goarch }}/adifmt
 
   release:
     needs: build
@@ -71,4 +71,4 @@ jobs:
           prerelease: false
           title: "Latest Build"
           files: |
-            adif-multitool-*
+            adif-multitool/**
