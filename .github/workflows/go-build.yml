@@ -54,7 +54,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: adifmt-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: adifmt-builds
           path: adifmt-${{ matrix.goos }}-${{ matrix.goarch }}
 
   release:
@@ -63,6 +63,8 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
+        with:
+          name: adifmt-builds
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -71,4 +73,4 @@ jobs:
           prerelease: false
           title: "Latest Build"
           files: |
-            adif-multitool/**
+            adifmt-*
