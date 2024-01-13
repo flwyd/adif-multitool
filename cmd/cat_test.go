@@ -44,7 +44,7 @@ func TestCatEmpty(t *testing.T) {
 	}
 }
 
-func TestEditADIToCSV(t *testing.T) {
+func TestCatADIToCSV(t *testing.T) {
 	adi := adif.NewADIIO()
 	csv := adif.NewCSVIO()
 	out := &bytes.Buffer{}
@@ -117,6 +117,45 @@ Fox Trot,Golf,Hotel,,
 `
 		if diff := cmp.Diff(want, got); diff != "" {
 			t.Errorf("Cat.Run(ctx, foo.ctx, bar.ctx) unexpected output, diff:\n%s", diff)
+		}
+	}
+}
+
+func TestCatPreserveAppHeaders(t *testing.T) {
+	adi := adif.NewADIIO()
+	out := &bytes.Buffer{}
+	file1 := `Generated 2020-06-21
+<ADIF_VER:5>3.1.2 <APP_TEST_FIELD1:3>Foo <APP_TEST_FIELD2:2:N>42 <EOH>
+<FIELD_1:4>Alfa <FOO:5>Bravo <FIELD_2:7>Charlie <EOR>
+<FIELD_1:5>Delta <FOO:4>Echo <EOR>
+`
+	file2 := `Generated 1999-12-31
+<ADIF_VER:5>2.1.9 <PROGRAMID:8>Fancy Software <PROGRAMVERSION:5>(devel) <APP_TEST_FIELD2:2>42 <APP_TEST_FIELD3:10>Some Value <EOH>
+
+<BAR:4>Golf <FIELD_2:5>Hotel <FIELD_1:8>Fox Trot <EOR>
+
+<FIELD_2:5>India <BAR:7>Juliett <today:8:D>19870605 <now:4:t>1234 <EOR>
+`
+	ctx := &Context{
+		OutputFormat: adif.FormatADI,
+		Readers:      readers(adi),
+		Writers:      writers(adi),
+		Out:          out,
+		Prepare:      testPrepare("My Comment", "3.1.4", "cat test", "1.2.3"),
+		fs:           fakeFilesystem{map[string]string{"foo.adi": file1, "bar.adi": file2}}}
+	if err := Cat.Run(ctx, []string{"foo.adi", "bar.adi"}); err != nil {
+		t.Errorf("Cat.Run(ctx) got error %v", err)
+	} else {
+		got := out.String()
+		want := `My Comment
+<APP_TEST_FIELD1:3>Foo <APP_TEST_FIELD2:2:N>42 <APP_TEST_FIELD3:10>Some Value <ADIF_VER:5>3.1.4 <PROGRAMID:8>cat test <PROGRAMVERSION:5>1.2.3 <EOH>
+<FIELD_1:4>Alfa <FOO:5>Bravo <FIELD_2:7>Charlie <EOR>
+<FIELD_1:5>Delta <FOO:4>Echo <EOR>
+<BAR:4>Golf <FIELD_2:5>Hotel <FIELD_1:8>Fox Trot <EOR>
+<FIELD_2:5>India <BAR:7>Juliett <TODAY:8:D>19870605 <NOW:4:T>1234 <EOR>
+`
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("Cat.Run(ctx, foo.adi, bar.adi) unexpected output, diff:\n%s", diff)
 		}
 	}
 }

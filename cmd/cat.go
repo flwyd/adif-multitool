@@ -22,7 +22,6 @@ var Cat = Command{Name: "cat", Run: runCat,
 	Description: "Concatenate all input files to standard output"}
 
 func runCat(ctx *Context, args []string) error {
-	// TODO add any needed flags
 	acc := accumulator{Out: adif.NewLogfile(), Ctx: ctx}
 	for _, f := range filesOrStdin(args) {
 		l, err := acc.read(f)
@@ -30,7 +29,6 @@ func runCat(ctx *Context, args []string) error {
 			return err
 		}
 		updateFieldOrder(acc.Out, l.FieldOrder)
-		// TODO merge headers and comments
 		acc.Out.Records = append(acc.Out.Records, l.Records...)
 	}
 	if err := acc.prepare(); err != nil {

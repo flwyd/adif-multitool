@@ -46,7 +46,6 @@ func runSelect(ctx *Context, args []string) error {
 		if err != nil {
 			return err
 		}
-		// TODO merge headers and comments
 		for _, r := range l.Records {
 			fields := make([]adif.Field, 0, len(con.Fields))
 			for _, name := range con.Fields {

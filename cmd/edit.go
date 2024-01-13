@@ -78,7 +78,6 @@ func runEdit(ctx *Context, args []string) error {
 			return err
 		}
 		updateFieldOrder(out, l.FieldOrder)
-		// TODO merge headers
 		for _, r := range l.Records {
 			eval := recordEvalContext{record: r, lang: ctx.Locale}
 			if !cond.Evaluate(eval) {

@@ -142,6 +142,15 @@ func (a *accumulator) read(filename string) (*adif.Logfile, error) {
 	for _, u := range l.Userdef {
 		a.Out.AddUserdef(u)
 	}
+	for _, f := range l.Header.Fields() {
+		if f.IsAppDefined() {
+			if e, ok := a.Out.Header.Get(f.Name); !ok || e.Value == "" {
+				a.Out.Header.Set(f)
+			} else if e.Value != f.Value {
+				fmt.Fprintf(os.Stderr, "Warning: conflicting values for %s: keeping %q and discarding %q\n", f.Name, e.Value, f.Value)
+			}
+		}
+	}
 	if c := l.Comment; c != "" {
 		prefix := "adif-multitool: original comment"
 		if !strings.HasPrefix(c, prefix) {
