@@ -37,6 +37,18 @@ func write(ctx *Context, l *adif.Logfile) error {
 	if !ok {
 		return fmt.Errorf("unknown output format %q", format)
 	}
+	if ctx.SuppressAppHeaders {
+		h := adif.NewRecord()
+		h.SetComment(l.Header.GetComment())
+		for _, f := range l.Header.Fields() {
+			if !f.IsAppDefined() {
+				h.Set(f)
+			}
+		}
+		if !l.Header.Equal(h) {
+			l.Header = h
+		}
+	}
 	return w.Write(l, ctx.Out)
 }
 

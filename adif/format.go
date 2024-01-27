@@ -27,7 +27,7 @@ import (
 	"unicode"
 )
 
-// ENUM(ADI, ADX, CSV, JSON, TSV)
+// ENUM(ADI, ADX, Cabrillo, CSV, JSON, TSV)
 type Format string
 
 // GuessFormatFromName guesses a file's Format based on its extension.
@@ -38,7 +38,14 @@ func GuessFormatFromName(filename string) (Format, error) {
 	if ext == "" {
 		return Format(""), fmt.Errorf("no file extension in %q", filename)
 	}
-	return ParseFormat(ext)
+	f, err := ParseFormat(ext)
+	if err != nil {
+		switch strings.ToLower(ext) {
+		case "cbr", "log":
+			f, err = FormatCabrillo, nil
+		}
+	}
+	return f, err
 }
 
 var (
@@ -65,6 +72,9 @@ func GuessFormatFromContent(r *bufio.Reader) (Format, error) {
 	}
 	if bytes.HasPrefix(start, []byte("<?xml")) || bytes.HasPrefix(start, []byte("<ADX>")) {
 		return FormatADX, nil
+	}
+	if bytes.HasPrefix(start, []byte("START-OF-LOG:")) {
+		return FormatCabrillo, nil
 	}
 	if firstADITagPat.Find(start) != nil {
 		return FormatADI, nil

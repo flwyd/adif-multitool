@@ -14,7 +14,9 @@
 
 package adif
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestEnsureCRLF(t *testing.T) {
 	tests := []struct {
@@ -80,6 +82,34 @@ func TestEnsureCRLF(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			if got := ensureCRLF(tc.from); got != tc.want {
 				t.Errorf("ensureCRLF(%q) = %q, want %q", tc.from, got, tc.want)
+			}
+		})
+	}
+}
+
+func TestIsAllDigits(t *testing.T) {
+	tests := []struct {
+		s    string
+		want bool
+	}{
+		{s: "", want: true},
+		{s: "0", want: true},
+		{s: "9", want: true},
+		{s: "123", want: true},
+		{s: "9876543210", want: true},
+		{s: "/123", want: false},
+		{s: "42:", want: false},
+		{s: "54 46", want: false},
+		{s: "5N5", want: false},
+		{s: "X", want: false},
+		{s: "௭௩", want: false},
+		{s: "⑦", want: false},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.s, func(t *testing.T) {
+			if got := isAllDigits(tc.s); got != tc.want {
+				t.Errorf("isAllDigits(%q) = %v, want %v", tc.s, got, tc.want)
 			}
 		})
 	}

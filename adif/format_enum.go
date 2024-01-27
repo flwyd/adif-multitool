@@ -16,6 +16,8 @@ const (
 	FormatADI Format = "ADI"
 	// FormatADX is a Format of type ADX.
 	FormatADX Format = "ADX"
+	// FormatCabrillo is a Format of type Cabrillo.
+	FormatCabrillo Format = "Cabrillo"
 	// FormatCSV is a Format of type CSV.
 	FormatCSV Format = "CSV"
 	// FormatJSON is a Format of type JSON.
@@ -29,6 +31,7 @@ var ErrInvalidFormat = fmt.Errorf("not a valid Format, try [%s]", strings.Join(_
 var _FormatNames = []string{
 	string(FormatADI),
 	string(FormatADX),
+	string(FormatCabrillo),
 	string(FormatCSV),
 	string(FormatJSON),
 	string(FormatTSV),
@@ -53,16 +56,18 @@ func (x Format) IsValid() bool {
 }
 
 var _FormatValue = map[string]Format{
-	"ADI":  FormatADI,
-	"adi":  FormatADI,
-	"ADX":  FormatADX,
-	"adx":  FormatADX,
-	"CSV":  FormatCSV,
-	"csv":  FormatCSV,
-	"JSON": FormatJSON,
-	"json": FormatJSON,
-	"TSV":  FormatTSV,
-	"tsv":  FormatTSV,
+	"ADI":      FormatADI,
+	"adi":      FormatADI,
+	"ADX":      FormatADX,
+	"adx":      FormatADX,
+	"Cabrillo": FormatCabrillo,
+	"cabrillo": FormatCabrillo,
+	"CSV":      FormatCSV,
+	"csv":      FormatCSV,
+	"JSON":     FormatJSON,
+	"json":     FormatJSON,
+	"TSV":      FormatTSV,
+	"tsv":      FormatTSV,
 }
 
 // ParseFormat attempts to convert a string to a Format.

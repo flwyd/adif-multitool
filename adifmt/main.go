@@ -131,14 +131,26 @@ func (v runeValue) Get() rune { return *v.r }
 func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
 	adiio := adif.NewADIIO()
 	adxio := adif.NewADXIO()
+	cabrilloio := adif.NewCabrilloIO()
+	cabrilloio.CreatedBy = "ADIF Multitool " + version
 	csvio := adif.NewCSVIO()
 	jsonio := adif.NewJSONIO()
 	tsvio := adif.NewTSVIO()
 	ctx.Readers = map[adif.Format]adif.Reader{
-		adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio, adif.FormatTSV: tsvio,
+		adif.FormatADI:      adiio,
+		adif.FormatADX:      adxio,
+		adif.FormatCabrillo: cabrilloio,
+		adif.FormatCSV:      csvio,
+		adif.FormatJSON:     jsonio,
+		adif.FormatTSV:      tsvio,
 	}
 	ctx.Writers = map[adif.Format]adif.Writer{
-		adif.FormatADI: adiio, adif.FormatADX: adxio, adif.FormatCSV: csvio, adif.FormatJSON: jsonio, adif.FormatTSV: tsvio,
+		adif.FormatADI:      adiio,
+		adif.FormatADX:      adxio,
+		adif.FormatCabrillo: cabrilloio,
+		adif.FormatCSV:      csvio,
+		adif.FormatJSON:     jsonio,
+		adif.FormatTSV:      tsvio,
 	}
 	ctx.Out = os.Stdout
 	ctx.Prepare = func(l *adif.Logfile) {
@@ -158,6 +170,8 @@ func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
 		"output `format` written to stdout\n"+fmtopts)
 	fs.Var(&languageValue{Tag: &ctx.Locale}, "locale",
 		"BCP-47 `language` code for IntlString comparisons e.g. da, pt-BR, zh-Hant")
+	fs.BoolVar(&ctx.SuppressAppHeaders, "suppress-app-headers", false,
+		"Don't output app-defined headers, to comply with ADIF 3.1.4 spec")
 	fs.Var(&ctx.UserdefFields, "userdef",
 		fmt.Sprintf("define a USERDEF `field` name and optional type, range, or enum (multi)\nfield formats: STRING_F:S NUMBER_F{0:360} ENUM_F:{A,B,C}\ntype indicators: %s#Data_Types", spec.ADIFSpecURL))
 
@@ -174,6 +188,29 @@ func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
 
 	// ADX flags
 	fs.IntVar(&adxio.Indent, "adx-indent", 1, "ADX files: indent nested XML structures `n` spaces, 0 for no whitespace")
+
+	// Cabrillo flags
+	fs.IntVar(&cabrilloio.LowPowerMax, "cabrillo-max-power-low", cabrilloio.LowPowerMax, "Higest allowed power in `watts` considered LOW power by the contest")
+	fs.IntVar(&cabrilloio.QRPPowerMax, "cabrillo-max-power-qrp", cabrilloio.QRPPowerMax, "Higest alqrped power in `watts` considered QRP power by the contest")
+	fs.StringVar(&cabrilloio.Callsign, "cabrillo-callsign", "", "Cabrillo files: CALLSIGN header `value`")
+	fs.StringVar(&cabrilloio.Club, "cabrillo-club", "", "Cabrillo files: CLUB header `value`")
+	// TODO Operators (string slice)
+	fs.StringVar(&cabrilloio.Contest, "cabrillo-contest", "", "Cabrillo files: CONTEST header `value`")
+	fs.StringVar(&cabrilloio.Email, "cabrillo-email", "", "Cabrillo files: EMAIL address header `value`")
+	fs.StringVar(&cabrilloio.GridLocator, "cabrillo-grid-locator", "", "Cabrillo files: GRID-LOCATOR header `value`")
+	fs.StringVar(&cabrilloio.Location, "cabrillo-location", "", "Cabrillo files: LOCATION header `value` (e.g. ARRL section)")
+	fs.StringVar(&cabrilloio.Name, "cabrillo-name", "", "Cabrillo files: NAME header `value` (your name or club name)")
+	fs.StringVar(&cabrilloio.Address, "cabrillo-address", "", "Cabrillo files: ADDRESS header `value` (include newlines)")
+	fs.StringVar(&cabrilloio.Soapbox, "cabrillo-soapbox", "", "Cabrillo files: SOAPBOX header `value` (free-form comment)")
+	// TODO MinReportedOfftime (duration)
+	fs.StringVar(&cabrilloio.MyExchange, "cabrillo-my-exchange", "", "Cabrillo files: `value` sent as exchange in QSOs")
+	fs.StringVar(&cabrilloio.MyExchangeField, "cabrillo-my-exchange-field", "", "Cabrillo files: ADIF `field` used for contest exchange sent")
+	fs.StringVar(&cabrilloio.TheirExchangeField, "cabrillo-their-exchange-field", "", "Cabrillo files: ADIF `field` used for contest exchange sent")
+	for c, a := range adif.CabrilloCategoryValues {
+		fs.Var(&mapValue{cabrilloio.Categories, c, a},
+			"cabrillo-category-"+strings.ToLower(c),
+			fmt.Sprintf("Cabrillo files: CATEGORY-%s header `value` (%s)", c, strings.Join(a, ", ")))
+	}
 
 	// CSV flags
 	// TODO csv-lower-case

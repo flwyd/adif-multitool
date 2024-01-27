@@ -36,10 +36,9 @@ multiple lines here for readability.
 
 ## Quick start
 
-ADIF Multitool is not yet available as a binary distribution, so you will need
-a Go compiler on your system (version at least 1.18).  To check, run
-`go version` at the command line.  If the `go` program is not found,
-[download and install it](https://go.dev/dl/).  Then run
+Binaries for each ADIF Multitool version are available on the
+[releases page](https://github.com/flwyd/adif-multitool/releases).  You can also
+build it from source code with a [Go compiler](https://go.dev/dl/).  Run
 `go install github.com/flwyd/adif-multitool/adifmt@latest` to make the `adifmt`
 command available.  (You may need to add the `$GOBIN` environment variable to
 your path.)  To see if it works, run `adifmt help`.  If the command is not
@@ -76,8 +75,8 @@ adifmt cat --adi-field-separator=newline \
 ```
 
 Multiple input and output formats are supported (currently ADI and ADX per the
-ADIF spec, CSV with field names matching the ADIF list, and JSON with a similar
-format to ADX).
+ADIF spec, Cabrillo according to the WWROF spec, CSV and TSV with field names
+matching the ADIF list, and JSON with a similar format to ADX).
 
 ```sh
 adifmt cat --input=adi --output=csv log1.adi > log1.csv
@@ -90,7 +89,7 @@ output format.  `adifmt save` infers the output format from the file’s
 extension.  Input files can be in different formats:
 
 ```sh
-adifmt cat log1.adi log2.adx log3.csv log4.json log5.tsv > combined.adi
+adifmt cat log1.adi log2.adx log3.csv log4.json log5.tsv log6.cbr > combined.adi
 ```
 
 If no file names are given, input is read from standard input:
@@ -121,17 +120,20 @@ each record in the input file `log1.adi`.
 
 `adifmt` can read from and write to the following formats.  ADI (tag-based) and
 ADX (XML-based) formats are [specified by ADIF](https://adif.org.uk/adiif).
+The Cabrillo V3 contest log format is
+[specified by WWROF](https://wwrof.org/cabrillo/).
 Others use standard formats for arbitrary key-value data.  Format-specific
 options are configured with option flags.  Formats are inferred from file names
 or can be set explicitly via `--input` and `--output` options.
 
-Name  | Extension | Notes
------ | --------- | -----
-ADI   | `.adi`    | Outputs `IntlString` (Unicode fields) in UTF-8
-ADX   | `.adx`    |
-CSV   | `.csv`    | Comma-separated values; other delimiters supported via the `--csv-field-separator` option
-JSON  | `.json`   | Can parse number and boolean typed data, to write these set the `--json-typed-output` option
-TSV   | `.tsv`    | Tab-separated values, tabs and line breaks escaped if `--tsv-escape-special` is set
+Name     | Extension                   | Notes
+-------- | --------------------------- | -----
+ADI      | `.adi`                      | Outputs `IntlString` (Unicode fields) in UTF-8
+ADX      | `.adx`                      |
+Cabrillo | `.cbr`, `.log`, `.cabrillo` | See [Cabrillo](#cabrillo) section
+CSV      | `.csv`                      | Comma-separated values; other delimiters supported via the `--csv-field-separator` option
+JSON     | `.json`                     | Can parse number and boolean typed data, to write these set the `--json-typed-output` option
+TSV      | `.tsv`                      | Tab-separated values, tabs and line breaks escaped if `--tsv-escape-special` is set
 
 Input files can have fields with any names, even if they’re not part of the
 ADIF spec.  The `--userdef` option will add user-defined field metadata to ADI
@@ -165,6 +167,56 @@ Some (but not all) comments found in ADI and ADX files are preserved from input
 to output.  Details of comment handling are subject to change and should not be
 depended upon.
 
+#### Cabrillo
+
+**Note: app-specific fields for Cabrillo are currently experimental and may be
+replaced by official ADIF fields in a future version, pending proposals to
+update the ADIF specification.**
+
+The [Cabrillo](https://wwrof.org/cabrillo/) format is commonly used to submit
+logs for ham radio contests.  ADIF Multitool can convert to and from Carbillo,
+but this is a lossy process: many ADIF fields are not included in Cabrillo and
+some Cabrillo values don't perfectly map to ADIF like the `DIGI` mode and the
+transmitter ID field.  The latter is imported as an app-specific field,
+ `APP_CABRILLO_TRANSMITTER_ID`.
+
+The flags `--cabrillo-my-exchange-field` and `--cabrillo-their-exchange-field`
+represent the contest exchange, e.g. `adifmt cat
+--cabrillo-their-exchange-field=ARRL_SECT
+--cabrillo-my-exchange-field=MY_ARRL_SECT field_day.adi`.  If the source log
+file does not have the exchange your station set, a single value can be used for
+all QSOs like `--cabrillo-my-exchange=WTX`.  If the flags are not given, the
+`SRX_STRING`/`SRX` and `STX_STRING`/`STX` are used for their/my exchange.
+
+Cabrillo contacts starting with `X-QSO:` rather than `QSO:` are imported with an
+`APP_CABRILLO_XQSO` boolean field set; if this field is set and true (`Y`) then
+`X-QSO:` will be used for export.  These contacts are used by contest organizers
+to confirm contacts without granting credit, e.g. if they were made with too high
+a power for the submitting station’s category.
+
+When converting from Cabrillo, header fields like `CLUB` and `CATEGORY-OVERLAY`
+are preserved as ADIF headers with `APP_CABRILLO_` prefixes, e.g.
+`APP_CABRILLO_CLUB` and `APP_CABRILLO_CATEGORY_OVERLAY` (hyphens are replaced
+by underscores).  (ADIF does not technically support app-defined fields in the
+header.  The `--suppress-app-headers` flag will disable this output.)  When
+converting from ADIF to Cabrillo, header fields can be set by the same app
+headers or command-line flags like `adifmt cat --output=cabrillo
+--cabrillo-club="Springfield ARC" --cabrillo-category-overlay=YOUTH log.adi`.
+ADIF Multitool will infer `CONTEST`, `CALLSIGN`, `OPERATORS`, `GRID-LOCATOR`,
+`LOCATION`, `CATEGORY-BAND`, `CATEGORY-MODE`, and `CATEGORY-POWER` headers from
+values in the log's records, but make sure to double-check the output.  Power
+levels for LOW and QRP are set with `--cabrillo-max-power-low` and
+`--cabrillo-max-power-qrp`.  Other headers are included in the output file with
+no value; fill these lines in based on contest instructions or delete them if
+not needed by the contest sponsor.  ADIF Multitool does not attempt to
+calculate scores for any contests.
+
+Since the mapping between ADIF and Cabrillo is not a perfect match, double-check
+your log file carefully and
+[report any conversion bugs](https://github.com/flwyd/adif-multitool/issues).
+Cabrillo 3.0 is currently the only supported format for import or export;
+Cabrillo 2.0 support could be added if there is demand.
+
 #### International text and Unicode
 
 `adifmt` currently assumes all input files are encoded in
@@ -187,9 +239,6 @@ aborts with an error; this will still output Intl fields if they contain only
 ASCII characters.  `adifmt validate` ensures that “non-intl” fields are
 ASCII-only; other commands pass through Unicode strings untouched.
 
-The `--locale` flag indicates the language to use for string comparisons, using
-the [BCP-47 format](https://en.wikipedia.org/wiki/IETF_language_tag).
-
 ### Conditions and Comparisons
 
 Several `adifmt` commands can produce output only if a record matches one or
@@ -197,8 +246,8 @@ more conditions.  For example, `adifmt find` can be used to filter a larger log
 file to a subset of records, like only CW contacts, or only QSOs on the 20
 meter band.  Conditions are specified with one or more flag options, e.g. `--if
 mode=CW` to match records where the `MODE` field is set to `CW`.  Conditions
-can be negated, e.g. `--if-not mode=CW` to match all records *except* CW.  If
-more than one condition is given, a record must match *all* of the `--if` and
+can be negated, e.g. `--if-not mode=CW` to match all records **except** CW.  If
+more than one condition is given, a record must match **all** of the `--if` and
 `--if-not` conditions (boolean AND logic).  The `--or-if` and `--or-if-not`
 flags introduce a boolean OR, matching if either all conditions before the flag
 *or* all of the conditions after the flag are met.  A contrived example:
@@ -207,12 +256,16 @@ will filter a logfile, producing only records which are _either_ (a) CW contacts
 _not_ on the 20 meter band, (b) 5 watt contacts (any mode) _not_ on the 20 meter
 band, or (c) contacts with W1AW (any band, any mode).
 
-In addition to equality checks, greater than and less than comparisons can be
+In addition to equality checks, greater-than and less-than comparisons can be
 used in a condition.  Comparisons use the type of the field, so numeric fields
 like frequency and power sort numerically while digits in string fields sort
 alphabetically.  For example, `FREQ>21` will match the frequency `146.52` but
 `ADDRESS>21` will _not_ match someone whose address is `146 Main St` since `1`
-comes before `2` in a string field.  Available comparisons are
+comes before `2` in a string field.  The `--locale` flag indicates the language
+to use for string comparisons, using the
+[BCP-47 format](https://en.wikipedia.org/wiki/IETF_language_tag).  Available
+comparisons are
+
 
 * `field = value`: Case-insensitive equality, e.g. `contest_id=ARRL-field-day`
 * `field < value`: Less than, `freq<29.701`
@@ -242,7 +295,7 @@ Empty or absent fields can be matched by omitting value:
 
 Make sure to use quotes around conditions so that operators are not treated as
 special shell characters:
-  `adifmt find --if 'freq>=7' --if-not 'mode=CW' --or-if 'tx_pwr<=5'`
+  `adifmt find --if 'freq>=7' --if-not 'state={my_state}' --or-if 'tx_pwr<=5'`
 
 The `--if`, `--if-not`, `--or-if`, and `--or-if-not` options are used by the
 `edit` and `find` commands.  Field comparison rules are also used by `sort`.
@@ -390,7 +443,7 @@ day/month/year or month/day/year input data can be unambiguously fixed.
 #### infer
 
 `adifmt infer` guesses the value for fields which are not present in a record.
-Field names to infer are given by the `-fields` option, which can be repeated
+Field names to infer are given by the `--fields` option, which can be repeated
 multiple times and/or comma-separated.  Fields in the list will not be changed
 if they are present in a record with a non-empty value.
 
@@ -450,7 +503,7 @@ band/mode pair to a separate file, perhaps producing `10M-SSB.adi 10M-FM.adi
 using the [Parks on the Air filename format](https://docs.pota.app/docs/activator_reference/submitting_logs.html)
 is `adifmt save '{station_callsign}@{my_sig_info}-{qso_date}.adi'`.  All field
 values will be converted to upper case and special file system characters are
-replaced by `-` (so `{CALL}.csv` with `W1AW/2` becomes `W1AW-2.csv`).  Fields
+replaced by `-` (so `{CALL}.csv` with `w1aw/2` becomes `W1AW-2.csv`).  Fields
 without a value are replaced with `FIELD_NAME-EMPTY`.  Special characters in the
 template itself are not replaced, and can be used to split a log into separate
 directories: `adifmt save --create-dirs '{operator}/{band}.adx`.
@@ -472,7 +525,7 @@ find duplicate QSOs by date, band, and mode, use
 [uniq](https://man7.org/linux/man-pages/man1/uniq.1.html):
 
 ```sh
-adifmt select --fields call,qso_date,band,mode --output csv mylog.adi \
+adifmt select --fields call,qso_date,band,mode --output tsv mylog.adi \
   | tail +2 | sort | uniq -d
 ```
 
@@ -503,9 +556,9 @@ accented letters, sorted as AE, O, and A respectively.
 `adifmt validate` checks that field values match the format and enumeration
 values in [the ADIF specification](https://adif.org.uk/adif).  Errors and
 warnings are printed to standard error.  If any field has an error, nothing is
-printed to standard output and exit status is `0`; if no errors are present (or
+printed to standard output and exit status is `1`; if no errors are present (or
 only warnings), the input will be printed to standard output as in
-[`cat`](#cat) and exit status is `1`.  If the output format is ADI or ADX,
+[`cat`](#cat) and exit status is `0`.  If the output format is ADI or ADX,
 warnings will be included as record-level comments in the output.
 
 Validations include field type syntax (e.g. number and date formats);
@@ -549,14 +602,16 @@ Features I plan to add:
     the same callsign on the same band with the same mode on the same Zulu day
     and the same `MY_SIG_INFO` value.
 *   Option for `save` to append records to an existing ADIF file.
+*   A list of required fields that `validate` ensures are present.
 *   Count the total number of records or the number of distinct values of a
     field.  (The total number of records can currently be counted with
     `--output=tsv`, piping the output to `wc -l`, and subtracting 1 for the
     header row.)  This could match the format of the “Report” comment in the
     test QSOs file produced with the ADIF spec.
-*   Maybe convert to and from Cabrillo format for contests.  Cabrillo has header
-    fields that don’t clearly map to ADIF header fields.  Fields like expected
-    contest score would need per-contest configuration.
+*   Support for Cabrillo 2.0 format.
+
+See the [issues page](https://github.com/flwyd/adif-multitool/issues) for more
+ideas or to suggest your own.
 
 ### Non-goals
 
@@ -571,7 +626,7 @@ piece of software will be needed.
     created, not for logging contacts as they happen over the air. There are
     many fine amateur radio logging programs, most of which can export ADIF
     files that `adifmt` can process.  You could also keep logs in a text file,
-    massage it to a CSV, and then process it with `adifmt`.
+    massage it to a CSV or TSV, and then process it with `adifmt`.
 
 ## Scripting and compatibility
 

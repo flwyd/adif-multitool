@@ -28,16 +28,17 @@ import (
 )
 
 type Context struct {
-	InputFormat   adif.Format
-	OutputFormat  adif.Format
-	Readers       map[adif.Format]adif.Reader
-	Writers       map[adif.Format]adif.Writer
-	Out           io.Writer
-	Locale        language.Tag
-	CommandCtx    any
-	UserdefFields UserdefFieldList
-	Prepare       func(*adif.Logfile)
-	fs            filesystem
+	InputFormat        adif.Format
+	OutputFormat       adif.Format
+	Readers            map[adif.Format]adif.Reader
+	Writers            map[adif.Format]adif.Writer
+	Out                io.Writer
+	Locale             language.Tag
+	CommandCtx         any
+	UserdefFields      UserdefFieldList
+	SuppressAppHeaders bool
+	Prepare            func(*adif.Logfile)
+	fs                 filesystem
 }
 
 func testPrepare(comment, adifVer, progName, progVer string) func(l *adif.Logfile) {

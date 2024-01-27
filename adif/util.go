@@ -18,6 +18,13 @@ import (
 	"strings"
 )
 
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 func ensureCRLF(s string) string {
 	first := -1
 	var wasCR bool
@@ -54,4 +61,18 @@ func ensureCRLF(s string) string {
 		res.WriteRune('\n')
 	}
 	return res.String()
+}
+
+func fieldValues(l *Logfile, fname string) map[string]int {
+	res := make(map[string]int)
+	for _, r := range l.Records {
+		if f, ok := r.Get(fname); ok {
+			res[f.Value]++
+		}
+	}
+	return res
+}
+
+func isAllDigits(s string) bool {
+	return !strings.ContainsFunc(s, func(r rune) bool { return r < '0' || r > '9' })
 }
