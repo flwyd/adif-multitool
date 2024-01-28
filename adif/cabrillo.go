@@ -159,7 +159,7 @@ func (o *CabrilloIO) Write(l *Logfile, out io.Writer) error {
 	}
 	headers := make(map[string]string)
 	for _, f := range l.Header.Fields() {
-		if h, ok := strings.CutPrefix(f.Name, "APP_CABRILLO_"); ok {
+		if h, ok := cutPrefix(f.Name, "APP_CABRILLO_"); ok {
 			headers[strings.Replace(h, "_", "-", -1)] = f.Value
 		}
 	}

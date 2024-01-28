@@ -15,6 +15,7 @@
 package adif
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -74,5 +75,26 @@ func fieldValues(l *Logfile, fname string) map[string]int {
 }
 
 func isAllDigits(s string) bool {
-	return !strings.ContainsFunc(s, func(r rune) bool { return r < '0' || r > '9' })
+	// TODO when upgrading to Go 1.20+, use
+	// return !strings.ContainsFunc(s, func(r rune) bool { return r < '0' || r > '9' })
+	for _, r := range s {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+// cutPrefix is a polyfill for strings.CutPrefix which was introduced in Go 1.20.
+func cutPrefix(s, prefix string) (after string, found bool) {
+	// TODO when upgrading to Go 1.20+ remove this polyfill
+	if strings.HasPrefix(s, prefix) {
+		var before string
+		before, after, found = strings.Cut(s, prefix)
+		if !found || before != "" {
+			panic(fmt.Sprintf("strings.Cut(%q, %q) got %q, %q, %v", s, prefix, before, after, found))
+		}
+		return
+	}
+	return s, false
 }
