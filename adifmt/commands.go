@@ -101,7 +101,12 @@ var (
 			ctx.CommandCtx = &cctx
 		}}
 
-	validateConf = cmdConfig{Command: cmd.Validate}
+	validateConf = cmdConfig{Command: cmd.Validate,
+		Configure: func(ctx *cmd.Context, fs *flag.FlagSet) {
+			cctx := cmd.ValidateContext{RequiredFields: make(cmd.FieldList, 0, 16)}
+			fs.Var(&cctx.RequiredFields, "required-fields", "Field `names` which must be present and non-empty in a valid record")
+			ctx.CommandCtx = &cctx
+		}}
 
 	versionConf = cmdConfig{Command: cmd.Command{
 		Name: "version", Description: "Print program version information",

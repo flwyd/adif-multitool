@@ -31,6 +31,7 @@ func TestValidateEmpty(t *testing.T) {
 		Readers:      readers(io),
 		Writers:      writers(io),
 		Out:          out,
+		CommandCtx:   &ValidateContext{},
 		Prepare:      testPrepare("My Comment", "3.1.4", "validate test", "1.2.3"),
 		fs:           fakeFilesystem{map[string]string{"-": ""}}}
 	if err := Validate.Run(ctx, []string{}); err != nil {
@@ -60,6 +61,7 @@ func TestValidateNoErrors(t *testing.T) {
 		Writers:      writers(adi),
 		Out:          out,
 		Prepare:      testPrepare("My Comment", "3.1.4", "validate test", "1.2.3"),
+		CommandCtx:   &ValidateContext{RequiredFields: FieldList{"qso_date", "band", "mode", "callsign"}},
 		fs:           fakeFilesystem{map[string]string{"foo.adi": file1}}}
 	if err := Validate.Run(ctx, []string{"foo.adi"}); err != nil {
 		t.Errorf("Validate.Run(ctx) got error on file without problems: %v", err)
@@ -77,7 +79,18 @@ func TestValidateErrors(t *testing.T) {
 		name    string
 		record  []adif.Field
 		userdef []adif.UserdefField
+		cctx    ValidateContext
 	}{
+		{
+			name:   "missing one required",
+			record: []adif.Field{{Name: "CALL", Value: "W1AW"}, {Name: "MODE", Value: "CW"}, {Name: "BAND", Value: "20m"}},
+			cctx:   ValidateContext{RequiredFields: FieldList{"BAND", "MODE", "CALL", "QSO_DATE"}},
+		},
+		{
+			name:   "missing app-defined",
+			record: []adif.Field{{Name: "FOO", Value: "123", Type: adif.TypeNumber}, {Name: "APP_ADIFMT_FEEDLINE", Value: "COAX"}, {Name: "COLOR", Value: "Blue"}},
+			cctx:   ValidateContext{RequiredFields: FieldList{"APP_ADIFMT_BAR"}},
+		},
 		{
 			name:   "non-ascii string",
 			record: []adif.Field{{Name: "NAME", Value: "Pedro Peña"}},
@@ -143,6 +156,7 @@ func TestValidateErrors(t *testing.T) {
 				Readers:      readers(adi),
 				Writers:      writers(adi),
 				Out:          out,
+				CommandCtx:   &tc.cctx,
 				Prepare:      testPrepare("My Comment", "3.1.4", "validate test", "1.2.3"),
 				fs:           fakeFilesystem{map[string]string{"foo.adi": infile.String()}}}
 			if err := Validate.Run(ctx, []string{"foo.adi"}); err == nil {

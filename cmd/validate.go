@@ -26,12 +26,16 @@ import (
 var Validate = Command{Name: "validate", Run: runValidate, Help: helpValidate,
 	Description: "Validate field values; non-zero exit and no stdout if invalid"}
 
+type ValidateContext struct {
+	RequiredFields FieldList
+}
+
 func helpValidate() string {
 	return "Non-failure warnings are added as comments in ADI and ADX output.\n"
 }
 
 func runValidate(ctx *Context, args []string) error {
-	// TODO add any needed flags
+	cctx := ctx.CommandCtx.(*ValidateContext)
 	log := os.Stderr
 	var errors, warnings int
 	appFields := make(map[string]adif.DataType)
@@ -49,6 +53,16 @@ func runValidate(ctx *Context, args []string) error {
 				return f.Value
 			}}
 			var msgs []string
+			missing := make([]string, 0)
+			for _, x := range cctx.RequiredFields {
+				if f, ok := r.Get(x); !ok || f.Value == "" {
+					missing = append(missing, x)
+				}
+			}
+			if len(missing) > 0 {
+				errors++
+				fmt.Fprintf(log, "ERROR on %s record %d: missing fields %s\n", l, i+1, strings.Join(missing, ", "))
+			}
 			for _, f := range r.Fields() {
 				name := strings.ToUpper(f.Name)
 				if f.IsAppDefined() {

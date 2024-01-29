@@ -569,6 +569,12 @@ for interoperability” but the type is string, allowing any value.  These
 warnings will be printed to standard error with `adifmt validate` but will not
 block the logfile from being printed to standard output.
 
+The `--required-field` option provides a list of fields which must be present in
+a valid record.  Multiple fields may be comma-separated or the option given
+several times.
+For example, checking a contest log might use
+`adifmt validate --reqiured-fields qso_date,time_on,call,band,mode,srx_string`
+
 Some but not all validation errors can be corrected with [`adifmt fix`](#fix).
 
 #### version
