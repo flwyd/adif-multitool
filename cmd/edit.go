@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/flwyd/adif-multitool/adif"
@@ -28,6 +29,7 @@ var Edit = Command{Name: "edit", Run: runEdit, Help: helpEdit,
 type EditContext struct {
 	Add         FieldAssignments
 	Set         FieldAssignments
+	Rename      FieldAssignments
 	Remove      FieldList
 	RemoveBlank bool
 	Cond        ConditionValue
@@ -52,18 +54,34 @@ func runEdit(ctx *Context, args []string) error {
 		remove[n] = true
 	}
 	set := make(map[string]adif.Field)
+	rename := make(map[string]string)
+	renameFrom := make(map[string]string)
 	for _, f := range cctx.Set.values {
 		if remove[f.Name] {
-			return fmt.Errorf("%q in both -set and -remove", f.Name)
+			return fmt.Errorf("%q in both --set and --remove", f.Name)
 		}
 		set[f.Name] = f
 	}
 	for _, f := range cctx.Add.values {
 		if remove[f.Name] {
-			return fmt.Errorf("%q in both -add and -remove, use -set to change values", f.Name)
+			return fmt.Errorf("%q in both --add and --remove, use --set to change values", f.Name)
 		}
 		if _, ok := set[f.Name]; ok {
-			return fmt.Errorf("%q in both -set and -add", f.Name)
+			return fmt.Errorf("%q in both --set and --add", f.Name)
+		}
+	}
+	for _, f := range cctx.Rename.values {
+		v := strings.ToUpper(f.Value)
+		if e := renameFrom[v]; e != "" {
+			return fmt.Errorf("duplicate rename target --rename %s=%s and --rename %s=%s", f.Name, v, e, v)
+		}
+		rename[f.Name] = v
+		renameFrom[v] = f.Name
+		if remove[f.Name] {
+			return fmt.Errorf("%q in both --rename and --remove, rename will leave field unset", f.Name)
+		}
+		if _, ok := set[v]; ok {
+			return fmt.Errorf("%q in --set and --rename %s=%s, set would override rename", v, f.Name, f.Value)
 		}
 	}
 	fromTz := cctx.FromZone.Get()
@@ -84,7 +102,7 @@ func runEdit(ctx *Context, args []string) error {
 				out.AddRecord(r) // edit condition doesn't match, pass through
 				continue
 			}
-			seen := make(map[string]bool)
+			seen := make(map[string]string)
 			old := r.Fields()
 			fields := make([]adif.Field, 0, len(old))
 			for _, f := range old {
@@ -94,23 +112,41 @@ func runEdit(ctx *Context, args []string) error {
 				if cctx.RemoveBlank && f.Value == "" {
 					continue
 				}
-				seen[f.Name] = true
 				if v, ok := set[f.Name]; ok {
 					f = v
 				}
+				if dest := rename[f.Name]; dest != "" {
+					if s := seen[dest]; s != "" {
+						if f.Value != "" {
+							return fmt.Errorf("X rename %s to %s would overwrite value %q with %q; to overwrite all use --remove %s --rename %s=%s", f.Name, dest, s, f.Value, dest, f.Name, dest)
+						} else {
+							continue
+						}
+					}
+					f.Name = dest
+				} else if src := renameFrom[f.Name]; src != "" {
+					if s := seen[f.Name]; s != "" {
+						if f.Value != "" {
+							return fmt.Errorf("Y rename %s to %s would overwrite value %q with %q; to overwrite all use --remove %s --rename %s=%s", src, f.Name, f.Value, s, f.Name, src, f.Name)
+						} else {
+							continue
+						}
+					}
+				}
+				seen[f.Name] = f.Value
 				fields = append(fields, f)
 			}
 			for _, f := range cctx.Set.values {
-				if !seen[f.Name] {
+				if _, ok := seen[f.Name]; !ok {
 					fields = append(fields, f)
 				}
-				seen[f.Name] = true
+				seen[f.Name] = f.Value
 			}
 			for _, f := range cctx.Add.values {
-				if !seen[f.Name] {
+				if v, ok := seen[f.Name]; !ok || v == "" {
 					fields = append(fields, f)
+					seen[f.Name] = f.Value
 				}
-				seen[f.Name] = true
 			}
 			if len(fields) > 0 {
 				rec := adif.NewRecord(fields...)

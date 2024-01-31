@@ -35,6 +35,7 @@ var (
 			cctx := cmd.EditContext{
 				Add:    cmd.NewFieldAssignments(cmd.ValidateAlphanumName),
 				Set:    cmd.NewFieldAssignments(cmd.ValidateAlphanumName),
+				Rename: cmd.NewFieldAssignments(cmd.ValidateAlphanumName),
 				Remove: make(cmd.FieldList, 0)}
 			// fs.Var(&cctx.If, "if", "Only edit records where `field=value` is already set (repeatable)")
 			fs.Var(cctx.Cond.IfFlag(), "if", "Only edit records where `condition` is true (repeatable)")
@@ -43,6 +44,7 @@ var (
 			fs.Var(cctx.Cond.OrIfNotFlag(), "or-if-not", "Only edit records where `condition` is false or any previous --if group is true (repeatable)")
 			fs.Var(&cctx.Add, "add", "Add `field=value` if field is not already in a record (repeatable)")
 			fs.Var(&cctx.Set, "set", "Set `field=value` for all records (repeatable)")
+			fs.Var(&cctx.Rename, "rename", "Rename `old=new` field for all records (repeatable)")
 			fs.Var(&cctx.Remove, "remove", "Remove `fields` from all records (comma-separated, repeatable)")
 			fs.BoolVar(&cctx.RemoveBlank, "remove-blank", false, "Remove all blank fields")
 			fs.Var(&cctx.FromZone, "time-zone-from", "Adjust times and dates from this time `zone` into -time-zone-to (default UTC)")

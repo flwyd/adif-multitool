@@ -375,10 +375,11 @@ Options can be specified multiple times, e.g.
 
 The `--set` option (`name=value`) changes the value of the given field on all
 records, adding it if it is not present.  The `--add` option (`name=value`)
-only adds the field if it is not already present in the record.  The `--remove`
-option (field names, optionally comma-separated) deletes the field from all
-records.  The `--remove-blank` removes all blank fields (string representation
-is empty).
+only adds the field if it is not already present in the record.  The `--rename`
+option (`old=new` field names) changes an old field name to a new one.  The
+`--remove` option (field names, optionally comma-separated) deletes the field
+from all records.  The `--remove-blank` removes all blank fields (string
+representation is empty).
 
 The `--time-zone-from` and `--time-zone-to` options will shift the `TIME_ON` and
 `TIME_OFF` fields (along with `QSO_DATE` and `QSO_DATE_OFF` if applicable) from

@@ -39,6 +39,7 @@ func TestEditEmpty(t *testing.T) {
 		CommandCtx: &EditContext{
 			Add:    FieldAssignments{values: []adif.Field{{Name: "BAZ", Value: "Baz value"}}, validate: ValidateAlphanumName},
 			Set:    FieldAssignments{values: []adif.Field{{Name: "FOO", Value: "Foo value"}}, validate: ValidateAlphanumName},
+			Rename: FieldAssignments{values: []adif.Field{{Name: "OLD", Value: "NEW"}}},
 			Remove: []string{"BAR"},
 		}}
 	if err := Edit.Run(ctx, []string{"foo.csv"}); err != nil {
@@ -52,12 +53,12 @@ func TestEditEmpty(t *testing.T) {
 	}
 }
 
-func TestEditAddSetRemove(t *testing.T) {
+func TestEditAddSetRemoveRename(t *testing.T) {
 	adi := adif.NewADIIO()
 	out := &bytes.Buffer{}
-	file1 := `<FOO:7>old foo <BAR:7>old bar <CALL:4>W1AW <EOR>
+	file1 := `<FOO:7>old foo <BAR:7>old bar <CALL:4>W1AW <OLD:2:N>42 <EOR>
 <BAZ:7>old baz <CALL:3>N0P <APP_MONOLOG_FOO:7>monofoo <EOR>
-<foo:4>foo2 <bar:4>bar2 <baz:4>baz2 <app_monolog_bar:7>monobar <eor>
+<old:8:d>20131031 <foo:4>foo2 <bar:4>bar2 <baz:4>baz2 <app_monolog_bar:7>monobar <eor>
 `
 	ctx := &Context{
 		OutputFormat: adif.FormatADI,
@@ -69,6 +70,7 @@ func TestEditAddSetRemove(t *testing.T) {
 		CommandCtx: &EditContext{
 			Add:    FieldAssignments{values: []adif.Field{{Name: "BAZ", Value: "Baz value"}}, validate: ValidateAlphanumName},
 			Set:    FieldAssignments{values: []adif.Field{{Name: "FOO", Value: "Foo value"}}, validate: ValidateAlphanumName},
+			Rename: FieldAssignments{values: []adif.Field{{Name: "OLD", Value: "NEW"}}},
 			Remove: []string{"BAR"},
 		}}
 	if err := Edit.Run(ctx, []string{"foo.adi"}); err != nil {
@@ -77,9 +79,9 @@ func TestEditAddSetRemove(t *testing.T) {
 		got := out.String()
 		want := `My Comment
 <ADIF_VER:5>3.1.4 <PROGRAMID:9>edit test <PROGRAMVERSION:5>1.2.3 <EOH>
-<FOO:9>Foo value <CALL:4>W1AW <BAZ:9>Baz value <EOR>
+<FOO:9>Foo value <CALL:4>W1AW <NEW:2:N>42 <BAZ:9>Baz value <EOR>
 <BAZ:7>old baz <CALL:3>N0P <APP_MONOLOG_FOO:7>monofoo <FOO:9>Foo value <EOR>
-<FOO:9>Foo value <BAZ:4>baz2 <APP_MONOLOG_BAR:7>monobar <EOR>
+<NEW:8:D>20131031 <FOO:9>Foo value <BAZ:4>baz2 <APP_MONOLOG_BAR:7>monobar <EOR>
 `
 		if diff := cmp.Diff(want, got); diff != "" {
 			t.Errorf("Edit.Run(ctx, foo.adi) unexpected output, diff:\n%s", diff)
@@ -90,12 +92,12 @@ func TestEditAddSetRemove(t *testing.T) {
 func TestEditIf(t *testing.T) {
 	adi := adif.NewADIIO()
 	out := &bytes.Buffer{}
-	file1 := `<FOO:7>old foo <BAR:7>old bar <CALL:4>W1AW <BAND:3>20M <MODE:2>CW <EOR>
-<FOO:7>old foo <BAR:7>old bar <CALL:4>W1AW <BAND:3>40M <MODE:2>CW <EOR>
-<BAZ:7>old baz <CALL:3>N0P <APP_MONOLOG_FOO:7>monofoo <BAND:3>40m <MODE:3>SSB <EOR>
-<BAZ:7>old baz <CALL:3>N0P <APP_MONOLOG_FOO:7>monofoo <BAND:3>40M <MODE:2>cw <EOR>
-<foo:4>foo2 <bar:4>bar2 <baz:4>baz2 <app_monolog_bar:7>monobar <BAND:3>40M <eor>
-<foo:4>foo2 <bar:4>bar2 <baz:4>baz2 <app_monolog_bar:7>monobar <BAND:3>40m <MODE:2>CW <eor>
+	file1 := `<FOO:7>old foo <BAR:7>old bar <OLD:2>CA <CALL:4>W1AW <BAND:3>20M <MODE:2>CW <EOR>
+<FOO:7>old foo <BAR:7>old bar <OLD:2>US <CALL:4>W1AW <BAND:3>40M <MODE:2>CW <EOR>
+<BAZ:7>old baz <OLD:2>MX <CALL:3>N0P <APP_MONOLOG_FOO:7>monofoo <BAND:3>40m <MODE:3>SSB <EOR>
+<BAZ:7>old baz <OLD:2>BZ <CALL:3>N0P <APP_MONOLOG_FOO:7>monofoo <BAND:3>40M <MODE:2>cw <EOR>
+<foo:4>foo2 <bar:4>bar2 <baz:4>baz2 <old:2>GT <app_monolog_bar:7>monobar <BAND:3>40M <eor>
+<foo:4>foo2 <bar:4>bar2 <baz:4>baz2 <old:2>SV <app_monolog_bar:7>monobar <BAND:3>40m <MODE:2>CW <eor>
 `
 	cond := ConditionValue{}
 	cond.IfFlag().Set("MODE=CW")
@@ -111,6 +113,7 @@ func TestEditIf(t *testing.T) {
 			Cond:   cond,
 			Add:    FieldAssignments{values: []adif.Field{{Name: "BAZ", Value: "Baz value"}}, validate: ValidateAlphanumName},
 			Set:    FieldAssignments{values: []adif.Field{{Name: "FOO", Value: "Foo value"}}, validate: ValidateAlphanumName},
+			Rename: FieldAssignments{values: []adif.Field{{Name: "OLD", Value: "NEW"}}},
 			Remove: []string{"BAR"},
 		}}
 	if err := Edit.Run(ctx, []string{"foo.adi"}); err != nil {
@@ -119,12 +122,127 @@ func TestEditIf(t *testing.T) {
 		got := out.String()
 		want := `My Comment
 <ADIF_VER:5>3.1.4 <PROGRAMID:9>edit test <PROGRAMVERSION:5>1.2.3 <EOH>
-<FOO:7>old foo <BAR:7>old bar <CALL:4>W1AW <BAND:3>20M <MODE:2>CW <EOR>
-<FOO:9>Foo value <CALL:4>W1AW <BAND:3>40M <MODE:2>CW <BAZ:9>Baz value <EOR>
-<BAZ:7>old baz <CALL:3>N0P <APP_MONOLOG_FOO:7>monofoo <BAND:3>40m <MODE:3>SSB <EOR>
-<BAZ:7>old baz <CALL:3>N0P <APP_MONOLOG_FOO:7>monofoo <BAND:3>40M <MODE:2>cw <FOO:9>Foo value <EOR>
-<FOO:4>foo2 <BAR:4>bar2 <BAZ:4>baz2 <APP_MONOLOG_BAR:7>monobar <BAND:3>40M <EOR>
-<FOO:9>Foo value <BAZ:4>baz2 <APP_MONOLOG_BAR:7>monobar <BAND:3>40m <MODE:2>CW <EOR>
+<FOO:7>old foo <BAR:7>old bar <OLD:2>CA <CALL:4>W1AW <BAND:3>20M <MODE:2>CW <EOR>
+<FOO:9>Foo value <NEW:2>US <CALL:4>W1AW <BAND:3>40M <MODE:2>CW <BAZ:9>Baz value <EOR>
+<BAZ:7>old baz <OLD:2>MX <CALL:3>N0P <APP_MONOLOG_FOO:7>monofoo <BAND:3>40m <MODE:3>SSB <EOR>
+<BAZ:7>old baz <NEW:2>BZ <CALL:3>N0P <APP_MONOLOG_FOO:7>monofoo <BAND:3>40M <MODE:2>cw <FOO:9>Foo value <EOR>
+<FOO:4>foo2 <BAR:4>bar2 <BAZ:4>baz2 <OLD:2>GT <APP_MONOLOG_BAR:7>monobar <BAND:3>40M <EOR>
+<FOO:9>Foo value <BAZ:4>baz2 <NEW:2>SV <APP_MONOLOG_BAR:7>monobar <BAND:3>40m <MODE:2>CW <EOR>
+`
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("Edit.Run(ctx, foo.adi) unexpected output, diff:\n%s", diff)
+		}
+	}
+}
+
+func TestRenameDoesNotClobber(t *testing.T) {
+	adi := adif.NewADIIO()
+	// output is empty string if error expected
+	tests := []struct{ name, input, output string }{
+		{
+			name:   "new has value and before old",
+			input:  "<STX:1>1 <NEW:9>new value <OLD:9>old value <OTHER:11>other value <EOR>",
+			output: "",
+		},
+		{
+			name:   "new has value and after old",
+			input:  "<STX:1>2 <OLD:9>old value <NEW:9>new value <OTHER:11>other value <EOR>",
+			output: "",
+		},
+		{
+			name:   "new is empty",
+			input:  "<STX:1>3 <OLD:9>old value <NEW:0> <OTHER:11>other value <EOR>",
+			output: "<STX:1>3 <NEW:9>old value <OTHER:11>other value <EOR>",
+		},
+		{
+			name:   "new is empty and before old",
+			input:  "<STX:1>4 <NEW:0> <OLD:9>old value <OTHER:11>other value <EOR>",
+			output: "<STX:1>4 <NEW:9>old value <OTHER:11>other value <EOR>",
+		},
+		{
+			name:   "new is not set",
+			input:  "<STX:1>5 <OLD:9>old value <OTHER:11>other value <EOR>",
+			output: "<STX:1>5 <NEW:9>old value <OTHER:11>other value <EOR>",
+		},
+		{
+			name:   "old is empty",
+			input:  "<STX:1>6 <OLD:0> <NEW:9>new value <OTHER:11>other value <EOR>",
+			output: "<STX:1>6 <NEW:9>new value <OTHER:11>other value <EOR>",
+		},
+		{
+			name:   "old is empty and after new",
+			input:  "<STX:1>7 <NEW:9>new value <OLD:0> <OTHER:11>other value <EOR>",
+			output: "<STX:1>7 <NEW:9>new value <OTHER:11>other value <EOR>",
+		},
+		{
+			name:   "old is not set",
+			input:  "<STX:1>8 <NEW:9>new value <OTHER:11>other value <EOR>",
+			output: "<STX:1>8 <NEW:9>new value <OTHER:11>other value <EOR>",
+		},
+	}
+	wanthead := "<ADIF_VER:5>3.1.4 <PROGRAMID:9>edit test <PROGRAMVERSION:5>1.2.3 <EOH>"
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			out := &bytes.Buffer{}
+			ctx := &Context{
+				OutputFormat: adif.FormatADI,
+				Readers:      readers(adi),
+				Writers:      writers(adi),
+				Out:          out,
+				Prepare:      testPrepare(tc.name, "3.1.4", "edit test", "1.2.3"),
+				fs:           fakeFilesystem{map[string]string{"foo.adi": tc.input}},
+				CommandCtx: &EditContext{
+					Rename: FieldAssignments{values: []adif.Field{{Name: "OLD", Value: "NEW"}}},
+				}}
+			if err := Edit.Run(ctx, []string{"foo.adi"}); err != nil {
+				if tc.output != "" {
+					t.Errorf("Edit.Run(ctx) got error %v", err)
+				}
+			} else if tc.output == "" {
+				t.Errorf("Edit.Run(ctx) want error, got %s", out.String())
+			} else {
+				got := out.String()
+				want := fmt.Sprintf("%s\n%s\n%s\n", tc.name, wanthead, tc.output)
+				if diff := cmp.Diff(want, got); diff != "" {
+					t.Errorf("Edit.Run(ctx, foo.adi) unexpected output, diff:\n%s", diff)
+				}
+			}
+		})
+	}
+}
+
+func TestCyclicRename(t *testing.T) {
+	adi := adif.NewADIIO()
+	out := &bytes.Buffer{}
+	file1 := `<STX:1>1 <OLD:9>old value <NEW:9>new value <OTHER:11>other value <EOR>
+<STX:1>2 <OLD:9>old value <OTHER:11>other value <EOR>
+<STX:1>3 <OLD:9>old value <NEW:9>new value <EOR>
+<STX:1>4 <NEW:9>new value <OTHER:11>other value <EOR>
+<STX:1>5 <NEW:9>new value <OLD:9>old value <OTHER:11>other value <EOR>
+<STX:1>6 <OTHER:11>other value <NEW:9>new value <OLD:9>old value <EOR>
+`
+	ctx := &Context{
+		OutputFormat: adif.FormatADI,
+		Readers:      readers(adi),
+		Writers:      writers(adi),
+		Out:          out,
+		Prepare:      testPrepare("My Comment", "3.1.4", "edit test", "1.2.3"),
+		fs:           fakeFilesystem{map[string]string{"foo.adi": file1}},
+		CommandCtx: &EditContext{
+			Rename: FieldAssignments{values: []adif.Field{{Name: "OLD", Value: "NEW"}, {Name: "NEW", Value: "OTHER"}, {Name: "OTHER", Value: "OLD"}}},
+		}}
+	if err := Edit.Run(ctx, []string{"foo.adi"}); err != nil {
+		t.Errorf("Edit.Run(ctx) got error %v", err)
+	} else {
+		got := out.String()
+		want := `My Comment
+<ADIF_VER:5>3.1.4 <PROGRAMID:9>edit test <PROGRAMVERSION:5>1.2.3 <EOH>
+<STX:1>1 <NEW:9>old value <OTHER:9>new value <OLD:11>other value <EOR>
+<STX:1>2 <NEW:9>old value <OLD:11>other value <EOR>
+<STX:1>3 <NEW:9>old value <OTHER:9>new value <EOR>
+<STX:1>4 <OTHER:9>new value <OLD:11>other value <EOR>
+<STX:1>5 <OTHER:9>new value <NEW:9>old value <OLD:11>other value <EOR>
+<STX:1>6 <OLD:11>other value <OTHER:9>new value <NEW:9>old value <EOR>
 `
 		if diff := cmp.Diff(want, got); diff != "" {
 			t.Errorf("Edit.Run(ctx, foo.adi) unexpected output, diff:\n%s", diff)
