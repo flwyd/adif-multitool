@@ -114,6 +114,7 @@ var (
 		Name: "version", Description: "Print program version information",
 		Run: func(*cmd.Context, []string) error {
 			fmt.Printf("%s version %s\n", programName, version)
+			fmt.Printf("Built from git revision %s\n", vcsRevision)
 			fmt.Printf("ADIF version %s from %s\n", spec.ADIFVersion, spec.ADIFSpecURL)
 			fmt.Printf("See %s for details\n", helpUrl)
 			return nil

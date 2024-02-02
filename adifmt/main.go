@@ -39,13 +39,21 @@ const (
 
 var (
 	programName = "adifmt"
-	version     = "v0.0.0"
+	version     = ""
+	vcsRevision = "(unknown)"
 )
 
 func init() {
-	if build, ok := debug.ReadBuildInfo(); ok {
-		programName = filepath.Base(build.Path)
-		version = build.Main.Version
+	if b, ok := debug.ReadBuildInfo(); ok {
+		programName = filepath.Base(b.Path)
+		if version == "" {
+			version = b.Main.Version
+		}
+		for _, s := range b.Settings {
+			if s.Key == "vcs.revision" {
+				vcsRevision = s.Value
+			}
+		}
 	}
 }
 
