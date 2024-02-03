@@ -62,8 +62,7 @@ jobs:
           cache: true
       - name: Build ${{ matrix.goos }} ${{ matrix.goarch }}
         run: |
-          go build -v -trimpath \
-            -o build/adifmt-${{ matrix.goos }}-${{ matrix.goarch }}/ \
+          go build -v -trimpath -o build/ \
             -ldflags "-X 'main.version=${{ github.ref_name }}'" \
             ./adifmt
         env:
@@ -71,8 +70,8 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
       - uses: actions/upload-artifact@v4
         with:
-          name: adifmt-builds
-          path: build/**
+          name: ${{ matrix.goos }}-${{ matrix.goarch }}
+          path: build/*
           if-no-files-found: error
 
   release:
@@ -83,10 +82,32 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: adifmt-builds
+          path: artifacts
+      - name: Rename artifacts
+        run: |
+          cd artifacts
+          mkdir files
+          for f in {darwin,linux}-*/* ; do
+            mv "$f" "files/$(basename $f)-$(dirname $f})"
+          done
+          for f in windows-*/* ; do
+            mv "$f" "files/$(basename -s .exe $f)-$(dirname $f}).exe"
+          done
       - name: Create release ${{ github.ref_name }}
         uses: softprops/action-gh-release@v1
         with:
-          files: adifmt-builds/*
+          files: artifacts/files/*
           fail_on_unmatched_files: true
           generate_release_notes: true
+          body: |
+            Download the version below matching your computer's OS and
+            processor architecture.
+
+            * macOS users: Download `adifmt-darwin-arm64` for Macs with M1 chips
+              or newer. Download `adifmt-darwin-amd64` for older Macs.
+            * Windows users: Download `adifmt-windows-amd64` for most modern
+              PCs, `adifmt-windows-arm64` for tablets and other ARM devices, and
+              `adifmt-windows-386` for older 32-bit computers.
+            * Linux users: Download `adifmt-linux-arm64` or `adifmt-linux-arm`
+              for Raspberry Pi or other embedded/mobile devices. Otherwise,
+              download `adifmt-linux-amd64` (64-bit) or `adifmt-linux-386) (32).
