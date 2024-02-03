@@ -78,13 +78,8 @@ jobs:
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-
-  upload:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
       - uses: actions/upload-artifact@v4
         with:
-          name: adifmt-builds
+          name: adifmt-build-${{ matrix.goos }}-${{ matrix.goarch }}
           path: build/**
           if-no-files-found: error
