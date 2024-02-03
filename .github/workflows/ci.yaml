@@ -38,6 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        fetch-tags: true
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -60,13 +61,15 @@ jobs:
             goos: linux
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        fetch-tags: true
       - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
           cache: true
       - name: Build ${{ matrix.goos }} ${{ matrix.goarch }}
         run: |
+          env
           go build -v -trimpath \
             -o build/adif-multitool-${{ matrix.goos }}-${{ matrix.goarch }}/ \
             -ldflags "-X 'main.version=$(git describe --dirty --match='v[0-9]*')'" \
@@ -78,3 +81,4 @@ jobs:
         with:
           name: adifmt-builds
           path: build/**
+          if-no-files-found: error

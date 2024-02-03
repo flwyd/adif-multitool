@@ -33,6 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        fetch-tags: true
       - uses: actions/setup-go@v5
         with:
           go-version: '>=1.18'
@@ -56,6 +57,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        fetch-tags: true
       - uses: actions/setup-go@v5
         with:
           go-version: '>=1.18'
@@ -73,6 +75,7 @@ jobs:
         with:
           name: adifmt-builds
           path: build/**
+          if-no-files-found: error
 
   release:
     needs: build
