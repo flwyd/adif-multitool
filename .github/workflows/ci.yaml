@@ -38,8 +38,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-tags: true
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -64,6 +62,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           fetch-tags: true
       - uses: actions/setup-go@v4
         with:
@@ -71,7 +70,7 @@ jobs:
           cache: true
       - name: Build ${{ matrix.goos }} ${{ matrix.goarch }}
         run: |
-          env
+          env | sort
           go build -v -trimpath \
             -o build/adif-multitool-${{ matrix.goos }}-${{ matrix.goarch }}/ \
             -ldflags "-X 'main.version=$(git describe --dirty --match='v[0-9]*')'" \
