@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Go
+# This workflow creates a release and builds adifmt binaries for several
+# platforms whenever a new version tag (v1.2.3) is pushed.
+name: Create Release
 
 env:
   ACTIONS_RUNNER_DEBUG: true
@@ -20,72 +22,70 @@ env:
 
 on:
   push:
-    branches: ["main"]
-    tags: ["v[0-9]+.*"]
+    tags:
+      - v[0-9]+.*
 
+# Builds with the latest Go, regardless of version declared by go.mod, so we
+# pick up compiler improvements.  CI builds with specified version to avoid API
+# usage regressions.
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: ">=1.18"
+          go-version: '>=1.18'
           cache: true
-
       - name: Test
         run: go test ./...
+
   build:
     needs: test
     runs-on: ubuntu-latest
     strategy:
       matrix:
         goos: [linux, windows, darwin]
-        goarch: ["386", amd64, arm64]
+        goarch: ['386', amd64, arm64]
         exclude:
-          - goarch: "386"
+          - goarch: '386'
             goos: darwin
         include:
           - goarch: arm
             goos: linux
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: ">=1.18"
+          go-version: '>=1.18'
           cache: true
-
       - name: Build ${{ matrix.goos }} ${{ matrix.goarch }}
-        run: go build -v -o adifmt-${{ matrix.goos }}-${{ matrix.goarch }} ./adifmt
+        run: |
+          go build -v -trimpath \
+            -o build/adifmt-${{ matrix.goos }}-${{ matrix.goarch }}/ \
+            -ldflags "-X 'main.version=${{ github.ref_name }}'" \
+            ./adifmt
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: adifmt-builds
-          path: adifmt-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: build/**
 
   release:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: adifmt-builds
-
-      - uses: "marvinpinto/action-automatic-releases@latest"
+      - name: Create release ${{ github.ref_name }}
+        uses: softprops/action-gh-release@v1
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          prerelease: false
-          title: "Latest Build"
-          files: |
-            adifmt-*
+          files: adifmt-builds/*
+          fail_on_unmatched_files: true
+          generate_release_notes: true

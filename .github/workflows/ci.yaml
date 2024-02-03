@@ -1,0 +1,80 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This workflow performs continuous integration testing: run unit tests and
+# ensure adifmt builds under all target platforms on each branch push or pull
+# request.  Uploads build artifacts but does not create a release.
+name: Build and test
+
+env:
+  ACTIONS_RUNNER_DEBUG: true
+  ACTIONS_STEP_LOG: true
+
+on:
+  push:
+    branches:
+      - '*'
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+
+# Uses Go version declared in go.mod to ensure we don't introduce API calls to
+# newer standard library functions.
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Test
+        run: go test ./...
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: ['386', amd64, arm64]
+        exclude:
+          - goarch: '386'
+            goos: darwin
+        include:
+          - goarch: arm
+            goos: linux
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Build ${{ matrix.goos }} ${{ matrix.goarch }}
+        run: |
+          go build -v -trimpath \
+            -o build/adif-multitool-${{ matrix.goos }}-${{ matrix.goarch }}/ \
+            -ldflags "-X 'main.version=$(git describe --dirty --match='v[0-9]*')'" \
+            ./adifmt
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: adifmt-builds
+          path: build/**
