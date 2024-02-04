@@ -45,11 +45,11 @@ jobs:
           go-version-file: go.mod
           cache: true
       - name: Test
-        run: go test -v ./... | tee "${RUNNER_TEMP}/go-test-results.txt"
+        run: go test -v ./... | tee go-test-results.txt
       - uses: actions/upload-artifact@v4
         with:
           name: go-test-results
-          path: "${{ env.RUNNER_TEMP }}/go-test-results.txt"
+          path: go-test-results.txt
 
   build:
     needs: test
