@@ -101,6 +101,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: artifacts/files/*
+          prerelease: ${{ contains(github.ref_name, '-') }}
           fail_on_unmatched_files: true
           generate_release_notes: true
           append_body: true
