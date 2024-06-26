@@ -21,17 +21,24 @@ import "strconv"
 // entity via the Country array.  Some ISO 3166 countries are made up of
 // several smaller DXCC entities like the Russian Federation (European Russia
 // and Asiatic Russia plus Kaliningrad) and the United Kingdom (England, Wales,
-// Scotland, and Northern Ireland).  Some DXCC entities are part of a larger
-// ISO country with its own DXCC entity, such as Alaska and Hawaii with the
+// Scotland, and Northern Ireland).  Some DXCC entities are primary subdivisions
+// within a country-level DXCC entity, such as Alaska and Hawaii with the
 // United States of America, Sardinia with Italy, or Andaman & Nicobar Islands
-// with India.  In such cases, the administrative divisions are not in the any
-// Countries list.  Most of those are remote islands.
+// with India; in such cases the parent is the first entity in the DXCC array
+// and the others follow.  Some DXCC entities are not associated with an ISO
+// country code; these are mostly remote islands without permanent civilian
+// populations, along with special entities like ITU Headquarters.  Deleted DXCC
+// entities like Czechoslovakia are not associated with a country code.
+// Likewise, deleted ISO 3166-1 codes are not present.  Geopolitical events and
+// administrative updates by ISO or ARRL may lead to a change in this data;
+// such changes will not be considered a semantic versioning breaking change.
 type ISO3166CountryCode struct {
-	Alpha2      string        // ISO 3166-1 alpha-2 code (two ASCII letters)
-	Alpha3      string        // ISO 3166-1 alpha-3 code (three ASCII letters)
-	Numeric     string        // ISO 3166-1 numeric code (three ASCII digits)
-	EnglishName string        // Official English name of the country, mixed case
-	DXCC        []CountryEnum // One or more DXCC entities that make up this country
+	Alpha2       string                 // ISO 3166-1 alpha-2 code (two ASCII letters)
+	Alpha3       string                 // ISO 3166-1 alpha-3 code (three ASCII letters)
+	Numeric      string                 // ISO 3166-1 numeric code (three ASCII digits)
+	EnglishName  string                 // Official English name of the country, mixed case
+	DXCC         []CountryEnum          // One or more DXCC entities that make up this country
+	Subdivisions map[string]CountryEnum // Subdivision codes associated with specific sub-national DXCC entities
 }
 
 var (
@@ -275,6 +282,11 @@ var (
 		Numeric:     "535",
 		EnglishName: "Bonaire, Sint Eustatius and Saba",
 		DXCC:        []CountryEnum{CountryBonaire, CountrySabaStEustatius},
+		Subdivisions: map[string]CountryEnum{
+			"BO": CountryBonaire,
+			"SA": CountrySabaStEustatius,
+			"SE": CountrySabaStEustatius,
+		},
 	}
 
 	CountryCodeBIH = ISO3166CountryCode{
@@ -438,11 +450,12 @@ var (
 	}
 
 	CountryCodeCOL = ISO3166CountryCode{
-		Alpha2:      "CO",
-		Alpha3:      "COL",
-		Numeric:     "170",
-		EnglishName: "Colombia",
-		DXCC:        []CountryEnum{CountryColombia},
+		Alpha2:       "CO",
+		Alpha3:       "COL",
+		Numeric:      "170",
+		EnglishName:  "Colombia",
+		DXCC:         []CountryEnum{CountryColombia, CountrySanAndresProvidencia},
+		Subdivisions: map[string]CountryEnum{"SAP": CountrySanAndresProvidencia},
 	}
 
 	CountryCodeCOM = ISO3166CountryCode{
@@ -566,11 +579,12 @@ var (
 	}
 
 	CountryCodeECU = ISO3166CountryCode{
-		Alpha2:      "EC",
-		Alpha3:      "ECU",
-		Numeric:     "218",
-		EnglishName: "Ecuador",
-		DXCC:        []CountryEnum{CountryEcuador},
+		Alpha2:       "EC",
+		Alpha3:       "ECU",
+		Numeric:      "218",
+		EnglishName:  "Ecuador",
+		DXCC:         []CountryEnum{CountryEcuador, CountryGalapagosIslands},
+		Subdivisions: map[string]CountryEnum{"W": CountryGalapagosIslands},
 	}
 
 	CountryCodeEGY = ISO3166CountryCode{
@@ -590,11 +604,12 @@ var (
 	}
 
 	CountryCodeGNQ = ISO3166CountryCode{
-		Alpha2:      "GQ",
-		Alpha3:      "GNQ",
-		Numeric:     "226",
-		EnglishName: "Equatorial Guinea",
-		DXCC:        []CountryEnum{CountryEquatorialGuinea},
+		Alpha2:       "GQ",
+		Alpha3:       "GNQ",
+		Numeric:      "226",
+		EnglishName:  "Equatorial Guinea",
+		DXCC:         []CountryEnum{CountryEquatorialGuinea, CountryAnnobonIsland},
+		Subdivisions: map[string]CountryEnum{"AN": CountryAnnobonIsland},
 	}
 
 	CountryCodeERI = ISO3166CountryCode{
@@ -646,11 +661,12 @@ var (
 	}
 
 	CountryCodeFJI = ISO3166CountryCode{
-		Alpha2:      "FJ",
-		Alpha3:      "FJI",
-		Numeric:     "242",
-		EnglishName: "Fiji",
-		DXCC:        []CountryEnum{CountryFiji},
+		Alpha2:       "FJ",
+		Alpha3:       "FJI",
+		Numeric:      "242",
+		EnglishName:  "Fiji",
+		DXCC:         []CountryEnum{CountryFiji, CountryRotumaIsland},
+		Subdivisions: map[string]CountryEnum{"R": CountryRotumaIsland},
 	}
 
 	CountryCodeFIN = ISO3166CountryCode{
@@ -666,7 +682,12 @@ var (
 		Alpha3:      "FRA",
 		Numeric:     "250",
 		EnglishName: "France",
-		DXCC:        []CountryEnum{CountryFrance},
+		DXCC:        []CountryEnum{CountryFrance, CountryCorsica},
+		Subdivisions: map[string]CountryEnum{
+			"2A":  CountryCorsica, // Corse-du-Sud
+			"2B":  CountryCorsica, // Haute-Corse
+			"20R": CountryCorsica, // Corsica as a metropolitan collectivity
+		},
 	}
 
 	CountryCodeGUF = ISO3166CountryCode{
@@ -682,7 +703,7 @@ var (
 		Alpha3:      "PYF",
 		Numeric:     "258",
 		EnglishName: "French Polynesia",
-		DXCC:        []CountryEnum{CountryFrenchPolynesia},
+		DXCC:        []CountryEnum{CountryFrenchPolynesia, CountryMarquesasIslands, CountryAustralIsland},
 	}
 
 	CountryCodeATF = ISO3166CountryCode{
@@ -746,7 +767,12 @@ var (
 		Alpha3:      "GRC",
 		Numeric:     "300",
 		EnglishName: "Greece",
-		DXCC:        []CountryEnum{CountryGreece},
+		DXCC:        []CountryEnum{CountryGreece, CountryCrete, CountryDodecanese, CountryMountAthos},
+		Subdivisions: map[string]CountryEnum{
+			"M":  CountryCrete,
+			"69": CountryMountAthos,
+			// Dodecanese forms only a portion of the South Agean administrative region (code L)
+		},
 	}
 
 	CountryCodeGRL = ISO3166CountryCode{
@@ -882,7 +908,11 @@ var (
 		Alpha3:      "IND",
 		Numeric:     "356",
 		EnglishName: "India",
-		DXCC:        []CountryEnum{CountryIndia},
+		DXCC:        []CountryEnum{CountryIndia, CountryAndamanNicobarIslands, CountryLakshadweepIslands},
+		Subdivisions: map[string]CountryEnum{
+			"AN": CountryAndamanNicobarIslands,
+			"LD": CountryLakshadweepIslands,
+		},
 	}
 
 	CountryCodeIDN = ISO3166CountryCode{
@@ -938,7 +968,21 @@ var (
 		Alpha3:      "ITA",
 		Numeric:     "380",
 		EnglishName: "Italy",
-		DXCC:        []CountryEnum{CountryItaly},
+		DXCC:        []CountryEnum{CountryItaly, CountrySardinia},
+		Subdivisions: map[string]CountryEnum{
+			"88": CountrySardinia, // Sardinia as an autonomous region
+			"CA": CountrySardinia, // Cagliari
+			"NU": CountrySardinia, // Nuoro
+			"OR": CountrySardinia, // Oristano
+			"SS": CountrySardinia, // Sassari
+			"SU": CountrySardinia, // Sud Sardegna
+			// the following provinces were replaced by Sud Sardegna in 2019
+			"CI": CountrySardinia, // Carbonia-Iglesias
+			"MD": CountrySardinia, // Medio Campidano non-ISO code
+			"OG": CountrySardinia, // Ogliastra
+			"OT": CountrySardinia, // Olbia-Tempio
+			"VS": CountrySardinia, // ISO code for Medio Campidano (Villacidro & Sanluri)
+		},
 	}
 
 	CountryCodeJAM = ISO3166CountryCode{
@@ -995,6 +1039,12 @@ var (
 		Numeric:     "296",
 		EnglishName: "Kiribati",
 		DXCC:        []CountryEnum{CountryWKiribatiGilbertIslands, CountryEKiribatiLineIslands, CountryCKiribatiBritishPhoenixIslands, CountryBanabaIslandOceanIsland},
+		Subdivisions: map[string]CountryEnum{
+			"G": CountryWKiribatiGilbertIslands,
+			"L": CountryEKiribatiLineIslands,
+			"P": CountryCKiribatiBritishPhoenixIslands,
+			// Banaba Island doesn't have its own ISO code
+		},
 	}
 
 	CountryCodePRK = ISO3166CountryCode{
@@ -1131,6 +1181,24 @@ var (
 		Numeric:     "458",
 		EnglishName: "Malaysia",
 		DXCC:        []CountryEnum{CountryWestMalaysia, CountryEastMalaysia},
+		Subdivisions: map[string]CountryEnum{
+			"12": CountryEastMalaysia, // Sabah
+			"13": CountryEastMalaysia, // Sarawak
+			"15": CountryEastMalaysia, // Labuan
+			"01": CountryWestMalaysia, // Johor
+			"02": CountryWestMalaysia, // Kedah
+			"03": CountryWestMalaysia, // Kelantan
+			"04": CountryWestMalaysia, // Melaka
+			"05": CountryWestMalaysia, // Negeri Sembilan
+			"06": CountryWestMalaysia, // Pahang
+			"07": CountryWestMalaysia, // Pulau Pinang
+			"08": CountryWestMalaysia, // Perak
+			"09": CountryWestMalaysia, // Perlis
+			"10": CountryWestMalaysia, // Selangor
+			"11": CountryWestMalaysia, // Terengganu
+			"14": CountryWestMalaysia, // Kuala Lumpur
+			"16": CountryWestMalaysia, // Putrajaya
+		},
 	}
 
 	CountryCodeMDV = ISO3166CountryCode{
@@ -1186,7 +1254,12 @@ var (
 		Alpha3:      "MUS",
 		Numeric:     "480",
 		EnglishName: "Mauritius",
-		DXCC:        []CountryEnum{CountryMauritius},
+		DXCC:        []CountryEnum{CountryMauritius, CountryAgalegaStBrandonIslands, CountryRodriguezIsland},
+		Subdivisions: map[string]CountryEnum{
+			"AG": CountryAgalegaStBrandonIslands, // Agalega Islands
+			"CC": CountryAgalegaStBrandonIslands, // Cargados Carajos Shoals
+			"RO": CountryRodriguezIsland,
+		},
 	}
 
 	CountryCodeMYT = ISO3166CountryCode{
@@ -1322,7 +1395,28 @@ var (
 		Alpha3:      "NZL",
 		Numeric:     "554",
 		EnglishName: "New Zealand",
-		DXCC:        []CountryEnum{CountryNewZealand},
+		DXCC:        []CountryEnum{CountryNewZealand, CountryChathamIslands},
+		Subdivisions: map[string]CountryEnum{
+			// Chatham and other New Zealand territories don't have subdivision codes, so regions
+			// from North Island and South Island are listed here to ensure contacts logged with "NZ"
+			// are interpreted as being from New Zealand
+			"AUK": CountryNewZealand, // Auckland
+			"BOP": CountryNewZealand, // Bay of Plenty
+			"CAN": CountryNewZealand, // Canterbury
+			"GIS": CountryNewZealand, // Gisborne
+			"HKB": CountryNewZealand, // Hawke's Bay
+			"MBH": CountryNewZealand, // Marlborough
+			"MWT": CountryNewZealand, // Manawatu-Whanganui
+			"NSN": CountryNewZealand, // Nelson
+			"NTL": CountryNewZealand, // Northland
+			"OTA": CountryNewZealand, // Otago
+			"STL": CountryNewZealand, // Southland
+			"TAS": CountryNewZealand, // Tasman
+			"TKI": CountryNewZealand, // Taranaki
+			"WGN": CountryNewZealand, // Greater Wellington
+			"WKO": CountryNewZealand, // Waikato
+			"WTC": CountryNewZealand, // West Coast
+		},
 	}
 
 	CountryCodeNIC = ISO3166CountryCode{
@@ -1474,7 +1568,13 @@ var (
 		Alpha3:      "PRT",
 		Numeric:     "620",
 		EnglishName: "Portugal",
-		DXCC:        []CountryEnum{CountryPortugal},
+		DXCC:        []CountryEnum{CountryPortugal, CountryAzores, CountryMadeiraIslands},
+		Subdivisions: map[string]CountryEnum{
+			"20": CountryAzores,         // ISO code
+			"AC": CountryAzores,         // ADIF code
+			"30": CountryMadeiraIslands, // ISO code
+			"MD": CountryMadeiraIslands, // ADIF code
+		},
 	}
 
 	CountryCodePRI = ISO3166CountryCode{
@@ -1515,6 +1615,159 @@ var (
 		Numeric:     "643",
 		EnglishName: "Russian Federation (the)",
 		DXCC:        []CountryEnum{CountryEuropeanRussia, CountryAsiaticRussia, CountryKaliningrad},
+		Subdivisions: map[string]CountryEnum{
+			// Asia side
+			"AL":  CountryAsiaticRussia, // Altay Republic (ISO), Altaysky Kraj (ADIF)
+			"ALT": CountryAsiaticRussia, // Altayskiy Kraj (ISO)
+			"AM":  CountryAsiaticRussia, // Amurskaya Oblast (ADIF)
+			"AMU": CountryAsiaticRussia, // Amurskaya Oblast (ISO)
+			"BA":  CountryAsiaticRussia, // Bashkortostan Republic (ISO, ADIF)
+			"BU":  CountryAsiaticRussia, // Buryatiya Republic (ISO, ADIF)
+			"CB":  CountryAsiaticRussia, // Chelyabinskaya Oblast (ADIF)
+			"CHE": CountryAsiaticRussia, // Chelyabinskaya Oblast (ISO)
+			"CHU": CountryAsiaticRussia, // Chukotskiy Autonomous Okrug (ISO)
+			"CK":  CountryAsiaticRussia, // Chukotskiy Autonomous Okrug (ADIF)
+			"CT":  CountryAsiaticRussia, // Zabaykalsky Kraj (ADIF)
+			"EA":  CountryAsiaticRussia, // Yevreyskaya Autonomous Oblast (ADIF)
+			"GA":  CountryAsiaticRussia, // Altaj Respublika (ADIF)
+			"HA":  CountryAsiaticRussia, // Hakasija Respublika (ADIF)
+			"HK":  CountryAsiaticRussia, // Khabarovskiy Kraj (ADIF)
+			"HM":  CountryAsiaticRussia, // Khanty-Mansiyskiy Autonomous Okrug (ADIF)
+			"IR":  CountryAsiaticRussia, // Irkutskaya Oblast (ADIF)
+			"IRK": CountryAsiaticRussia, // Irkutskaya Oblast (ISO)
+			"KAM": CountryAsiaticRussia, // Kamchatskiy Kray (ISO)
+			"KE":  CountryAsiaticRussia, // Kemerovskaya Oblast (ADIF)
+			"KEM": CountryAsiaticRussia, // Kemerovskaya Oblast (ISO)
+			"KGN": CountryAsiaticRussia, // Kurganskaya Oblast (ISO)
+			"KHA": CountryAsiaticRussia, // Khabarovskiy Kraj (ISO)
+			"KHM": CountryAsiaticRussia, // Khanty-Mansiyskiy Autonomous Okrug (ISO)
+			"KK":  CountryAsiaticRussia, // Khaskasiya Republic (ISO), Krasnoyarsk Kraj (ADIF)
+			"KN":  CountryAsiaticRussia, // Kurganskaya Oblast (ADIF)
+			"KO":  CountryAsiaticRussia, // Komi Republic (ISO, ADIF)
+			"KT":  CountryAsiaticRussia, // Kamchatskaya Oblast (ADIF)
+			"KYA": CountryAsiaticRussia, // Krasnojarskij Kraj (ADIF)
+			"MAG": CountryAsiaticRussia, // Magadanskaya Oblast (ISO)
+			"MG":  CountryAsiaticRussia, // Magadanskaya Oblast (ADIF)
+			"NS":  CountryAsiaticRussia, // Novosibriskaya Oblast (ADIF)
+			"NVS": CountryAsiaticRussia, // Novosibriskaya Oblast (ISO)
+			"OB":  CountryAsiaticRussia, // Orenburgskaya Oblast (ADIF)
+			"OM":  CountryAsiaticRussia, // Omskaya Oblast (ADIF)
+			"OMS": CountryAsiaticRussia, // Omskaya Oblast (ISO)
+			"ORE": CountryAsiaticRussia, // Orenburgskaya Oblast (ISO)
+			"PER": CountryAsiaticRussia, // Permskiy Kraj (ISO)
+			"PK":  CountryAsiaticRussia, // Primorsky Kraj (ADIF)
+			"PM":  CountryAsiaticRussia, // Permskiy Kraj (ADIF)
+			"PRI": CountryAsiaticRussia, // Primorsky Kraj (ISO)
+			// "SA": CountryAsiaticRussia, // Sakha Republic (ISO), conflicts with Europe Saratovskaya (ADIF)
+			"SAK": CountryAsiaticRussia, // Sakhalinskaya Oblast (ISO)
+			"SL":  CountryAsiaticRussia, // Sakhalinskaya Oblast (ADIF)
+			"SV":  CountryAsiaticRussia, // Sverdlovskaya Oblast (ADIF)
+			"SVE": CountryAsiaticRussia, // Sverdlovskaya Oblast (ISO)
+			"TN":  CountryAsiaticRussia, // Tyumenskaya Oblast (ADIF)
+			"TO":  CountryAsiaticRussia, // Tomskaya Oblast (ADIF)
+			"TOM": CountryAsiaticRussia, // Tomskaya Oblast (ISO)
+			"TU":  CountryAsiaticRussia, // Tuva Republic (ADIF)
+			"TY":  CountryAsiaticRussia, // Tuva Republic (ISO)
+			"TYU": CountryAsiaticRussia, // Tyumenskaya Republic (ISO)
+			"YA":  CountryAsiaticRussia, // Sakha Republic (ISO)
+			"YAN": CountryAsiaticRussia, // Yamalo-Nenetsky Autonomous Oblast (ISO)
+			"YEV": CountryAsiaticRussia, // Yevreyskaya Autonomous Oblast (ISO)
+			"YN":  CountryAsiaticRussia, // Yamalo-Nenetsky Autonomous Oblast (ADIF)
+			"ZAB": CountryAsiaticRussia, // Zabaykalsky Kraj (ISO)
+			// Europe side
+			"AD":  CountryEuropeanRussia, // Adygeya Republic (ISO, ADIF)
+			"AO":  CountryEuropeanRussia, // Astrakhanskaya Oblast (ADIF)
+			"AR":  CountryEuropeanRussia, // Arkhangelskaya Oblast (ADIF)
+			"ARK": CountryEuropeanRussia, // Arkhangelskaya Oblast (ISO)
+			"AST": CountryEuropeanRussia, // Astrakhanskaya Oblast (ISO)
+			"BEL": CountryEuropeanRussia, // Belgorodskaya Oblast (ISO)
+			"BO":  CountryEuropeanRussia, // Belgorodskaya Oblast (ADIF)
+			"BR":  CountryEuropeanRussia, // Bryanskaya Oblast (ADIF)
+			"BRY": CountryEuropeanRussia, // Bryanskaya Oblast (ISO)
+			"CE":  CountryEuropeanRussia, // Chechnya Republic (ISO)
+			"CN":  CountryEuropeanRussia, // Chechnya Republic (ADIF)
+			"CU":  CountryEuropeanRussia, // Chuvashia Republic (ISO, ADIF)
+			"DA":  CountryEuropeanRussia, // Daghestan Republic (ISO, ADIF)
+			"IN":  CountryEuropeanRussia, // Ingushetia Republic (ISO, ADIF)
+			"IV":  CountryEuropeanRussia, // Ivanovskaya Oblast (ADIF)
+			"IVA": CountryEuropeanRussia, // Ivanovskaya Oblast (ADIF)
+			"KB":  CountryEuropeanRussia, // Kabardino-Balkaria Republic (ISO, ADIF)
+			"KDA": CountryEuropeanRussia, // Krasnodarskiy Kraj (ISO)
+			"KG":  CountryEuropeanRussia, // Kaluzhskaya Oblast (ADIF)
+			"KI":  CountryEuropeanRussia, // Kirovskaya Oblast (ADIF)
+			"KIR": CountryEuropeanRussia, // Kirovskaya Oblast (ADIF)
+			"KL":  CountryEuropeanRussia, // Kalmykia Republic (ISO), Karelia Republic (ADIF)
+			"KLU": CountryEuropeanRussia, // Kaluzhskaya Oblast (ISO)
+			"KM":  CountryEuropeanRussia, // Kalmykia Republic (ADIF)
+			"KOS": CountryEuropeanRussia, // Kostromskaya Oblast (ADIF)
+			"KR":  CountryEuropeanRussia, // Karelia Republic (ISO)
+			"KRS": CountryEuropeanRussia, // Kurskaya Oblast (ISO)
+			"KS":  CountryEuropeanRussia, // Kostromskaya Oblast (ADIF)
+			"KU":  CountryEuropeanRussia, // Kurskaya Oblast (ADIF)
+			"LEN": CountryEuropeanRussia, // Leningraskaya Oblast (ISO)
+			"LIP": CountryEuropeanRussia, // Lipetskaya Oblast (ISO)
+			"LO":  CountryEuropeanRussia, // Leningraskaya Oblast (ADIF)
+			"LP":  CountryEuropeanRussia, // Lipetskaya Oblast (ADIF)
+			"MA":  CountryEuropeanRussia, // Moskow City (ADIF)
+			"MD":  CountryEuropeanRussia, // Mordovia Republic (ADIF)
+			"ME":  CountryEuropeanRussia, // Marij-El Republic (ISO)
+			"MO":  CountryEuropeanRussia, // Mordovia Republic (ISO), Moscowskaya Oblast (ADIF)
+			"MOS": CountryEuropeanRussia, // Moscowskaya Oblast (ISO)
+			"MOW": CountryEuropeanRussia, // Moscow City (ISO)
+			"MR":  CountryEuropeanRussia, // Marij-El Republic (ADIF)
+			"MU":  CountryEuropeanRussia, // Murmanskaya Oblast (ADIF)
+			"MUR": CountryEuropeanRussia, // Murmanskaya Oblast (ISO)
+			"NEN": CountryEuropeanRussia, // Nenetsky Autonomous Okrug (ISO)
+			"NGR": CountryEuropeanRussia, // Novgoroskaya Oblast (ISO)
+			"NN":  CountryEuropeanRussia, // Nizhegorodskaya Oblast (ADIF)
+			"NO":  CountryEuropeanRussia, // Nenetsky Autonomous Okrug (ADIF)
+			"NV":  CountryEuropeanRussia, // Novgoroskaya Oblast (ADIF)
+			"OR":  CountryEuropeanRussia, // Orlovskaya Oblast (ADIF)
+			"ORL": CountryEuropeanRussia, // Orlovskaya Oblast (ISO)
+			"PE":  CountryEuropeanRussia, // Penzenskaya Oblast (ADIF)
+			"PNZ": CountryEuropeanRussia, // Penzenskaya Oblast (ISO)
+			"PS":  CountryEuropeanRussia, // Pskovskaya Oblast (ADIF)
+			"PSK": CountryEuropeanRussia, // Pskovskaya Oblast (ISO)
+			"RA":  CountryEuropeanRussia, // Ryazanskaya Oblast (ADIF)
+			"RO":  CountryEuropeanRussia, // Rostovskaya Oblast (ADIF)
+			"ROS": CountryEuropeanRussia, // Rostovskaya Oblast (ISO)
+			"RYA": CountryEuropeanRussia, // Ryazanskaya Oblast (ISO)
+			// "SA": CountryEuropeanRussia, // Saratovskaya Oblast (ADIF), conflicts with Asia Sakha (ISO)
+			"SAM": CountryEuropeanRussia, // Samarskaya Oblast (ADIF)
+			"SAR": CountryEuropeanRussia, // Saratovskaya Oblast (ISO)
+			"SE":  CountryEuropeanRussia, // Northern Ossetia Republic (ISO)
+			"SM":  CountryEuropeanRussia, // Smolenskaya Oblast (ADIF)
+			"SMO": CountryEuropeanRussia, // Smolenskaya Oblast (ISO)
+			"SO":  CountryEuropeanRussia, // Northern Ossetia Republic (ADIF)
+			"SP":  CountryEuropeanRussia, // St. Petersburg City (ADIF)
+			"SPE": CountryEuropeanRussia, // St. Petersburg City (ADIF)
+			"SR":  CountryEuropeanRussia, // Samaraskaya Oblast (ISO)
+			"ST":  CountryEuropeanRussia, // Stavropolsky Kraj (ADIF)
+			"STA": CountryEuropeanRussia, // Stavropolsky Kraj (ISO)
+			"TA":  CountryEuropeanRussia, // Tataria Republic (ISO, ADIF)
+			"TAM": CountryEuropeanRussia, // Tambovskaya Oblast (ISO)
+			"TB":  CountryEuropeanRussia, // Tambovskaya Oblast (ADIF)
+			"TL":  CountryEuropeanRussia, // Tulskaya Oblast (ADIF)
+			"TUL": CountryEuropeanRussia, // Tulskaya Oblast (ISO)
+			"TV":  CountryEuropeanRussia, // Tverskaya Oblast (ISO)
+			"TVE": CountryEuropeanRussia, // Tverskaya Oblast (ISO)
+			"UD":  CountryEuropeanRussia, // Udmurtia Republic (ISO, ADIF)
+			"UL":  CountryEuropeanRussia, // Ulyanovskaya Oblast (ADIF)
+			"ULY": CountryEuropeanRussia, // Ulyanovskaya Oblast (ISO)
+			"VG":  CountryEuropeanRussia, // Volgogradskaya Oblast (ADIF)
+			"VGG": CountryEuropeanRussia, // Volgogradskaya Oblast (ISO)
+			"VL":  CountryEuropeanRussia, // Vladimirskaya Oblast (ADIF)
+			"VLA": CountryEuropeanRussia, // Vladimirskaya Oblast (ISO)
+			"VLG": CountryEuropeanRussia, // Vologodskaya Oblast (ISO)
+			"VO":  CountryEuropeanRussia, // Vologodskaya Oblast (ADIF)
+			"VOR": CountryEuropeanRussia, // Voronezhskaya Oblast (ISO)
+			"VR":  CountryEuropeanRussia, // Voronezhskaya Oblast (ADIF)
+			"YAR": CountryEuropeanRussia, // Yaroslavskaya Oblast (ISO)
+			"YR":  CountryEuropeanRussia, // Yaroslavskaya Oblast (ADIF)
+			// Kaliningrad
+			"KA":  CountryKaliningrad, // Kaliningraskaya Oblast (ADIF)
+			"KGD": CountryKaliningrad, // Kaliningraskaya Oblast (ISO)
+		},
 	}
 
 	CountryCodeRWA = ISO3166CountryCode{
@@ -1547,6 +1800,11 @@ var (
 		Numeric:     "654",
 		EnglishName: "Saint Helena, Ascension and Tristan da Cunha",
 		DXCC:        []CountryEnum{CountryStHelena, CountryAscensionIsland, CountryTristanDaCunhaGoughIsland},
+		Subdivisions: map[string]CountryEnum{
+			"AC": CountryAscensionIsland,
+			"HL": CountryStHelena,
+			"TA": CountryTristanDaCunhaGoughIsland,
+		},
 	}
 
 	CountryCodeKNA = ISO3166CountryCode{
@@ -1686,11 +1944,12 @@ var (
 	}
 
 	CountryCodeSLB = ISO3166CountryCode{
-		Alpha2:      "SB",
-		Alpha3:      "SLB",
-		Numeric:     "090",
-		EnglishName: "Solomon Islands",
-		DXCC:        []CountryEnum{CountrySolomonIslands},
+		Alpha2:       "SB",
+		Alpha3:       "SLB",
+		Numeric:      "090",
+		EnglishName:  "Solomon Islands",
+		DXCC:         []CountryEnum{CountrySolomonIslands, CountryTemotuProvince},
+		Subdivisions: map[string]CountryEnum{"TE": CountryTemotuProvince},
 	}
 
 	CountryCodeSOM = ISO3166CountryCode{
@@ -1730,7 +1989,16 @@ var (
 		Alpha3:      "ESP",
 		Numeric:     "724",
 		EnglishName: "Spain",
-		DXCC:        []CountryEnum{CountrySpain},
+		DXCC:        []CountryEnum{CountrySpain, CountryBalearicIslands, CountryCeutaMelilla, CountryCanaryIslands},
+		Subdivisions: map[string]CountryEnum{
+			"IB": CountryBalearicIslands, // Illes Balears autonomous community
+			"PM": CountryBalearicIslands, // Illes Balears province
+			"CN": CountryCanaryIslands,   // Canarias autonomous community
+			"GC": CountryCanaryIslands,   // Las Plamas province
+			"TF": CountryCanaryIslands,   // Santa Cruz de Tenerife province
+			"CE": CountryCeutaMelilla,    // Ceuta
+			"ML": CountryCeutaMelilla,    // Melilla
+		},
 	}
 
 	CountryCodeLKA = ISO3166CountryCode{
@@ -1931,6 +2199,250 @@ var (
 		Numeric:     "826",
 		EnglishName: "United Kingdom of Great Britain and Northern Ireland (the)",
 		DXCC:        []CountryEnum{CountryEngland, CountryWales, CountryScotland, CountryNorthernIreland},
+		Subdivisions: map[string]CountryEnum{
+			// Countries
+			"ENG": CountryEngland,
+			"NIR": CountryNorthernIreland,
+			"SCT": CountryScotland,
+			"WLS": CountryWales,
+			// English counties, districs, boroughs, authorities
+			"BAS": CountryEngland, // Bath and North East Somerset
+			"BBD": CountryEngland, // Blackburn with Darwen
+			"BCP": CountryEngland, // Bournemouth, Christchurch and Poole
+			"BDF": CountryEngland, // Bedford
+			"BDG": CountryEngland, // Barking and Dagenham
+			"BEN": CountryEngland, // Brent
+			"BEX": CountryEngland, // Bexley
+			"BIR": CountryEngland, // Birmingham
+			"BKM": CountryEngland, // Buckinghamshire
+			"BNE": CountryEngland, // Barnet
+			"BNH": CountryEngland, // Brighton and Hove
+			"BNS": CountryEngland, // Barnsley
+			"BOL": CountryEngland, // Bolton
+			"BPL": CountryEngland, // Blackpool
+			"BRC": CountryEngland, // Bracknell Forest
+			"BRD": CountryEngland, // Bradford
+			"BRY": CountryEngland, // Bromley
+			"BST": CountryEngland, // Bristol, City of
+			"BUR": CountryEngland, // Bury
+			"CAM": CountryEngland, // Cambridgeshire
+			"CBF": CountryEngland, // Central Bedfordshire
+			"CHE": CountryEngland, // Cheshire East
+			"CHW": CountryEngland, // Cheshire West and Chester
+			"CLD": CountryEngland, // Calderdale
+			"CMA": CountryEngland, // Cumbria
+			"CMD": CountryEngland, // Camden
+			"CON": CountryEngland, // Cornwall
+			"COV": CountryEngland, // Coventry
+			"CRY": CountryEngland, // Croydon
+			"DAL": CountryEngland, // Darlington
+			"DBY": CountryEngland, // Derbyshire
+			"DER": CountryEngland, // Derby
+			"DEV": CountryEngland, // Devon
+			"DNC": CountryEngland, // Doncaster
+			"DOR": CountryEngland, // Dorset
+			"DUD": CountryEngland, // Dudley
+			"DUR": CountryEngland, // Durham, County
+			"EAL": CountryEngland, // Ealing
+			"ENF": CountryEngland, // Enfield
+			"ERY": CountryEngland, // East Riding of Yorkshire
+			"ESS": CountryEngland, // Essex
+			"ESX": CountryEngland, // East Sussex
+			"GAT": CountryEngland, // Gateshead
+			"GLS": CountryEngland, // Gloucestershire
+			"GRE": CountryEngland, // Greenwich
+			"HAL": CountryEngland, // Halton
+			"HAM": CountryEngland, // Hampshire
+			"HAV": CountryEngland, // Havering
+			"HCK": CountryEngland, // Hackney
+			"HEF": CountryEngland, // Herefordshire
+			"HIL": CountryEngland, // Hillingdon
+			"HMF": CountryEngland, // Hammersmith and Fulham
+			"HNS": CountryEngland, // Hounslow
+			"HPL": CountryEngland, // Hartlepool
+			"HRT": CountryEngland, // Hertfordshire
+			"HRW": CountryEngland, // Harrow
+			"HRY": CountryEngland, // Haringey
+			"IOS": CountryEngland, // Isles of Scilly
+			"IOW": CountryEngland, // Isle of Wight
+			"ISL": CountryEngland, // Islington
+			"KEC": CountryEngland, // Kensington and Chelsea
+			"KEN": CountryEngland, // Kent
+			"KHL": CountryEngland, // Kingston upon Hull
+			"KIR": CountryEngland, // Kirklees
+			"KTT": CountryEngland, // Kingston upon Thames
+			"KWL": CountryEngland, // Knowsley
+			"LAN": CountryEngland, // Lancashire
+			"LBH": CountryEngland, // Lambeth
+			"LCE": CountryEngland, // Leicester
+			"LDS": CountryEngland, // Leeds
+			"LEC": CountryEngland, // Leicestershire
+			"LEW": CountryEngland, // Lewisham
+			"LIN": CountryEngland, // Lincolnshire
+			"LIV": CountryEngland, // Liverpool
+			"LND": CountryEngland, // London, City of
+			"LUT": CountryEngland, // Luton
+			"MAN": CountryEngland, // Manchester
+			"MDB": CountryEngland, // Middlesbrough
+			"MDW": CountryEngland, // Medway
+			"MIK": CountryEngland, // Milton Keynes
+			"MRT": CountryEngland, // Merton
+			"NBL": CountryEngland, // Northumberland
+			"NEL": CountryEngland, // North East Lincolnshire
+			"NET": CountryEngland, // Newcastle upon Tyne
+			"NFK": CountryEngland, // Norfolk
+			"NGM": CountryEngland, // Nottingham
+			"NLN": CountryEngland, // North Lincolnshire
+			"NNH": CountryEngland, // North Northamptonshire
+			"NSM": CountryEngland, // North Somerset
+			"NTT": CountryEngland, // Nottinghamshire
+			"NTY": CountryEngland, // North Tyneside
+			"NWM": CountryEngland, // Newham
+			"NYK": CountryEngland, // North Yorkshire
+			"OLD": CountryEngland, // Oldham
+			"OXF": CountryEngland, // Oxfordshire
+			"PLY": CountryEngland, // Plymouth
+			"POR": CountryEngland, // Portsmouth
+			"PTE": CountryEngland, // Peterborough
+			"RCC": CountryEngland, // Redcar and Cleveland
+			"RCH": CountryEngland, // Rochdale
+			"RDB": CountryEngland, // Redbridge
+			"RDG": CountryEngland, // Reading
+			"RIC": CountryEngland, // Richmond upon Thames
+			"ROT": CountryEngland, // Rotherham
+			"RUT": CountryEngland, // Rutland
+			"SAW": CountryEngland, // Sandwell
+			"SFK": CountryEngland, // Suffolk
+			"SFT": CountryEngland, // Sefton
+			"SGC": CountryEngland, // South Gloucestershire
+			"SHF": CountryEngland, // Sheffield
+			"SHN": CountryEngland, // St. Helens
+			"SHR": CountryEngland, // Shropshire
+			"SKP": CountryEngland, // Stockport
+			"SLF": CountryEngland, // Salford
+			"SLG": CountryEngland, // Slough
+			"SND": CountryEngland, // Sunderland
+			"SOL": CountryEngland, // Solihull
+			"SOM": CountryEngland, // Somerset
+			"SOS": CountryEngland, // Southend-on-Sea
+			"SRY": CountryEngland, // Surrey
+			"STE": CountryEngland, // Stoke-on-Trent
+			"STH": CountryEngland, // Southampton
+			"STN": CountryEngland, // Sutton
+			"STS": CountryEngland, // Staffordshire
+			"STT": CountryEngland, // Stockton-on-Tees
+			"STY": CountryEngland, // South Tyneside
+			"SWD": CountryEngland, // Swindon
+			"SWK": CountryEngland, // Southwark
+			"TAM": CountryEngland, // Tameside
+			"TFW": CountryEngland, // Telford and Wrekin
+			"THR": CountryEngland, // Thurrock
+			"TOB": CountryEngland, // Torbay
+			"TRF": CountryEngland, // Trafford
+			"TWH": CountryEngland, // Tower Hamlets
+			"WAR": CountryEngland, // Warwickshire
+			"WBK": CountryEngland, // West Berkshire
+			"WFT": CountryEngland, // Waltham Forest
+			"WGN": CountryEngland, // Wigan
+			"WIL": CountryEngland, // Wiltshire
+			"WKF": CountryEngland, // Wakefield
+			"WLL": CountryEngland, // Walsall
+			"WLV": CountryEngland, // Wolverhampton
+			"WND": CountryEngland, // Wandsworth
+			"WNH": CountryEngland, // West Northamptonshire
+			"WNM": CountryEngland, // Windsor and Maidenhead
+			"WOK": CountryEngland, // Wokingham
+			"WOR": CountryEngland, // Worcestershire
+			"WRL": CountryEngland, // Wirral
+			"WRT": CountryEngland, // Warrington
+			"WSM": CountryEngland, // Westminster
+			"WSX": CountryEngland, // West Sussex
+			"YOR": CountryEngland, // York
+			// Northern Irish districs
+			"ABC": CountryNorthernIreland, // Armagh, Banbridge, and Craigavon
+			"AND": CountryNorthernIreland, // Ards and North Down
+			"ANN": CountryNorthernIreland, // Antrim and Newtonabbey
+			"BFS": CountryNorthernIreland, // Belfast City
+			"CCG": CountryNorthernIreland, // Causeway Coast and Glens
+			"DRS": CountryNorthernIreland, // Derry and Strabane
+			"FMO": CountryNorthernIreland, // Fermanagh and Omagh
+			"LBC": CountryNorthernIreland, // Lisburn and Castlereagh
+			"MEA": CountryNorthernIreland, // Mid and East Antrim
+			"MUL": CountryNorthernIreland, // Mid-Ulster
+			"NMD": CountryNorthernIreland, // Newry, Mourne, and Down
+			// Scottish council areas
+			"ABD": CountryScotland, // Aberdeenshire
+			"ABE": CountryScotland, // Aberdeen City
+			"AGB": CountryScotland, // Argyll and Bute
+			"ANS": CountryScotland, // Angus
+			"CLK": CountryScotland, // Clackmannanshire
+			"DGY": CountryScotland, // Dumfries and Galloway
+			"DND": CountryScotland, // Dundee City
+			"EAY": CountryScotland, // East Ayrshire
+			"EDH": CountryScotland, // Edinburgh, City of
+			"EDU": CountryScotland, // East Dunbartonshire
+			"ELN": CountryScotland, // East Lothian
+			"ELS": CountryScotland, // Eilean Siar
+			"ERW": CountryScotland, // East Renfrewshire
+			"FAL": CountryScotland, // Falkirk
+			"FIF": CountryScotland, // Fife
+			"GLG": CountryScotland, // Glasgow City
+			"HLD": CountryScotland, // Highland
+			"IVC": CountryScotland, // Inverclyde
+			"MLN": CountryScotland, // Midlothian
+			"MRY": CountryScotland, // Moray
+			"NAY": CountryScotland, // North Ayrshire
+			"NLK": CountryScotland, // North Lanarkshire
+			"ORK": CountryScotland, // Orkney Islands
+			"PKN": CountryScotland, // Perth and Kinross
+			"RFW": CountryScotland, // Renfrewshire
+			"SAY": CountryScotland, // South Ayrshire
+			"SCB": CountryScotland, // Scottish Borders
+			"SLK": CountryScotland, // South Lanarkshire
+			"STG": CountryScotland, // Stirling
+			"WDU": CountryScotland, // West Dunbartonshire
+			"WLN": CountryScotland, // West Lothian
+			"ZET": CountryScotland, // Shetland Islands
+			// Welsh authorities
+			"AGY": CountryWales, // Isle of Anglesey
+			"BGE": CountryWales, // Bridgend
+			"BGW": CountryWales, // Blaenau Gwent
+			"CAY": CountryWales, // Caerphilly
+			"CGN": CountryWales, // Ceredigion
+			"CMN": CountryWales, // Carmarthenshire
+			"CRF": CountryWales, // Cardiff
+			"CWY": CountryWales, // Conwy
+			"DEN": CountryWales, // Denbighshire
+			"FLN": CountryWales, // Flintshire
+			"GWN": CountryWales, // Gwynedd
+			"MON": CountryWales, // Monmouthshire
+			"MTY": CountryWales, // Merthyr Tydfil
+			"NTL": CountryWales, // Neath Port Talbot
+			"NWP": CountryWales, // Newport
+			"PEM": CountryWales, // Pembrokeshire
+			"POW": CountryWales, // Powys
+			"RCT": CountryWales, // Rhondda Cynon Taff
+			"SWA": CountryWales, // Swansea
+			"TOF": CountryWales, // Torfaen
+			"VGL": CountryWales, // Vale of Glamorgan, The
+			"WRX": CountryWales, // Wrexham
+			// Welsh-language versions of Welsh authorities
+			"YNM": CountryWales, // Sir Ynys Môn, AGY
+			"POG": CountryWales, // Pen-y-bont ar Ogwr, BGE
+			"CAF": CountryWales, // Caerffili, CAY
+			"GFY": CountryWales, // Sir Gaerfyrddin, CMN
+			"CRD": CountryWales, // Caerdydd, CRF
+			"DDB": CountryWales, // Sir Ddinbych, DEN
+			"FFL": CountryWales, // Sir y Fflint, FLN
+			"FYN": CountryWales, // Sir Fynwy, MON
+			"MTU": CountryWales, // Merthyr Tudful, MTY
+			"CTL": CountryWales, // Castell-nedd Port Talbot, NTL
+			"CNW": CountryWales, // Casnewydd, NWP
+			"BNF": CountryWales, // Sir Benfro, PEM
+			"ATA": CountryWales, // Abertawe, SWA
+			"BMG": CountryWales, // Bro Morgannwg, VGL
+			"WRC": CountryWales, // Wrecsam, WRX
+		},
 	}
 
 	CountryCodeUMI = ISO3166CountryCode{
@@ -1946,7 +2458,11 @@ var (
 		Alpha3:      "USA",
 		Numeric:     "840",
 		EnglishName: "United States of America (the)",
-		DXCC:        []CountryEnum{CountryUnitedStatesOfAmerica},
+		DXCC:        []CountryEnum{CountryUnitedStatesOfAmerica, CountryAlaska, CountryHawaii},
+		Subdivisions: map[string]CountryEnum{
+			"AK": CountryAlaska,
+			"HI": CountryHawaii,
+		},
 	}
 
 	CountryCodeURY = ISO3166CountryCode{

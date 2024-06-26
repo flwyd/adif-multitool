@@ -61,7 +61,7 @@ func runFix(ctx *Context, args []string) error {
 	// fix again in case userdef fields were added
 	for _, r := range out.Records {
 		for _, f := range r.Fields() {
-			ff := fixField(f, out)
+			ff := fixField(f, r, out)
 			if f != ff {
 				r.Set(ff)
 			}
@@ -73,12 +73,12 @@ func runFix(ctx *Context, args []string) error {
 func fixRecord(r *adif.Record, l *adif.Logfile) *adif.Record {
 	fields := r.Fields()
 	for i, f := range fields {
-		fields[i] = fixField(f, l)
+		fields[i] = fixField(f, r, l)
 	}
 	return adif.NewRecord(fields...)
 }
 
-func fixField(f adif.Field, l *adif.Logfile) adif.Field {
+func fixField(f adif.Field, r *adif.Record, l *adif.Logfile) adif.Field {
 	t := fieldType(f, l)
 	if t == spec.DateDataType {
 		f.Value = fixDate(f.Value)
@@ -87,7 +87,17 @@ func fixField(f adif.Field, l *adif.Logfile) adif.Field {
 	} else if t == spec.LocationDataType {
 		f.Value = fixLocation(f.Value, f.Name)
 	} else if f.Name == spec.CountryField.Name || f.Name == spec.MyCountryField.Name {
-		f.Value = fixCountry(f.Value)
+		var state string
+		if f.Name == spec.CountryField.Name {
+			if s, ok := r.Get(spec.StateField.Name); ok {
+				state = s.Value
+			}
+		} else if f.Name == spec.MyCountryField.Name {
+			if s, ok := r.Get(spec.MyStateField.Name); ok {
+				state = s.Value
+			}
+		}
+		f.Value = fixCountry(f.Value, state)
 	}
 	return f
 }
@@ -155,13 +165,22 @@ func fixTime(t string) string {
 	return t
 }
 
-func fixCountry(c string) string {
+func fixCountry(c, state string) string {
 	if e := spec.CountryEnumeration.Value(c); len(e) > 0 {
 		return c
 	}
 	if cc, ok := spec.ISO3166Alpha[strings.ToUpper(c)]; ok {
 		if len(cc.DXCC) == 1 {
 			return cc.DXCC[0].EntityName
+		}
+		if state != "" {
+			if e, ok := cc.Subdivisions[state]; ok {
+				return e.EntityName
+			}
+			if len(cc.Subdivisions) > 0 {
+				// if state isn't associated with a sub-national entity, use main one if the country has subdivisions defined
+				return cc.DXCC[0].EntityName
+			}
 		}
 	}
 	return c

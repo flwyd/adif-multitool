@@ -209,13 +209,19 @@ func TestFixCountry(t *testing.T) {
 	csv := adif.NewCSVIO()
 	header := "My Comment\n<ADIF_VER:5>3.1.4 <PROGRAMID:8>fix test <PROGRAMVERSION:5>1.2.3 <EOH>\n"
 	fields := []string{"COUNTRY", "MY_COUNTRY"}
-	tests := []struct{ source, want string }{
+	tests := []struct{ source, state, want string }{
 		{source: "", want: ""},
 		{source: "CANADA", want: "CANADA"},
+		{source: "CA", state: "BC", want: "CANADA"},
 		{source: "El Salvador", want: "El Salvador"},
 		{source: "REPUBLIC OF THE CONGO", want: "REPUBLIC OF THE CONGO"},
-		{source: "IT", want: "ITALY"},
-		{source: "USA", want: "UNITED STATES OF AMERICA"},
+		{source: "IT", state: "BO", want: "ITALY"},    // Bologna is on mainland Italy
+		{source: "IT", state: "CA", want: "SARDINIA"}, // Cagliari is on Sardinia
+		{source: "IT", state: "", want: "IT"},         // Don't know if it's mainland or Sardinia
+		{source: "USA", state: "DE", want: "UNITED STATES OF AMERICA"},
+		{source: "USA", state: "AK", want: "ALASKA"},
+		{source: "USA", state: "HI", want: "HAWAII"},
+		{source: "USA", state: "", want: "USA"}, // Don't know if it's mainland, Alaska, or Hawaii
 		{source: "ci", want: "COTE D'IVOIRE"},
 		{source: "prk", want: "DEMOCRATIC PEOPLE'S REP. OF KOREA"},
 		{source: "Pn", want: "PITCAIRN I."},
@@ -232,8 +238,12 @@ func TestFixCountry(t *testing.T) {
 	}
 	for _, tc := range tests {
 		for _, f := range fields {
+			statef := "STATE"
+			if f == "MY_COUNTRY" {
+				statef = "MY_STATE"
+			}
 			out := &bytes.Buffer{}
-			file1 := fmt.Sprintf("OTHER_FIELD,%s\nJP,%s\n", f, tc.source)
+			file1 := fmt.Sprintf("OTHER_FIELD,%s,%s\nJP,%s,%s\n", f, statef, tc.source, tc.state)
 			ctx := &Context{
 				OutputFormat: adif.FormatADI,
 				Readers:      readers(adi, csv),
@@ -245,7 +255,7 @@ func TestFixCountry(t *testing.T) {
 				t.Errorf("Fix.Run(ctx, foo.csv) got error %v", err)
 			} else {
 				got := out.String()
-				want := fmt.Sprintf("%s<OTHER_FIELD:2>JP <%s:%d>%s <EOR>\n", header, f, len(tc.want), tc.want)
+				want := fmt.Sprintf("%s<OTHER_FIELD:2>JP <%s:%d>%s <%s:%d>%s <EOR>\n", header, f, len(tc.want), tc.want, statef, len(tc.state), tc.state)
 				if diff := cmp.Diff(want, got); diff != "" {
 					t.Errorf("fix %s=%s want %s got diff %s", f, tc.source, tc.want, diff)
 				}
