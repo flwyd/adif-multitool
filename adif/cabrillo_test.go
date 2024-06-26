@@ -201,7 +201,7 @@ func TestWriteCabrillo(t *testing.T) {
 		Field{Name: "QSO_DATE", Value: "20231031", Type: TypeDate},
 		Field{Name: "TIME_ON", Value: "1234", Type: TypeTime},
 		Field{Name: "TIME_OFF", Value: "1239", Type: TypeTime},
-		Field{Name: "FREQ", Value: "14.234", Type: TypeNumber},
+		Field{Name: "FREQ", Value: "7.234", Type: TypeNumber},
 		Field{Name: "BAND", Value: "20m"},
 		Field{Name: "MODE", Value: "SSB"},
 		Field{Name: "SUBMODE", Value: "USB"},
@@ -213,7 +213,7 @@ func TestWriteCabrillo(t *testing.T) {
 		Field{Name: "MY_ARRL_SECT", Value: "CT"},
 		Field{Name: "APP_CABRILLO_TRANSMITTER_ID", Value: "0"},
 	)).AddRecord(NewRecord(
-		Field{Name: "FREQ", Value: "7.0120", Type: TypeNumber},
+		Field{Name: "FREQ", Value: "14.0461", Type: TypeNumber},
 		Field{Name: "MODE", Value: "CW", Type: TypeString},
 		Field{Name: "QSO_DATE", Value: "20231101", Type: TypeDate},
 		Field{Name: "TIME_ON", Value: "0123", Type: TypeTime},
@@ -286,12 +286,12 @@ CATEGORY-STATION:
 CATEGORY-TIME: 
 CATEGORY-TRANSMITTER: 
 X-INSTRUCTIONS: See contest rules for expected category values
-X-Q:                          --info sent---- --info rcvd----
-X-Q: freq  mo date       time call   rst exch call   rst exch t
-QSO: 14234 PH 2023-10-31 1234 W1AW   57  CT   AA1A   48  PAC  0
-QSO: 7012  CW 2023-11-01 0123 W1AW   599 CT   WX0YZ  432 MN   1
-QSO: 1.2G  DG 2023-11-01 1415 W1AW   23  CT   N7N    45  WWA  1
-QSO: 222   FM 2023-10-31 2345 W1AW/M 59  CT   KJ4LMN 59  NC   0
+X-Q:                            --info sent---- --info rcvd----
+X-Q: freq    mo date       time call   rst exch call   rst exch t
+QSO: 7234    PH 2023-10-31 1234 W1AW   57  CT   AA1A   48  PAC  0
+QSO: 14046.1 CW 2023-11-01 0123 W1AW   599 CT   WX0YZ  432 MN   1
+QSO: 1.2G    DG 2023-11-01 1415 W1AW   23  CT   N7N    45  WWA  1
+QSO: 222     FM 2023-10-31 2345 W1AW/M 59  CT   KJ4LMN 59  NC   0
 END-OF-LOG: 
 `
 	cab := &CabrilloIO{

@@ -431,8 +431,8 @@ func (o *CabrilloIO) toCabrilloQSO(r *Record) (cabrilloQSO, error) {
 		}
 	}
 	if mhz, err := r.ParseFloat("FREQ"); err == nil && mhz > 0 && mhz < 30 {
-		khz := mhz * 1000
-		q.freq = strconv.FormatFloat(khz, 'f', -1, 64)
+		mhzf, _ := r.Get("FREQ")
+		q.freq = mhzToKhz(mhzf.Value)
 	}
 	if q.freq == "" {
 		return q, fmt.Errorf("missing FREQ or BAND in %v", r)
@@ -489,6 +489,25 @@ func (o *CabrilloIO) toCabrilloQSO(r *Record) (cabrilloQSO, error) {
 		q.xQSO = x
 	}
 	return q, nil
+}
+
+func mhzToKhz(mhz string) string {
+	pieces := strings.Split(mhz, ".")
+	if len(pieces) == 1 {
+		return mhz + "000" // 14 MHz -> 14000 kHz
+	}
+	switch len(pieces[1]) {
+	case 0:
+		return pieces[0] + "000"
+	case 1:
+		return pieces[0] + pieces[1] + "00"
+	case 2:
+		return pieces[0] + pieces[1] + "0"
+	case 3:
+		return pieces[0] + pieces[1]
+	default:
+		return pieces[0] + pieces[1][0:3] + "." + pieces[1][3:]
+	}
 }
 
 func (o *CabrilloIO) toRecord(q cabrilloQSO) (*Record, error) {
