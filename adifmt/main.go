@@ -214,6 +214,7 @@ func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
 	fs.StringVar(&cabrilloio.MyExchange, "cabrillo-my-exchange", "", "Cabrillo files: `value` sent as exchange in QSOs")
 	fs.StringVar(&cabrilloio.MyExchangeField, "cabrillo-my-exchange-field", "", "Cabrillo files: ADIF `field` used for contest exchange sent")
 	fs.StringVar(&cabrilloio.TheirExchangeField, "cabrillo-their-exchange-field", "", "Cabrillo files: ADIF `field` used for contest exchange sent")
+	fs.StringVar(&cabrilloio.TheirExchangeAlt, "cabrillo-their-exchange-field-alt", "", "Cabrillo files: ADIF `field` used as exchange if --cabrillo-their-exchange-field, SRX_STRING, and SRX are not set")
 	for c, a := range adif.CabrilloCategoryValues {
 		fs.Var(&mapValue{cabrilloio.Categories, c, a},
 			"cabrillo-category-"+strings.ToLower(c),

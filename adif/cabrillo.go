@@ -36,11 +36,11 @@ import (
 type CabrilloIO struct {
 	Callsign, Contest, Club, CreatedBy, Email,
 	GridLocator, Location, Name, Address, Soapbox, MyExchange string
-	Operators                           []string
-	LowPowerMax, QRPPowerMax            int
-	MinReportedOfftime                  time.Duration
-	Categories                          map[string]string
-	TheirExchangeField, MyExchangeField string
+	Operators                                             []string
+	LowPowerMax, QRPPowerMax                              int
+	MinReportedOfftime                                    time.Duration
+	Categories                                            map[string]string
+	TheirExchangeField, TheirExchangeAlt, MyExchangeField string
 }
 
 func NewCabrilloIO() *CabrilloIO {
@@ -477,7 +477,7 @@ func (o *CabrilloIO) toCabrilloQSO(r *Record) (cabrilloQSO, error) {
 	if q.theirRST, err = firstFieldValue(r, "RST_RCVD"); err != nil {
 		return q, err
 	}
-	if q.theirExch, err = firstFieldValue(r, o.TheirExchangeField, "SRX_STRING", "SRX"); err != nil {
+	if q.theirExch, err = firstFieldValue(r, o.TheirExchangeField, "SRX_STRING", "SRX", o.TheirExchangeAlt); err != nil {
 		return q, err
 	}
 	// TODO is there a beter ADIF field for this?
