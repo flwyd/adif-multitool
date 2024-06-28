@@ -90,9 +90,9 @@ var TypeValidators = map[string]FieldValidator{
 	"IntlCharacter":            ValidateIntlCharacter,
 	"Date":                     ValidateDate,
 	"Digit":                    ValidateDigit,
-	"GridSquare":               gridsquarerValidator(8),
-	"GridSquareExt":            gridsquarerValidator(4),
-	"GridSquareList":           listValidator(gridsquarerValidator(8)),
+	"GridSquare":               gridsquareValidator(8),
+	"GridSquareExt":            gridsquareValidator(4),
+	"GridSquareList":           listValidator(gridsquareValidator(8)),
 	"Integer":                  ValidateNumber,
 	"IntlString":               ValidateIntlString,
 	"IntlMultilineString":      ValidateIntlString,
@@ -377,7 +377,7 @@ func ValidateEnumScope(val string, f Field, ctx ValidationContext) Validation {
 	return valid()
 }
 
-func gridsquarerValidator(maxLen int) FieldValidator {
+func gridsquareValidator(maxLen int) FieldValidator {
 	return func(val string, f Field, ctx ValidationContext) Validation {
 		if val == "" {
 			return valid()
