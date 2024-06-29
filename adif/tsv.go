@@ -30,6 +30,8 @@ type TSVIO struct {
 
 func NewTSVIO() *TSVIO { return &TSVIO{} }
 
+func (_ *TSVIO) String() string { return "tsv" }
+
 func (o *TSVIO) Read(r io.Reader) (*Logfile, error) {
 	scan := bufio.NewScanner(r)
 	if !scan.Scan() {
