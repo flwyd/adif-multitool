@@ -341,6 +341,7 @@ Name       | Description |
 `edit`     | Add, change, remove, or adjust field values |
 `find`     | Include only records matching a condition |
 `fix`      | Correct field formats to match the ADIF specification |
+`flatten`  | Flatten multi-instance fields to multiple records |
 `help`     | Print program or command usage information |
 `infer`    | Add missing fields based on present fields |
 `save`     | Save standard input to file with format inferred by extension |
@@ -440,6 +441,70 @@ data types, forcing some string fields to upper case, and perhaps correcting
 some other common variations on enum fields as is done with countries.  A
 future update will also provide options like date formats so that
 day/month/year or month/day/year input data can be unambiguously fixed.
+
+#### flatten
+
+`adifmt flatten` converts single records with a multi-instance field into
+multiple records with a single value for that field.  Non-flattened fields are
+included unchanged in each record.  This can be useful when processing the
+output with tools which don’t expect a list of values in a field, e.g. counting
+the number of contacts you’ve made with each grid square while treating
+contacts on the border of a square as separate:
+
+```sh
+adifmt flatten --fields VUCC_GRIDS --output tsv \
+  | adifmt select --fields VUCC_GRIDS --output tsv \
+  | tail +2 | sort | uniq -c
+```
+
+The `flatten` command will turn
+
+```
+CALL	VUCC_GRIDS
+W1AW	EN98,FM08,EM97,FM07
+AH1Z	FM07,FM08
+```
+
+into
+
+```
+CALL	VUCC_GRIDS
+W1AW	EN98
+W1AW	FM08
+W1AW	EM97
+W1AW	FM07
+AH1Z	FM07
+AH1Z	FM08
+```
+
+and the rest of the pipeline will produce grid counts like
+
+```
+1 EM97
+1 EN98
+2 FM07
+2 FM08
+```
+
+If multiple fields are flattened and each has multiple instances, a Cartesian
+combination will be output.  For example, if `MY_POTA_REF` has two POTA
+references and `POTA_REF` has three POTA references on one record, six records
+will be output, one for each pair.  As of June 2024, POTA uploads don’t handle
+multi-instance `POTA_REF` fields, so
+
+```sh
+adifmt flatten --fields POTA_REF,MY_POTA_REF \
+  | adifmt infer --fields SIG_INFO,MY_SIG_INFO \
+  | adifmt save '{station_callsign}@{my_sig_info}-{qso_date}.adi'
+```
+
+is needed to get full credit for park-to-park 2-fers.
+
+The delimiter (usually a comma, except SecondarySubdivisionList which uses a
+colon) is implied by the field’s data type in the ADIF spec.  You may specify
+the delimiter for a field with the `--delimiter field=delim` flag, make sure to
+quote any special shell characters, e.g.
+`adifmt flatten --fields STX_STRING --delimiter 'STX_STRING=;'`
 
 #### infer
 
@@ -570,7 +635,7 @@ for interoperability” but the type is string, allowing any value.  These
 warnings will be printed to standard error with `adifmt validate` but will not
 block the logfile from being printed to standard output.
 
-The `--required-field` option provides a list of fields which must be present in
+The `--required-fields` option provides a list of fields which must be present in
 a valid record.  Multiple fields may be comma-separated or the option given
 several times.
 For example, checking a contest log might use
@@ -609,7 +674,6 @@ Features I plan to add:
     the same callsign on the same band with the same mode on the same Zulu day
     and the same `MY_SIG_INFO` value.
 *   Option for `save` to append records to an existing ADIF file.
-*   A list of required fields that `validate` ensures are present.
 *   Count the total number of records or the number of distinct values of a
     field.  (The total number of records can currently be counted with
     `--output=tsv`, piping the output to `wc -l`, and subtracting 1 for the
@@ -680,7 +744,7 @@ to ensure it’s present when adding files: `addlicense .`
 Apache header:
 
 ```
-Copyright 2023 Google LLC
+Copyright 2024 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

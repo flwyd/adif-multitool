@@ -64,6 +64,16 @@ var (
 
 	fixConf = cmdConfig{Command: cmd.Fix}
 
+	flattenConf = cmdConfig{Command: cmd.Flatten,
+		Configure: func(ctx *cmd.Context, fs *flag.FlagSet) {
+			cctx := cmd.FlattenContext{
+				Delimiters: cmd.NewFieldAssignments(cmd.ValidateDelimiterAssignments),
+			}
+			fs.Var(&cctx.Delimiters, "delimiter", "`field=delim` to split field around character sequence delim, only needed if delim isn't implied by field's type (repeatable)")
+			fs.Var(&cctx.Fields, "fields", "Comma-separated or multiple instance field `names` to flatten")
+			ctx.CommandCtx = &cctx
+		}}
+
 	helpConf = cmdConfig{Command: cmd.Command{
 		Name: "help", Description: "Print program or command usage information",
 		Run: func(*cmd.Context, []string) error {
@@ -125,6 +135,7 @@ var (
 		editConf,
 		findConf,
 		fixConf,
+		flattenConf,
 		helpConf,
 		inferConf,
 		saveConf,
