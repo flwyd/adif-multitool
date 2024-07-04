@@ -43,6 +43,20 @@ func (e Enumeration) Value(val string) []EnumValue {
 	return res
 }
 
+func (e Enumeration) ScopeValues(scope string) []EnumValue {
+	p := e.ScopeProperty()
+	if p == "" {
+		return []EnumValue{}
+	}
+	res := make([]EnumValue, 0)
+	for _, v := range e.Values {
+		if strings.EqualFold(scope, v.Property(p)) {
+			res = append(res, v)
+		}
+	}
+	return res
+}
+
 func (e Enumeration) ScopeProperty() string {
 	switch e.Name {
 	case "Primary_Administrative_Subdivision":

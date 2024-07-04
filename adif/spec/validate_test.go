@@ -309,76 +309,105 @@ func TestValidateEnumScope(t *testing.T) {
 			validateTest: validateTest{field: StateField, value: "", want: Valid},
 			values:       map[string]string{},
 		},
-		// Wyoming, presumably
+		{
+			validateTest: validateTest{field: StateField, value: "", want: Valid},
+			values:       map[string]string{DxccField.Name: ""},
+		},
+		// Wyoming, USA
 		{
 			validateTest: validateTest{field: MyStateField, value: "WY", want: Valid},
-			values:       map[string]string{"MY_STATE": "WY"},
+			values:       map[string]string{MyDxccField.Name: CountryUnitedStatesOfAmerica.EntityCode},
 		},
 		// Yukon Territory, Canada
 		{
 			validateTest: validateTest{field: StateField, value: "YT", want: Valid},
-			values:       map[string]string{"DXCC": "1", "STATE": "YT"},
+			values:       map[string]string{DxccField.Name: "1"},
 		},
 		// Sichuan, China
 		{
 			validateTest: validateTest{field: MyStateField, value: "SC", want: Valid},
-			values:       map[string]string{"MY_DXCC": "318", "MY_STATE": "SC"},
+			values:       map[string]string{MyDxccField.Name: "318"},
 		},
 		// Nagano, Japan
 		{
 			validateTest: validateTest{field: StateField, value: "09", want: Valid},
-			values:       map[string]string{"DXCC": "339", "STATE": "09"},
+			values:       map[string]string{DxccField.Name: "339"},
 		},
 		// Vranov nad Toplou, Slovak Republic
 		{
 			validateTest: validateTest{field: MyStateField, value: "vrt", want: Valid},
-			values:       map[string]string{"MY_DXCC": "504", "MY_STATE": "vrt"},
+			values:       map[string]string{MyDxccField.Name: "504"},
 		},
 		// Permskaya oblast (new) or Permskaya Kraj (old) in Russia
 		{
 			validateTest: validateTest{field: StateField, value: "PM", want: Valid},
-			values:       map[string]string{"DXCC": "15", "STATE": "PM"},
+			values:       map[string]string{DxccField.Name: "15"},
 		},
 
+		// St. John, Barbados, but ADIF doesn't define Barbadan subdivisions
+		{
+			validateTest: validateTest{field: MyStateField, value: "JN", want: InvalidWarning},
+			values:       map[string]string{MyDxccField.Name: CountryBarbados.EntityCode, "MY_STATE": "JN"},
+		},
 		// not an empty string
 		{
 			validateTest: validateTest{field: StateField, value: "  ", want: InvalidError},
+			values:       map[string]string{DxccField.Name: "1"},
+		},
+		// not an empty string, but DXCC not set
+		{
+			validateTest: validateTest{field: StateField, value: "  ", want: InvalidWarning},
 			values:       map[string]string{},
 		},
 		// Not a state abbreviation in any country
 		{
 			validateTest: validateTest{field: MyStateField, value: "XYZ", want: InvalidError},
-			values:       map[string]string{"MY_STATE": "XYZ"},
+			values:       map[string]string{MyDxccField.Name: "291"},
+		},
+		// Not a state abbreviation in any country, DXCC not set
+		{
+			validateTest: validateTest{field: MyStateField, value: "XYZ", want: InvalidWarning},
+			values:       map[string]string{},
 		},
 		// Not a valid DXCC code
 		{
 			validateTest: validateTest{field: MyStateField, value: "CA", want: InvalidWarning},
-			values:       map[string]string{"MY_DXCC": "9876", "MY_STATE": "CA"},
+			values:       map[string]string{MyDxccField.Name: "9876"},
+		},
+		// Wyoming, presumably but not certain
+		{
+			validateTest: validateTest{field: MyStateField, value: "WY", want: InvalidWarning},
+			values:       map[string]string{},
 		},
 		// Yukon Territory, but wrong country
 		{
-			validateTest: validateTest{field: StateField, value: "YT", want: InvalidWarning},
-			values:       map[string]string{"DXCC": "123", "STATE": "YT"},
+			validateTest: validateTest{field: StateField, value: "YT", want: InvalidError},
+			values:       map[string]string{DxccField.Name: "291"},
 		},
 		// Sichuan, but not abbreviated
 		{
 			validateTest: validateTest{field: MyStateField, value: "Sichuan", want: InvalidError},
-			values:       map[string]string{"MY_DXCC": "China", "MY_STATE": "Sichuan"},
+			values:       map[string]string{MyDxccField.Name: "318"},
+		},
+		// Sichuan, not abbreviated, but DXCC is invalid; warn on subdivision, DXCC validation will be error
+		{
+			validateTest: validateTest{field: MyStateField, value: "Sichuan", want: InvalidWarning},
+			values:       map[string]string{MyDxccField.Name: "China"},
 		},
 		// Nagano, but missing leading 0
 		{
 			validateTest: validateTest{field: StateField, value: "9", want: InvalidError},
-			values:       map[string]string{"DXCC": "339", "STATE": "09"},
+			values:       map[string]string{DxccField.Name: "339"},
 		},
 		// Vranov nad Toplou, but Slovak Republic is spelled out
 		{
 			validateTest: validateTest{field: MyStateField, value: "VRT", want: InvalidWarning},
-			values:       map[string]string{"MY_DXCC": "Slovak Republic", "MY_STATE": "VRT"},
+			values:       map[string]string{MyDxccField.Name: "Slovak Republic"},
 		},
 		// PM in Russia, but Cyrilic characters
 		{
 			validateTest: validateTest{field: StateField, value: "ПМ", want: InvalidError},
-			values:       map[string]string{"DXCC": "15", "STATE": "ПМ"},
+			values:       map[string]string{DxccField.Name: "15"},
 		},
 	}
 	for _, tc := range tests {
@@ -399,73 +428,87 @@ func TestValidateStringEnumScope(t *testing.T) {
 		},
 		{
 			validateTest: validateTest{field: SubmodeField, value: "", want: Valid},
-			values:       map[string]string{"MODE": "CW", "SUBMOE": ""},
+			values:       map[string]string{ModeField.Name: "CW", SubmodeField.Name: ""},
 		},
 		{
 			validateTest: validateTest{field: SubmodeField, value: "THOR-M", want: Valid},
-			values:       map[string]string{"MODE": "", "SUBMOE": "THOR-M"},
+			values:       map[string]string{ModeField.Name: "THOR", SubmodeField.Name: "THOR-M"},
 		},
 		{
 			validateTest: validateTest{field: SubmodeField, value: "LSB", want: Valid},
-			values:       map[string]string{"MODE": "SSB", "SUBMOE": "LSB"},
+			values:       map[string]string{ModeField.Name: "SSB", SubmodeField.Name: "LSB"},
 		},
 		{
 			validateTest: validateTest{field: SubmodeField, value: "lsb", want: Valid},
-			values:       map[string]string{"MODE": "sSb", "SUBMODE": "lsb"},
+			values:       map[string]string{ModeField.Name: "sSb", SubmodeField.Name: "lsb"},
 		},
 		{
 			validateTest: validateTest{field: SubmodeField, value: "PSK31", want: Valid},
-			values:       map[string]string{"MODE": "PSK", "SUBMOE": "PSK31"},
+			values:       map[string]string{ModeField.Name: "PSK", SubmodeField.Name: "PSK31"},
 		},
 		{
 			validateTest: validateTest{field: SubmodeField, value: "Dstar", want: Valid},
-			values:       map[string]string{"MODE": "DIGITALVOICE", "SUBMOE": "Dstar"},
+			values:       map[string]string{ModeField.Name: "DIGITALVOICE", SubmodeField.Name: "Dstar"},
 		},
 		{
 			validateTest: validateTest{field: SubmodeField, value: "OLIVIA 16/500", want: Valid},
-			values:       map[string]string{"MODE": "OLIVIA", "SUBMOE": "OLIVIA 16/500"},
-		},
-		// only submode set, fine
-		{
-			validateTest: validateTest{field: SubmodeField, value: "PSK31", want: Valid},
-			values:       map[string]string{"SUBMODE": "PSK31"},
+			values:       map[string]string{ModeField.Name: "OLIVIA", SubmodeField.Name: "OLIVIA 16/500"},
 		},
 
+		// valid submode, but mode not set
+		{
+			validateTest: validateTest{field: SubmodeField, value: "THOR-M", want: InvalidWarning},
+			values:       map[string]string{ModeField.Name: "", SubmodeField.Name: "THOR-M"},
+		},
+		{
+			validateTest: validateTest{field: SubmodeField, value: "PSK31", want: InvalidWarning},
+			values:       map[string]string{SubmodeField.Name: "PSK31"},
+		},
+		// Unkknoown submodes
 		{
 			validateTest: validateTest{field: SubmodeField, value: "NOTAMODE", want: InvalidWarning},
 			values:       map[string]string{},
 		},
 		{
 			validateTest: validateTest{field: SubmodeField, value: "lower", want: InvalidWarning},
-			values:       map[string]string{"MODE": "SSB", "SUBMOE": "lower"},
+			values:       map[string]string{ModeField.Name: "SSB", SubmodeField.Name: "lower"},
 		},
 		// mode/submode mismatch
 		{
 			validateTest: validateTest{field: SubmodeField, value: "LSB", want: InvalidWarning},
-			values:       map[string]string{"MODE": "FM", "SUBMOE": "LSB"},
+			values:       map[string]string{ModeField.Name: "FM", SubmodeField.Name: "LSB"},
 		},
 		{
 			validateTest: validateTest{field: SubmodeField, value: "PSK31", want: InvalidWarning},
-			values:       map[string]string{"MODE": "CW", "SUBMOE": "PSK31"},
+			values:       map[string]string{ModeField.Name: "CW", SubmodeField.Name: "PSK31"},
 		},
 		{
 			validateTest: validateTest{field: SubmodeField, value: "VOCODER", want: InvalidWarning},
-			values:       map[string]string{"MODE": "DIGITALVOICE", "SUBMOE": "VOCODER"},
+			values:       map[string]string{ModeField.Name: "DIGITALVOICE", SubmodeField.Name: "VOCODER"},
 		},
 
 		{
 			validateTest: validateTest{field: SubmodeField, value: "USB", want: InvalidWarning},
-			values:       map[string]string{"MODE": "CW", "SUBMODE": "USB"},
+			values:       map[string]string{ModeField.Name: "CW", SubmodeField.Name: "USB"},
 		},
 		// submode entirely unknown, submode is string so only warning
 		{
 			validateTest: validateTest{field: SubmodeField, value: "TotalJunk", want: InvalidWarning},
-			values:       map[string]string{"MODE": "RTTY", "SUBMODE": "TotalJunk"},
+			values:       map[string]string{ModeField.Name: "RTTY", SubmodeField.Name: "TotalJunk"},
+		},
+		// mode doesn't have any submodes
+		{
+			validateTest: validateTest{field: SubmodeField, value: "TotalJunk", want: InvalidWarning},
+			values:       map[string]string{ModeField.Name: "FAX", SubmodeField.Name: "TotalJunk"},
+		},
+		{
+			validateTest: validateTest{field: SubmodeField, value: "ASCI", want: InvalidWarning},
+			values:       map[string]string{ModeField.Name: "FAX", SubmodeField.Name: "ASCI"},
 		},
 		// mode/submode swapped
 		{
 			validateTest: validateTest{field: SubmodeField, value: "SSB", want: InvalidWarning},
-			values:       map[string]string{"MODE": "USB", "SUBMODE": "SSB"},
+			values:       map[string]string{ModeField.Name: "USB", SubmodeField.Name: "SSB"},
 		},
 	}
 	for _, tc := range tests {
@@ -673,6 +716,19 @@ func TestValidateIOTARef(t *testing.T) {
 func TestValidatePOTARef(t *testing.T) {
 	tests := []validateTest{
 		{field: PotaRefField, value: "", want: Valid},
+		// 2024 introduced ISO-3166 codes
+		{field: MyPotaRefField, value: "US-0001", want: Valid},
+		{field: PotaRefField, value: "CY-0123", want: Valid},
+		{field: MyPotaRefField, value: "jp-1491", want: Valid},
+		{field: PotaRefField, value: "AN-0001", want: Valid},
+		{field: MyPotaRefField, value: "cl-0016@cl-at", want: Valid},
+		{field: PotaRefField, value: "PR-0001@PR-PR", want: Valid},
+		{field: MyPotaRefField, value: "MY-0129@MY-08", want: Valid},
+		{field: PotaRefField, value: "GB-0086@GB-ENG", want: Valid},
+		{field: MyPotaRefField, value: "US-0028,CA-0110", want: Valid},
+		{field: PotaRefField, value: "FJ-0003,FJ-0004,FJ-0005", want: Valid},
+		{field: MyPotaRefField, value: "CN-0004@CN-SN,CN-0004@CN-SX", want: Valid},
+		// pre-2024 style
 		{field: MyPotaRefField, value: "K-0001", want: Valid},
 		{field: PotaRefField, value: "5B-0123", want: Valid},
 		{field: MyPotaRefField, value: "ja-1491", want: Valid},
@@ -684,6 +740,7 @@ func TestValidatePOTARef(t *testing.T) {
 		{field: MyPotaRefField, value: "K-0028,VE-0110", want: Valid},
 		{field: PotaRefField, value: "3D2-0003,3D2-0004,3D2-0005", want: Valid},
 		{field: MyPotaRefField, value: "BY-0004@CN-SA,BY-0004@CN-SX", want: Valid},
+		// invalid
 		{field: PotaRefField, value: "-", want: InvalidError},
 		{field: MyPotaRefField, value: "K-1", want: InvalidError},
 		{field: PotaRefField, value: "5B-123", want: InvalidError},

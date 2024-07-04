@@ -223,7 +223,7 @@ func ValidateNumber(val string, f Field, ctx ValidationContext) Validation {
 	if minstr == "" {
 		minstr = f.Type.Minimum
 	}
-	if minstr != "" || f.Type.Name == "PositiveInteger" {
+	if minstr != "" || f.Type.Name == PositiveIntegerDataType.Name {
 		min, err := strconv.ParseFloat(minstr, 64)
 		if err != nil {
 			return errorf("specification error! invalid minimum %q in field %v: %v", minstr, f, err)
@@ -313,7 +313,7 @@ func ValidateEnumeration(val string, f Field, ctx ValidationContext) Validation 
 	}
 	e := f.Enum()
 	if e.Name == "" {
-		if f.Name == "DARC_DOK" {
+		if f.Name == DarcDokField.Name {
 			// ADIF spec says type is Enumeration but doesn't provide an enum
 			// See https://www.darc.de/der-club/referate/conteste/wag-contest/en/service/districtsdoks/
 			// It's supposed to be LNN (L = letter N = number) but special occasions
@@ -322,21 +322,16 @@ func ValidateEnumeration(val string, f Field, ctx ValidationContext) Validation 
 		}
 		return errorf("%s unknown enumeration %q", f.Name, f.EnumName)
 	}
+	if f.EnumScope != "" {
+		return ValidateEnumScope(val, f, ctx)
+	}
 	vals := e.Value(val)
 	if len(vals) == 0 {
-		if e.Name == "Secondary_Administrative_Subdivision" {
-			// TODO add ValidateCounties; ADIF spec only lists Alaska values but has
-			// references to formats and other sources in III.B.12
-			return valid()
-		}
 		fn := errorf
 		if ctx.UnknownEnumValueWarning {
 			fn = warningf
 		}
 		return fn("%s unknown value %q for enumeration %s", f.Name, val, e.Name)
-	}
-	if f.EnumScope != "" {
-		return ValidateEnumScope(val, f, ctx)
 	}
 	return valid()
 }
@@ -346,33 +341,49 @@ func ValidateEnumScope(val string, f Field, ctx ValidationContext) Validation {
 		return valid()
 	}
 	e := f.Enum()
-	vals := e.Value(val)
-	if len(vals) == 0 {
-		fn := errorf
-		if ctx.UnknownEnumValueWarning {
-			fn = warningf
-		}
-		return fn("%s unknown value %q for enumeration %s", f.Name, val, e.Name)
-	}
 	var sval string
 	if ctx.FieldValue != nil {
 		sval = ctx.FieldValue(f.EnumScope)
 	}
-	if sval != "" {
-		var match bool
-		prop := e.ScopeProperty()
-		if prop == "" {
-			return warningf("%s config error! %s doesn't have a ScopeProperty", f.Name, e.Name)
-		}
-		for _, v := range vals {
-			if strings.EqualFold(v.Property(prop), sval) {
-				match = true
-				break
+	if sval == "" {
+		vals := e.Value(val)
+		if len(vals) == 0 {
+			if e.Name == SecondaryAdministrativeSubdivisionEnumeration.Name {
+				// TODO add ValidateCounties; ADIF spec only lists Alaska values but has
+				// references to formats and other sources in III.B.12
+				return valid()
 			}
+			return warningf("%s unknown value %q for enumeration %s, %s is not set", f.Name, val, e.Name, f.EnumScope)
 		}
-		if !match {
-			return warningf("%s value %q is not valid for %s=%q", f.Name, val, f.EnumScope, sval)
+		return warningf("%s has value %q but %s is not set", f.Name, val, f.EnumScope)
+	}
+	var match bool
+	prop := e.ScopeProperty()
+	if prop == "" {
+		return warningf("%s config error! %s doesn't have a ScopeProperty", f.Name, e.Name)
+	}
+	svals := e.ScopeValues(sval)
+	if len(svals) == 0 {
+		if e.Name == SecondaryAdministrativeSubdivisionEnumeration.Name {
+			// This enum only has values defined for Alaska
+			return valid()
 		}
+		return warningf("%s has value %q but %s doesn't define any values for %s=%q", f.Name, val, e.Name, f.EnumScope, sval)
+	}
+	for _, v := range svals {
+		if strings.EqualFold(val, v.String()) {
+			match = true
+			break
+		}
+	}
+	if !match {
+		fn := errorf
+		if e.Name == SubmodeEnumeration.Name {
+			// ADIF spec suggests "use enumeration values for interoperability"
+			// but a new submode might've been developed since ADIF spec
+			fn = warningf
+		}
+		return fn("%s value %q is not valid for %s=%q", f.Name, val, f.EnumScope, sval)
 	}
 	return valid()
 }
