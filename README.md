@@ -342,7 +342,7 @@ Name       | Description |
 `find`     | Include only records matching a condition |
 `fix`      | Correct field formats to match the ADIF specification |
 `flatten`  | Flatten multi-instance fields to multiple records |
-`help`     | Print program or command usage information |
+`help`     | Print program, command, or format usage information |
 `infer`    | Add missing fields based on present fields |
 `save`     | Save standard input to file with format inferred by extension |
 `select`   | Print only specific fields from the input |
@@ -354,10 +354,11 @@ Name       | Description |
 
 #### help
 
-`adifmt help` prints usage information, a list of available commands, and
-options which apply to any command.  `adifmt help cmd` prints usage information
-about and options for command `cmd`.  There are a lot of options, so consider
-running `adifmt help | less`.
+`adifmt help` prints usage information, a list of supported formats, available
+commands, and options which apply to any command.  `adifmt help cmd` prints
+usage information about and options for command `cmd`.  `adifmt help fmt`
+prints options for input/output format `fmt`.  There are a lot of options, so
+consider running `adifmt help | less`.
 
 #### cat
 

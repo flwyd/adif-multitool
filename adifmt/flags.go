@@ -17,9 +17,38 @@ package main
 import (
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	"golang.org/x/exp/slices"
+	"golang.org/x/text/language"
 )
+
+type runeValue struct{ r *rune }
+
+func (v runeValue) String() string {
+	if v.r == nil {
+		return ""
+	}
+	return fmt.Sprintf("%q", *v.r)
+}
+
+func (v runeValue) Set(s string) error {
+	switch utf8.RuneCountInString(s) {
+	case 0:
+		return nil
+	case 1:
+		r, _ := utf8.DecodeRuneInString(s)
+		if r == utf8.RuneError {
+			return fmt.Errorf("invalid UTF-8 encoding %q", s)
+		}
+		*v.r = r
+		return nil
+	default:
+		return fmt.Errorf("expecting one character, not %q", s)
+	}
+}
+
+func (v runeValue) Get() rune { return *v.r }
 
 type mapValue struct {
 	m       map[string]string
@@ -42,4 +71,24 @@ func (v *mapValue) Set(s string) error {
 
 func (v *mapValue) Get() any {
 	return v.String()
+}
+
+type languageValue struct{ *language.Tag }
+
+func (v *languageValue) Set(s string) error {
+	t, err := language.Parse(s)
+	if err != nil {
+		return err
+	}
+	*v.Tag = t
+	return nil
+}
+
+func (v *languageValue) Get() any { return v.Tag }
+
+func (v *languageValue) String() string {
+	if v.Tag == nil {
+		return language.Und.String()
+	}
+	return v.Tag.String()
 }

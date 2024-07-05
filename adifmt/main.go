@@ -25,12 +25,10 @@ import (
 	"runtime/debug"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/flwyd/adif-multitool/adif"
 	"github.com/flwyd/adif-multitool/adif/spec"
 	"github.com/flwyd/adif-multitool/cmd"
-	"golang.org/x/text/language"
 )
 
 const (
@@ -58,10 +56,10 @@ func init() {
 }
 
 func main() {
-	ctx := &cmd.Context{}
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.SetOutput(os.Stderr)
-	configureContext(ctx, fs)
+	ctx := buildContext(fs)
+
 	if len(os.Args) < 2 {
 		fs.Usage = usage(fs, "")
 		fs.Usage()
@@ -74,10 +72,8 @@ func main() {
 	switch strings.TrimLeft(name, "-") {
 	case "help", "h":
 		name = ""
-		if len(os.Args) > 2 {
-			if _, ok := commandNamed(os.Args[2]); ok {
-				name = os.Args[2]
-			}
+		if len(os.Args) > 2 && !strings.HasPrefix(os.Args[2], "-") {
+			name = os.Args[2]
 		}
 		fs.Usage = usage(fs, name)
 		// help explicitly requested, so print to stdout and exit without error
@@ -86,6 +82,11 @@ func main() {
 		os.Exit(0)
 	case "version":
 		name = "version"
+	}
+
+	// Add format flags late so help is less overwhelming
+	for _, f := range formatConfigs {
+		f.AddFlags(fs)
 	}
 
 	c, ok := commandNamed(name)
@@ -107,67 +108,23 @@ func main() {
 	}
 }
 
-type runeValue struct {
-	r *rune
-}
-
-func (v runeValue) String() string {
-	if v.r == nil {
-		return ""
+func buildContext(fs *flag.FlagSet) *cmd.Context {
+	ctx := &cmd.Context{
+		Out:     os.Stdout,
+		Readers: make(map[adif.Format]adif.Reader),
+		Writers: make(map[adif.Format]adif.Writer),
+		Prepare: func(l *adif.Logfile) {
+			t := time.Now()
+			l.Header.SetComment(fmt.Sprintf("Generated at %s with %d records by %s", t.Format(time.RFC1123Z), len(l.Records), helpUrl))
+			l.Header.Set(adif.Field{Name: spec.AdifVerField.Name, Value: spec.ADIFVersion})
+			l.Header.Set(adif.Field{Name: spec.CreatedTimestampField.Name, Value: t.Format("20060102 150405")})
+			l.Header.Set(adif.Field{Name: spec.ProgramidField.Name, Value: programName})
+			l.Header.Set(adif.Field{Name: spec.ProgramversionField.Name, Value: version})
+		},
 	}
-	return fmt.Sprintf("%q", *v.r)
-}
-
-func (v runeValue) Set(s string) error {
-	switch utf8.RuneCountInString(s) {
-	case 0:
-		return nil
-	case 1:
-		r, _ := utf8.DecodeRuneInString(s)
-		if r == utf8.RuneError {
-			return fmt.Errorf("invalid UTF-8 encoding %q", s)
-		}
-		*v.r = r
-		return nil
-	default:
-		return fmt.Errorf("expecting one character, not %q", s)
-	}
-}
-
-func (v runeValue) Get() rune { return *v.r }
-
-func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
-	adiio := adif.NewADIIO()
-	adxio := adif.NewADXIO()
-	cabrilloio := adif.NewCabrilloIO()
-	cabrilloio.CreatedBy = "ADIF Multitool " + version
-	csvio := adif.NewCSVIO()
-	jsonio := adif.NewJSONIO()
-	tsvio := adif.NewTSVIO()
-	ctx.Readers = map[adif.Format]adif.Reader{
-		adif.FormatADI:      adiio,
-		adif.FormatADX:      adxio,
-		adif.FormatCabrillo: cabrilloio,
-		adif.FormatCSV:      csvio,
-		adif.FormatJSON:     jsonio,
-		adif.FormatTSV:      tsvio,
-	}
-	ctx.Writers = map[adif.Format]adif.Writer{
-		adif.FormatADI:      adiio,
-		adif.FormatADX:      adxio,
-		adif.FormatCabrillo: cabrilloio,
-		adif.FormatCSV:      csvio,
-		adif.FormatJSON:     jsonio,
-		adif.FormatTSV:      tsvio,
-	}
-	ctx.Out = os.Stdout
-	ctx.Prepare = func(l *adif.Logfile) {
-		t := time.Now()
-		l.Header.SetComment(fmt.Sprintf("Generated at %s with %d records by %s", t.Format(time.RFC1123Z), len(l.Records), helpUrl))
-		l.Header.Set(adif.Field{Name: spec.AdifVerField.Name, Value: spec.ADIFVersion})
-		l.Header.Set(adif.Field{Name: spec.CreatedTimestampField.Name, Value: t.Format("20060102 150405")})
-		l.Header.Set(adif.Field{Name: spec.ProgramidField.Name, Value: programName})
-		l.Header.Set(adif.Field{Name: spec.ProgramversionField.Name, Value: version})
+	for _, f := range formatConfigs {
+		ctx.Readers[f.Format()] = f.IO()
+		ctx.Writers[f.Format()] = f.IO()
 	}
 
 	// General flags
@@ -182,68 +139,10 @@ func configureContext(ctx *cmd.Context, fs *flag.FlagSet) {
 		"Don't output app-defined headers, to comply with ADIF 3.1.4 spec")
 	fs.Var(&ctx.UserdefFields, "userdef",
 		fmt.Sprintf("define a USERDEF `field` name and optional type, range, or enum (multi)\nfield formats: STRING_F:S NUMBER_F{0:360} ENUM_F:{A,B,C}\ntype indicators: %s#Data_Types", spec.ADIFSpecURL))
-
-	// ADI flags
-	fs.BoolVar(&adiio.ASCIIOnly, "adi-ascii-only", false,
-		"ADI files: error on any non-ASCII characters, instead of writing UTF-8")
-	fs.BoolVar(&adiio.LowerCase, "adi-lower-case", false,
-		"ADI files: print tags in lower case instead of upper case")
-	sepHelp := "options: " + strings.Join(adif.SeparatorNames(), ", ")
-	fs.Var(&adiio.FieldSep, "adi-field-separator",
-		"ADI files: field `separator`\n"+sepHelp)
-	fs.Var(&adiio.RecordSep, "adi-record-separator",
-		"ADI files: record `separator`\n"+sepHelp)
-
-	// ADX flags
-	fs.IntVar(&adxio.Indent, "adx-indent", 1, "ADX files: indent nested XML structures `n` spaces, 0 for no whitespace")
-
-	// Cabrillo flags
-	fs.IntVar(&cabrilloio.LowPowerMax, "cabrillo-max-power-low", cabrilloio.LowPowerMax, "Higest allowed power in `watts` considered LOW power by the contest")
-	fs.IntVar(&cabrilloio.QRPPowerMax, "cabrillo-max-power-qrp", cabrilloio.QRPPowerMax, "Higest alqrped power in `watts` considered QRP power by the contest")
-	fs.StringVar(&cabrilloio.Callsign, "cabrillo-callsign", "", "Cabrillo files: CALLSIGN header `value`")
-	fs.StringVar(&cabrilloio.Club, "cabrillo-club", "", "Cabrillo files: CLUB header `value`")
-	// TODO Operators (string slice)
-	fs.StringVar(&cabrilloio.Contest, "cabrillo-contest", "", "Cabrillo files: CONTEST header `value`")
-	fs.StringVar(&cabrilloio.Email, "cabrillo-email", "", "Cabrillo files: EMAIL address header `value`")
-	fs.StringVar(&cabrilloio.GridLocator, "cabrillo-grid-locator", "", "Cabrillo files: GRID-LOCATOR header `value`")
-	fs.StringVar(&cabrilloio.Location, "cabrillo-location", "", "Cabrillo files: LOCATION header `value` (e.g. ARRL section)")
-	fs.StringVar(&cabrilloio.Name, "cabrillo-name", "", "Cabrillo files: NAME header `value` (your name or club name)")
-	fs.StringVar(&cabrilloio.Address, "cabrillo-address", "", "Cabrillo files: ADDRESS header `value` (include newlines)")
-	fs.StringVar(&cabrilloio.Soapbox, "cabrillo-soapbox", "", "Cabrillo files: SOAPBOX header `value` (free-form comment)")
-	// TODO MinReportedOfftime (duration)
-	fs.StringVar(&cabrilloio.MyExchange, "cabrillo-my-exchange", "", "Cabrillo files: `value` sent as exchange in QSOs")
-	fs.StringVar(&cabrilloio.MyExchangeField, "cabrillo-my-exchange-field", "", "Cabrillo files: ADIF `field` used for contest exchange sent")
-	fs.StringVar(&cabrilloio.TheirExchangeField, "cabrillo-their-exchange-field", "", "Cabrillo files: ADIF `field` used for contest exchange sent")
-	fs.StringVar(&cabrilloio.TheirExchangeAlt, "cabrillo-their-exchange-field-alt", "", "Cabrillo files: ADIF `field` used as exchange if --cabrillo-their-exchange-field, SRX_STRING, and SRX are not set")
-	for c, a := range adif.CabrilloCategoryValues {
-		fs.Var(&mapValue{cabrilloio.Categories, c, a},
-			"cabrillo-category-"+strings.ToLower(c),
-			fmt.Sprintf("Cabrillo files: CATEGORY-%s header `value` (%s)", c, strings.Join(a, ", ")))
-	}
-
-	// CSV flags
-	// TODO csv-lower-case
-	// TODO separate comma values for input and output?
-	fs.Var(&runeValue{&csvio.Comma}, "csv-field-separator", "CSV files: field separator `character` if not comma")
-	fs.Var(&runeValue{&csvio.Comment}, "csv-comment", "CSV files: ignore lines beginnig with `character`")
-	fs.BoolVar(&csvio.LazyQuotes, "csv-lazy-quotes", false, "CSV files: be relaxed about quoting rules")
-	fs.BoolVar(&csvio.RequireFullRecord, "csv-require-all-fields", false, "CSV files: error if fewer fields in a record than in header")
-	fs.BoolVar(&csvio.TrimLeadingSpace, "csv-trim-space", false, "CSV files: ignore leading space in fields")
-	fs.BoolVar(&csvio.CRLF, "csv-crlf", false, "CSV files: output MS Windows line endings")
-
-	// JSON flags
-	// TODO json-lower-case
-	fs.BoolVar(&jsonio.HTMLSafe, "json-html-safe", false, "JSON files: escape characters including < > & for use in HTML")
-	fs.IntVar(&jsonio.Indent, "json-indent", 1, "JSON files: indent nested JSON structures `n` spaces, 0 for no whitespace")
-	fs.BoolVar(&jsonio.TypedOutput, "json-typed-output", false, "JSON files: output numbers and booleans instead of strings")
-
-	// TSV flags
-	fs.BoolVar(&tsvio.CRLF, "tsv-crlf", false, "TSV files: output MS Windows line endings")
-	fs.BoolVar(&tsvio.EscapeSpecial, "tsv-escape-special", false, "TSV files: accept and produce \\t \\r \\n and \\\\ escapes in fields")
-	fs.BoolVar(&tsvio.IgnoreEmptyHeaders, "tsv-ignore-empty-headers", false, "TSV files: do not return error if a TSV file has an empty header field")
+	return ctx
 }
 
-func usage(fs *flag.FlagSet, command string) func() {
+func usage(fs *flag.FlagSet, term string) func() {
 	return func() {
 		out := fs.Output()
 		fmt.Fprintln(out, "ADIF Multitool: read and transform ADIF amateur radio logs")
@@ -255,9 +154,9 @@ func usage(fs *flag.FlagSet, command string) func() {
 		fmt.Fprintln(out, "Global options:")
 		fs.PrintDefaults()
 		fmt.Fprintln(out)
-		if c, ok := commandNamed(command); ok {
+		if c, ok := commandNamed(term); ok {
 			fmt.Fprintf(out, "%s: %s\n", c.Name, c.Description)
-			cfs := flag.NewFlagSet(command, flag.ContinueOnError)
+			cfs := flag.NewFlagSet(term, flag.ContinueOnError)
 			if c.Configure != nil {
 				c.Configure(&cmd.Context{}, cfs)
 			}
@@ -266,7 +165,16 @@ func usage(fs *flag.FlagSet, command string) func() {
 			if c.Help != nil {
 				fmt.Fprint(out, c.Help())
 			}
+		} else if c := formatNamed(term); c != nil {
+			fmt.Fprintf(out, "%s format:\n", c.Format())
+			cfs := flag.NewFlagSet(term, flag.ContinueOnError)
+			c.AddFlags(cfs)
+			cfs.SetOutput(out)
+			cfs.PrintDefaults()
 		} else {
+			fmt.Fprintln(out, "Formats:", strings.Join(adif.FormatNames(), ", "))
+			fmt.Fprintf(out, "To see options specific to a format, run\n%s help formatname\n", fs.Name())
+			fmt.Fprintln(out)
 			fmt.Fprintln(out, "Commands:")
 			for _, c := range cmds {
 				fmt.Fprintf(out, "  %s: %s\n", c.Name, c.Description)
@@ -274,24 +182,4 @@ func usage(fs *flag.FlagSet, command string) func() {
 			fmt.Fprintf(out, "To see options specific to a particular command, run\n%s help command\n", fs.Name())
 		}
 	}
-}
-
-type languageValue struct{ *language.Tag }
-
-func (v *languageValue) Set(s string) error {
-	t, err := language.Parse(s)
-	if err != nil {
-		return err
-	}
-	*v.Tag = t
-	return nil
-}
-
-func (v *languageValue) Get() any { return v.Tag }
-
-func (v *languageValue) String() string {
-	if v.Tag == nil {
-		return language.Und.String()
-	}
-	return v.Tag.String()
 }
