@@ -14,7 +14,7 @@
 
 changelog:
   categories:
-    - title: Noteworthy Changes :scroll:
+    - title: "Noteworthy Changes :scroll:"
       labels:
         - '*'
       exclude:
