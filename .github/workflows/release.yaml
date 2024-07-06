@@ -98,7 +98,7 @@ jobs:
             mv "$f" "files/$(basename -s .exe $f)-$(dirname $f}).exe"
           done
       - name: Create release ${{ github.ref_name }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: artifacts/files/*
           prerelease: ${{ contains(github.ref_name, '-') }}
