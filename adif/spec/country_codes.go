@@ -14,7 +14,10 @@
 
 package spec
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+)
 
 // ISO3166CountryCode associates ISO 3166-1 alpha-2, alpha-3, and numeric codes
 // with DXCC entities.  Most country codes are associated with a single DXCC
@@ -39,6 +42,15 @@ type ISO3166CountryCode struct {
 	EnglishName  string                 // Official English name of the country, mixed case
 	DXCC         []CountryEnum          // One or more DXCC entities that make up this country
 	Subdivisions map[string]CountryEnum // Subdivision codes associated with specific sub-national DXCC entities
+}
+
+func (c ISO3166CountryCode) IncludesDXCC(dxcc string) bool {
+	for _, d := range c.DXCC {
+		if d.EntityCode == dxcc || strings.EqualFold(d.EntityName, dxcc) {
+			return true
+		}
+	}
+	return false
 }
 
 var (

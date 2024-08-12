@@ -534,6 +534,10 @@ Inferable fields:
 * `MY_COUNTRY` from `MY_DXCC`
 * `DXCC` from `COUNTRY`
 * `MY_DXCC` from `MY_COUNTRY`
+* `CNTY` from `USACA_COUNTIES` (unless multiple county-line counties)
+* `MY_CNTY` from `MY_USACA_COUNTIES` (unless multiple county-line counties)
+* `USACA_COUNTIES` from `CNTY` (if a USA DXCC entity)
+* `MY_USACA_COUNTIES` from `MY_CNTY` (if a USA DXCC entity)
 * `GRIDSQUARE` and `GRIDSQUARE_EXT` from `LAT`/`LON`
 * `MY_GRIDSQUARE` and `MY_GRIDSQUARE_EXT` from `MY_LAT`/`MY_LON`
 * `OPERATOR` from `GUEST_OP`

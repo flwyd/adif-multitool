@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -54,6 +55,10 @@ var inferrers = map[string]inferrer{
 	spec.OperatorField.Name:        inferStation,
 	spec.StationCallsignField.Name: inferStation,
 	spec.OwnerCallsignField.Name:   inferStation,
+	spec.UsacaCountiesField.Name:   inferUSCounty,
+	spec.MyUsacaCountiesField.Name: inferUSCounty,
+	spec.CntyField.Name:            inferUSCounty, // US is the only secondary subdivision
+	spec.MyCntyField.Name:          inferUSCounty, // with a special field
 	spec.SigInfoField.Name:         inferSigInfo,
 	spec.MySigInfoField.Name:       inferSigInfo,
 	spec.IotaField.Name:            inferProgramRef("IOTA"),
@@ -77,6 +82,10 @@ func helpInfer() string {
 	fmt.Fprintf(res, fromfmt, spec.MyCountryField.Name, spec.MyDxccField.Name)
 	fmt.Fprintf(res, fromfmt, spec.DxccField.Name, spec.CountryField.Name)
 	fmt.Fprintf(res, fromfmt, spec.MyDxccField.Name, spec.MyCountryField.Name)
+	fmt.Fprintf(res, fromfmt, spec.CntyField.Name, spec.UsacaCountiesField.Name)
+	fmt.Fprintf(res, fromfmt, spec.MyCntyField.Name, spec.MyUsacaCountiesField.Name)
+	fmt.Fprintf(res, fromfmt, spec.UsacaCountiesField.Name, spec.CntyField.Name)
+	fmt.Fprintf(res, fromfmt, spec.MyUsacaCountiesField.Name, spec.MyCntyField.Name)
 
 	gsfmt := "  %s and %s from %s/%s\n"
 	fmt.Fprintf(res, gsfmt, spec.GridsquareField.Name, spec.GridsquareExtField.Name, spec.LatField.Name, spec.LonField.Name)
@@ -345,6 +354,38 @@ func inferStation(r *adif.Record, name string) bool {
 		}
 	}
 	return false
+}
+
+var usCountyPattern = regexp.MustCompile(`^[A-Z]{2},[A-Za-z '.-]+$`) // doesn't match county-line lists
+
+func inferUSCounty(r *adif.Record, name string) bool {
+	if f, ok := r.Get(name); ok && f.Value != "" {
+		return false
+	}
+	my := func(s string) string { return s }
+	if strings.HasPrefix(name, "MY_") {
+		my = func(s string) string { return "MY_" + s }
+	}
+	if dx, ok := r.Get(my(spec.DxccField.Name)); ok && dx.Value != "" {
+		if !spec.CountryCodeUSA.IncludesDXCC(dx.Value) {
+			return false // not a US contact
+		}
+	}
+	var src string
+	switch strings.ToUpper(name) {
+	case spec.UsacaCountiesField.Name, spec.MyUsacaCountiesField.Name:
+		src = my(spec.CntyField.Name)
+	case spec.CntyField.Name, spec.MyCntyField.Name:
+		src = my(spec.UsacaCountiesField.Name)
+	default:
+		return false
+	}
+	sub, ok := r.Get(src)
+	if !ok || sub.Value == "" || !usCountyPattern.MatchString(sub.Value) {
+		return false
+	}
+	r.Set(adif.Field{Name: name, Value: sub.Value})
+	return true
 }
 
 func inferLatLon(r *adif.Record, name string) bool {

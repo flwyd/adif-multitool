@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/flwyd/adif-multitool/adif"
+	"github.com/flwyd/adif-multitool/adif/spec"
 )
 
 func TestInfer(t *testing.T) {
@@ -195,6 +196,69 @@ func TestInfer(t *testing.T) {
 			infer: FieldList{"OWNER_CALLSIGN", "STATION_CALLSIGN"},
 			start: []adif.Field{{Name: "OPERATOR", Value: "W1AW"}},
 			want:  []adif.Field{{Name: "OPERATOR", Value: "W1AW"}, {Name: "OWNER_CALLSIGN", Value: "W1AW"}, {Name: "STATION_CALLSIGN", Value: "W1AW"}},
+		},
+
+		{
+			name:  "usaca_counties from US cnty",
+			infer: FieldList{"USACA_COUNTIES", "MY_USACA_COUNTIES"},
+			start: []adif.Field{
+				{Name: "CNTY", Value: "MD,St. Mary's"}, {Name: "DXCC", Value: spec.CountryUnitedStatesOfAmerica.EntityCode},
+				{Name: "MY_CNTY", Value: "HI,Maui"}, {Name: "MY_DXCC", Value: spec.CountryHawaii.EntityCode}},
+			want: []adif.Field{
+				{Name: "USACA_COUNTIES", Value: "MD,St. Mary's"}, {Name: "CNTY", Value: "MD,St. Mary's"}, {Name: "DXCC", Value: spec.CountryUnitedStatesOfAmerica.EntityCode},
+				{Name: "MY_USACA_COUNTIES", Value: "HI,Maui"}, {Name: "MY_CNTY", Value: "HI,Maui"}, {Name: "MY_DXCC", Value: spec.CountryHawaii.EntityCode}},
+		},
+		{
+			name:  "cnty from usaca_counties",
+			infer: FieldList{"CNTY", "MY_CNTY"},
+			start: []adif.Field{
+				{Name: "USACA_COUNTIES", Value: "AK,Prince of Wales-Outer Ketchikan"}, {Name: "DXCC", Value: spec.CountryAlaska.EntityCode},
+				{Name: "MY_USACA_COUNTIES", Value: "FL,Miami-Dade"}, {Name: "MY_DXCC", Value: spec.CountryUnitedStatesOfAmerica.EntityCode}},
+			want: []adif.Field{
+				{Name: "CNTY", Value: "AK,Prince of Wales-Outer Ketchikan"}, {Name: "USACA_COUNTIES", Value: "AK,Prince of Wales-Outer Ketchikan"}, {Name: "DXCC", Value: spec.CountryAlaska.EntityCode},
+				{Name: "MY_CNTY", Value: "FL,Miami-Dade"}, {Name: "MY_USACA_COUNTIES", Value: "FL,Miami-Dade"}, {Name: "MY_DXCC", Value: spec.CountryUnitedStatesOfAmerica.EntityCode}},
+		},
+		{
+			name:  "multiple usaca_counties not copied to cnty",
+			infer: FieldList{"CNTY", "MY_CNTY"},
+			start: []adif.Field{
+				{Name: "USACA_COUNTIES", Value: "MA,Franklin:MA,Hampshire"}, {Name: "DXCC", Value: spec.CountryUnitedStatesOfAmerica.EntityCode},
+				{Name: "MY_USACA_COUNTIES", Value: "AK,Northwest Arctic:AK,Nome"}, {Name: "MY_DXCC", Value: spec.CountryAlaska.EntityCode}},
+			want: []adif.Field{
+				{Name: "USACA_COUNTIES", Value: "MA,Franklin:MA,Hampshire"}, {Name: "DXCC", Value: spec.CountryUnitedStatesOfAmerica.EntityCode},
+				{Name: "MY_USACA_COUNTIES", Value: "AK,Northwest Arctic:AK,Nome"}, {Name: "MY_DXCC", Value: spec.CountryAlaska.EntityCode}},
+		},
+		{
+			name:  "JA subdivisions not copied to usaca_counties",
+			infer: FieldList{"USACA_COUNTIES", "MY_USACA_COUNTIES"},
+			start: []adif.Field{
+				{Name: "CNTY", Value: "01001"}, {Name: "DXCC", Value: spec.CountryJapan.EntityCode},
+				{Name: "MY_CNTY", Value: "100100"}, {Name: "MY_DXCC", Value: spec.CountryJapan.EntityCode}},
+			want: []adif.Field{
+				{Name: "CNTY", Value: "01001"}, {Name: "DXCC", Value: spec.CountryJapan.EntityCode},
+				{Name: "MY_CNTY", Value: "100100"}, {Name: "MY_DXCC", Value: spec.CountryJapan.EntityCode}},
+		},
+		{
+			name:  "non-US subdivisions matching format not copied to usaca_counties",
+			infer: FieldList{"USACA_COUNTIES", "MY_USACA_COUNTIES"},
+			start: []adif.Field{
+				{Name: "CNTY", Value: "NL,Monterrey"}, {Name: "DXCC", Value: spec.CountryMexico.EntityCode},
+				{Name: "MY_CNTY", Value: "GD,Guangzhou"}, {Name: "MY_DXCC", Value: spec.CountryChina.EntityCode}},
+			want: []adif.Field{
+				{Name: "CNTY", Value: "NL,Monterrey"}, {Name: "DXCC", Value: spec.CountryMexico.EntityCode},
+				{Name: "MY_CNTY", Value: "GD,Guangzhou"}, {Name: "MY_DXCC", Value: spec.CountryChina.EntityCode}},
+		},
+		{
+			name:  "usaca_counties does not overwrite",
+			infer: FieldList{"CNTY", "MY_CNTY", "USACA_COUNTIES", "MY_USACA_COUNTIES"},
+			start: []adif.Field{
+				{Name: "CNTY", Value: "AL,Autauga"}, {Name: "USACA_COUNTIES", Value: "AL,Winston"}, {Name: "DXCC", Value: spec.CountryUnitedStatesOfAmerica.EntityCode},
+				{Name: "MY_CNTY", Value: "WY,Albany"}, {Name: "MY_USACA_COUNTIES", Value: "WY,Weston"}, {Name: "MY_DXCC", Value: spec.CountryUnitedStatesOfAmerica.EntityCode},
+			},
+			want: []adif.Field{
+				{Name: "CNTY", Value: "AL,Autauga"}, {Name: "USACA_COUNTIES", Value: "AL,Winston"}, {Name: "DXCC", Value: spec.CountryUnitedStatesOfAmerica.EntityCode},
+				{Name: "MY_CNTY", Value: "WY,Albany"}, {Name: "MY_USACA_COUNTIES", Value: "WY,Weston"}, {Name: "MY_DXCC", Value: spec.CountryUnitedStatesOfAmerica.EntityCode},
+			},
 		},
 
 		{
