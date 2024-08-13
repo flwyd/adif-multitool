@@ -79,7 +79,8 @@ func runFlatten(ctx *Context, args []string) error {
 		}
 		for _, r := range l.Records {
 			expn := []*adif.Record{r}
-			for n, d := range delims {
+			for _, n := range cctx.Fields {
+				d := delims[strings.ToUpper(n)]
 				if f, ok := r.Get(n); ok && f.Value != "" {
 					l := strings.Split(f.Value, d)
 					if len(l) > 1 {
