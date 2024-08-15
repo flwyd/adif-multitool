@@ -153,6 +153,30 @@ func (f *FieldAssignments) Set(s string) error {
 	return nil
 }
 
+type FieldDelimiters map[string]string
+
+func (f FieldDelimiters) String() string {
+	res := make([]string, 0, len(f))
+	for k, v := range f {
+		res = append(res, fmt.Sprintf("%s=%q", k, v))
+	}
+	return strings.Join(res, "  ")
+}
+
+func (f FieldDelimiters) Set(s string) error {
+	key, delim, found := strings.Cut(s, "=")
+	if !found || key == "" {
+		return fmt.Errorf(`expected "name=value", got %q`, s)
+	}
+	name := strings.ToUpper(key)
+	f[name] = delim
+	return nil
+}
+
+func (f FieldDelimiters) Get() FieldDelimiters {
+	return f
+}
+
 type TimeZone struct {
 	tz *time.Location
 }

@@ -28,17 +28,7 @@ var Flatten = Command{Name: "flatten", Run: runFlatten, Help: helpFlatten,
 
 type FlattenContext struct {
 	Fields     FieldList
-	Delimiters FieldAssignments
-}
-
-func ValidateDelimiterAssignments(k, v string) error {
-	if k == "" {
-		return errors.New("empty field name")
-	}
-	if v == "" {
-		return fmt.Errorf("empty delimiter for field %q", k)
-	}
-	return nil
+	Delimiters FieldDelimiters
 }
 
 func helpFlatten() string {
@@ -48,8 +38,8 @@ func helpFlatten() string {
 func runFlatten(ctx *Context, args []string) error {
 	cctx := ctx.CommandCtx.(*FlattenContext)
 	delims := make(map[string]string)
-	for _, f := range cctx.Delimiters.values {
-		delims[f.Name] = f.Value
+	for name, delim := range cctx.Delimiters {
+		delims[name] = delim
 	}
 	for _, n := range cctx.Fields {
 		if n == "" {

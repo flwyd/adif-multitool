@@ -106,10 +106,8 @@ K3C	0303	JKL	TSR QPO
 		Prepare:      testPrepare("My Comment", "3.1.4", "flatten test", "1.2.3"),
 		fs:           fakeFilesystem{map[string]string{"foo.tsv": file1}},
 		CommandCtx: &FlattenContext{
-			Fields: FieldList{"SRX_STRING", "STX_STRING"},
-			Delimiters: FieldAssignments{values: []adif.Field{
-				{Name: "SRX_STRING", Value: "/"},
-				{Name: "STX_STRING", Value: " "}}},
+			Fields:     FieldList{"SRX_STRING", "STX_STRING"},
+			Delimiters: FieldDelimiters{"SRX_STRING": "/", "STX_STRING": " "},
 		}}
 	if err := Flatten.Run(ctx, []string{"foo.tsv"}); err != nil {
 		t.Errorf("Flatten.Run(ctx, foo.tsv) got error %v", err)

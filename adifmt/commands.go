@@ -66,9 +66,7 @@ var (
 
 	flattenConf = cmdConfig{Command: cmd.Flatten,
 		Configure: func(ctx *cmd.Context, fs *flag.FlagSet) {
-			cctx := cmd.FlattenContext{
-				Delimiters: cmd.NewFieldAssignments(cmd.ValidateDelimiterAssignments),
-			}
+			cctx := cmd.FlattenContext{Delimiters: make(cmd.FieldDelimiters)}
 			fs.Var(&cctx.Delimiters, "delimiter", "`field=delim` to split field around character sequence delim, only needed if delim isn't implied by field's type (repeatable)")
 			fs.Var(&cctx.Fields, "fields", "Comma-separated or multiple instance field `names` to flatten")
 			ctx.CommandCtx = &cctx
