@@ -17,6 +17,7 @@ package cmd
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -169,6 +170,13 @@ func (f FieldDelimiters) Set(s string) error {
 		return fmt.Errorf(`expected "name=value", got %q`, s)
 	}
 	name := strings.ToUpper(key)
+	if len(delim) > 1 && (isSurrounded(delim, `"`, `"`) || isSurrounded(delim, "'", "'")) {
+		var err error
+		delim, err = strconv.Unquote(delim)
+		if err != nil {
+			return fmt.Errorf("could not parse special delimiter sequence %q: %w", s, err)
+		}
+	}
 	f[name] = delim
 	return nil
 }

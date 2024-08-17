@@ -104,8 +104,8 @@ func (c comparison) Evaluate(e EvaluationContext) bool {
 	f := e.Get(c.FieldName)
 	for _, o := range c.Operands {
 		var v adif.Field
-		if strings.HasPrefix(o, "{") && strings.HasSuffix(o, "}") {
-			v = e.Get(o[1 : len(o)-1])
+		if isSurrounded(o, "{", "}") {
+			v = e.Get(trimSurrounding(o, "{", "}"))
 		} else {
 			v = e.Cast(c.FieldName, o)
 		}

@@ -505,7 +505,14 @@ The delimiter (usually a comma, except SecondarySubdivisionList which uses a
 colon) is implied by the field’s data type in the ADIF spec.  You may specify
 the delimiter for a field with the `--delimiter field=delim` flag, make sure to
 quote any special shell characters, e.g.
-`adifmt flatten --fields STX_STRING --delimiter 'STX_STRING=;'`
+`adifmt flatten --fields STX_STRING --delimiter 'STX_STRING=;'`  Escape
+sequences can be surrounded with single or double quotes, e.g.
+`adifmt flatten --fields COMMENT --delimiter 'COMMENT="\r\n"' (the `'`s are
+seen by the shell so the `"`s are passed to the program) or
+`--delimiter "COMMENT='\u3000'" (the `"`s are seen by the shell, the `'`s by
+adifmt, and can only contain a single character).  Double-quoted delimiters are
+interpreted as a [Go string literal](https://go.dev/ref/spec#String_literals)
+and single-quoted as a [rune literal](https://go.dev/ref/spec#Rune_literals).
 
 #### infer
 
