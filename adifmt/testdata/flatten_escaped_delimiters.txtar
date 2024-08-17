@@ -1,0 +1,25 @@
+# tests string literals with flatten --delimiter
+
+exec adifmt flatten --fields planet,colors --delimiter 'planet=''\t''' --delimiter 'colors="(\u2301)"' input.csv
+cmp stdout golden.adi
+! stderr .
+
+-- input.csv --
+CALL,PLANET,MODE,COLORS
+K1A,Mercury,CW,red(⌁)orange
+K2B,Venus	Earth,FM,yellow(⌁)green(⌁)blue
+K3C,Mars	Jupiter	Saturn,SSB,purple
+-- golden.adi --
+Generated with 11 records by https://github.com/flwyd/adif-multitool
+<ADIF_VER:5>3.1.4 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:6>adifmt <PROGRAMVERSION:7>(devel) <EOH>
+<CALL:3>K1A <PLANET:7>Mercury <MODE:2>CW <COLORS:3>red <EOR>
+<CALL:3>K1A <PLANET:7>Mercury <MODE:2>CW <COLORS:6>orange <EOR>
+<CALL:3>K2B <PLANET:5>Venus <MODE:2>FM <COLORS:6>yellow <EOR>
+<CALL:3>K2B <PLANET:5>Venus <MODE:2>FM <COLORS:5>green <EOR>
+<CALL:3>K2B <PLANET:5>Venus <MODE:2>FM <COLORS:4>blue <EOR>
+<CALL:3>K2B <PLANET:5>Earth <MODE:2>FM <COLORS:6>yellow <EOR>
+<CALL:3>K2B <PLANET:5>Earth <MODE:2>FM <COLORS:5>green <EOR>
+<CALL:3>K2B <PLANET:5>Earth <MODE:2>FM <COLORS:4>blue <EOR>
+<CALL:3>K3C <PLANET:4>Mars <MODE:3>SSB <COLORS:6>purple <EOR>
+<CALL:3>K3C <PLANET:7>Jupiter <MODE:3>SSB <COLORS:6>purple <EOR>
+<CALL:3>K3C <PLANET:6>Saturn <MODE:3>SSB <COLORS:6>purple <EOR>

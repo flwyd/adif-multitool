@@ -56,14 +56,18 @@ func init() {
 }
 
 func main() {
+	os.Exit(runMain(defaultPrepare))
+}
+
+func runMain(prepare func(l *adif.Logfile)) int {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.SetOutput(os.Stderr)
-	ctx := buildContext(fs)
+	ctx := buildContext(fs, prepare)
 
 	if len(os.Args) < 2 {
 		fs.Usage = usage(fs, "")
 		fs.Usage()
-		os.Exit(2)
+		return 2
 	}
 	name := os.Args[1]
 	fs.Usage = usage(fs, name)
@@ -79,7 +83,7 @@ func main() {
 		// help explicitly requested, so print to stdout and exit without error
 		fs.SetOutput(os.Stdout)
 		fs.Usage()
-		os.Exit(0)
+		return 0
 	case "version":
 		name = "version"
 	}
@@ -95,7 +99,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Usage: %s command [options] [file ...]\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "Commands are %s\n", strings.Join(commandNames(), ", "))
 		fmt.Fprintf(os.Stderr, "Run %s help for more details\n", os.Args[0])
-		os.Exit(2)
+		return 2
 	}
 	if c.Configure != nil {
 		c.Configure(ctx, fs)
@@ -104,23 +108,26 @@ func main() {
 	err := c.Run(ctx, fs.Args())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error running %s: %v\n", name, err)
-		os.Exit(1)
+		return 1
 	}
+	return 0
 }
 
-func buildContext(fs *flag.FlagSet) *cmd.Context {
+func defaultPrepare(l *adif.Logfile) {
+	t := time.Now()
+	l.Header.SetComment(fmt.Sprintf("Generated at %s with %d records by %s", t.Format(time.RFC1123Z), len(l.Records), helpUrl))
+	l.Header.Set(adif.Field{Name: spec.AdifVerField.Name, Value: spec.ADIFVersion})
+	l.Header.Set(adif.Field{Name: spec.CreatedTimestampField.Name, Value: t.Format("20060102 150405")})
+	l.Header.Set(adif.Field{Name: spec.ProgramidField.Name, Value: programName})
+	l.Header.Set(adif.Field{Name: spec.ProgramversionField.Name, Value: version})
+}
+
+func buildContext(fs *flag.FlagSet, prepare func(l *adif.Logfile)) *cmd.Context {
 	ctx := &cmd.Context{
 		Out:     os.Stdout,
 		Readers: make(map[adif.Format]adif.Reader),
 		Writers: make(map[adif.Format]adif.Writer),
-		Prepare: func(l *adif.Logfile) {
-			t := time.Now()
-			l.Header.SetComment(fmt.Sprintf("Generated at %s with %d records by %s", t.Format(time.RFC1123Z), len(l.Records), helpUrl))
-			l.Header.Set(adif.Field{Name: spec.AdifVerField.Name, Value: spec.ADIFVersion})
-			l.Header.Set(adif.Field{Name: spec.CreatedTimestampField.Name, Value: t.Format("20060102 150405")})
-			l.Header.Set(adif.Field{Name: spec.ProgramidField.Name, Value: programName})
-			l.Header.Set(adif.Field{Name: spec.ProgramversionField.Name, Value: version})
-		},
+		Prepare: prepare,
 	}
 	for _, f := range formatConfigs {
 		ctx.Readers[f.Format()] = f.IO()
