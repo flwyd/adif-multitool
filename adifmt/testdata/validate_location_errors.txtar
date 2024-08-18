@@ -1,0 +1,26 @@
+# tests that invalid locations are errors
+! adifmt validate -output csv input.csv
+cmp stderr golden.err
+! stdout .
+
+-- input.csv --
+CALL,LAT,LON,GRIDSQUARE
+K1A,12.345,34.567,AB12cd34
+K2B,N12 34.567,W123 45.678,ZY12ab
+K3C,S123 45.678,X23 45.678,AB0CD
+K4D,N12 98.765,E12 34.56789,A01CD23
+K5E,S12 12.34,W0 01.200,MN9876
+K6F,S001 02.340,W000 01.200,oo00
+-- golden.err --
+ERROR on input.csv record 1: LAT invalid location format, make sure to zero-pad "12.345"
+ERROR on input.csv record 1: LON invalid location format, make sure to zero-pad "34.567"
+ERROR on input.csv record 2: LAT invalid location format, make sure to zero-pad "N12 34.567"
+ERROR on input.csv record 3: LON invalid location format, make sure to zero-pad "X23 45.678"
+ERROR on input.csv record 3: GRIDSQUARE odd grid square length "AB0CD"
+ERROR on input.csv record 4: LAT invalid location format, make sure to zero-pad "N12 98.765"
+ERROR on input.csv record 4: LON invalid location format, make sure to zero-pad "E12 34.56789"
+ERROR on input.csv record 4: GRIDSQUARE odd grid square length "A01CD23"
+ERROR on input.csv record 5: LAT invalid location format, make sure to zero-pad "S12 12.34"
+ERROR on input.csv record 5: LON invalid location format, make sure to zero-pad "W0 01.200"
+ERROR on input.csv record 5: GRIDSQUARE non-letter in position 4 "MN9876"
+Error running validate: validate got 11 errors and 0 warnings

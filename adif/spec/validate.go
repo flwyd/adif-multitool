@@ -77,7 +77,8 @@ var (
 )
 
 type ValidationContext struct {
-	UnknownEnumValueWarning bool // if true, values not in an enumeration are a warning, otherwise an error
+	UnknownEnumValueWarning bool      // if true, values not in an enumeration are a warning, otherwise an error
+	Now                     time.Time // comparison point for times-in-the-future checks
 	FieldValue              func(name string) string
 }
 
@@ -262,6 +263,9 @@ func ValidateDate(val string, f Field, ctx ValidationContext) Validation {
 	if d.Year() < 1930 {
 		return errorf("%s year before 1930 %q", f.Name, val)
 	}
+	if !ctx.Now.IsZero() && d.After(ctx.Now) {
+		return warningf("%s value %q later than today", f.Name, val)
+	}
 	return valid()
 }
 
@@ -269,19 +273,37 @@ func ValidateTime(val string, f Field, ctx ValidationContext) Validation {
 	if !allNumeric.MatchString(val) {
 		return errorf("%s invalid time %q", f.Name, val)
 	}
+	var dateField, d string
+	if f.Name == TimeOnField.Name {
+		dateField = QsoDateField.Name
+	} else if f.Name == TimeOffField.Name {
+		dateField = QsoDateOffField.Name
+	}
+	if dateField != "" {
+		d = ctx.FieldValue(dateField)
+	}
+	var dtfmt = "20060102"
 	switch len(val) {
 	case 4:
 		_, err := time.Parse("1504", val)
 		if err != nil {
 			return errorf("%s time out of HH:MM range %q", f.Name, val)
 		}
+		dtfmt += "1504"
 	case 6:
 		_, err := time.Parse("150405", val)
 		if err != nil {
 			return errorf("%s time out of HH:MM:SS range %q", f.Name, val)
 		}
+		dtfmt += "150405"
 	default:
-		return errorf("%s not an 4- or 6-digit time %q", f.Name, val)
+		return errorf("%s not a 4- or 6-digit time %q", f.Name, val)
+	}
+	if d != "" && !ctx.Now.IsZero() {
+		t, err := time.ParseInLocation(dtfmt, d+val, time.UTC)
+		if err == nil && t.After(ctx.Now) && t.Truncate(24*time.Hour) == ctx.Now.Truncate(24*time.Hour) {
+			return warningf("%s time %q is later than now, %s=%q", f.Name, val, dateField, d)
+		}
 	}
 	return valid()
 }

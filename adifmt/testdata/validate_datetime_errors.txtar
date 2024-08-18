@@ -1,0 +1,32 @@
+# tests that invalid dates and times are errors
+! adifmt validate -output csv input.csv
+cmp stderr golden.err
+! stdout .
+
+-- input.csv --
+CALL,QSO_DATE,TIME_ON,TIME_OFF,QSLSDATE
+K1A,2012,123,1,201206
+K2B,20221032,0860,123467,9870605
+K3C,2018-10-21,12:34,13:14:15,31/10/2018
+K4D,November 11 2011,11pm,1111am,11111988
+K5E,23450607,0000,0000,19291231
+-- golden.err --
+ERROR on input.csv record 1: QSO_DATE not an 8-digit date "2012"
+ERROR on input.csv record 1: TIME_ON not a 4- or 6-digit time "123"
+ERROR on input.csv record 1: TIME_OFF not a 4- or 6-digit time "1"
+ERROR on input.csv record 1: QSLSDATE not an 8-digit date "201206"
+ERROR on input.csv record 2: QSO_DATE invalid date "20221032"
+ERROR on input.csv record 2: TIME_ON time out of HH:MM range "0860"
+ERROR on input.csv record 2: TIME_OFF time out of HH:MM:SS range "123467"
+ERROR on input.csv record 2: QSLSDATE not an 8-digit date "9870605"
+ERROR on input.csv record 3: QSO_DATE invalid date "2018-10-21"
+ERROR on input.csv record 3: TIME_ON invalid time "12:34"
+ERROR on input.csv record 3: TIME_OFF invalid time "13:14:15"
+ERROR on input.csv record 3: QSLSDATE invalid date "31/10/2018"
+ERROR on input.csv record 4: QSO_DATE invalid date "November 11 2011"
+ERROR on input.csv record 4: TIME_ON invalid time "11pm"
+ERROR on input.csv record 4: TIME_OFF invalid time "1111am"
+ERROR on input.csv record 4: QSLSDATE invalid date "11111988"
+WARNING on input.csv record 5: QSO_DATE value "23450607" later than today
+ERROR on input.csv record 5: QSLSDATE year before 1930 "19291231"
+Error running validate: validate got 17 errors and 1 warnings

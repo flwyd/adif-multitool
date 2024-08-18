@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/flwyd/adif-multitool/adif"
 	"github.com/flwyd/adif-multitool/adif/spec"
@@ -36,6 +37,7 @@ func helpValidate() string {
 
 func runValidate(ctx *Context, args []string) error {
 	cctx := ctx.CommandCtx.(*ValidateContext)
+	now := time.Now().UTC() // consistent for the whole log
 	log := os.Stderr
 	var errors, warnings int
 	appFields := make(map[string]adif.DataType)
@@ -48,10 +50,12 @@ func runValidate(ctx *Context, args []string) error {
 		}
 		updateFieldOrder(out, l.FieldOrder)
 		for i, r := range l.Records {
-			vctx := spec.ValidationContext{FieldValue: func(name string) string {
-				f, _ := r.Get(name)
-				return f.Value
-			}}
+			vctx := spec.ValidationContext{
+				Now: now,
+				FieldValue: func(name string) string {
+					f, _ := r.Get(name)
+					return f.Value
+				}}
 			var msgs []string
 			missing := make([]string, 0)
 			for _, x := range cctx.RequiredFields {

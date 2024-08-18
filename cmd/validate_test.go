@@ -22,6 +22,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+// Warnings (which are printed to stderr) are tested from adifmt/cli_test.go
+
 func TestValidateEmpty(t *testing.T) {
 	io := adif.NewADIIO()
 	out := &bytes.Buffer{}
@@ -167,5 +169,3 @@ func TestValidateErrors(t *testing.T) {
 		})
 	}
 }
-
-// TODO test warnings (which are printed to stderr)

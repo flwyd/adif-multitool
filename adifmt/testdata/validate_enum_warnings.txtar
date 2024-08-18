@@ -1,0 +1,17 @@
+# tests that certain unknown enum values are warnings, not errors
+adifmt validate -output csv input.csv
+cmp stderr golden.err
+cmp stdout input.csv
+
+-- input.csv --
+CALL,MODE,SUBMODE,CONTEST_ID,DXCC,STATE
+K1A,SSB,MSB,ADIF-INVALID-CONTEST,291,CT
+K2A,PSK,PSK123,ARRL-DIGI,,NJ
+3A0DX,CW,,,260,MO
+-- golden.err --
+WARNING on input.csv record 1: SUBMODE value "MSB" is not valid for MODE="SSB"
+WARNING on input.csv record 1: CONTEST_ID unknown value "ADIF-INVALID-CONTEST" for enumeration Contest_ID
+WARNING on input.csv record 2: SUBMODE value "PSK123" is not valid for MODE="PSK"
+WARNING on input.csv record 2: STATE has value "NJ" but DXCC is not set
+WARNING on input.csv record 3: STATE has value "MO" but Primary_Administrative_Subdivision doesn't define any values for DXCC="260"
+validate got 5 warnings

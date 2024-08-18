@@ -14,7 +14,10 @@
 
 package spec
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 type validateTest struct {
 	field Field
@@ -22,16 +25,16 @@ type validateTest struct {
 	want  Validity
 }
 
-var emptyCtx ValidationContext
+var emptyCtx = ValidationContext{FieldValue: func(name string) string { return "" }}
 
 func testValidator(t *testing.T, tc validateTest, ctx ValidationContext, funcname string) {
 	t.Helper()
 	v := TypeValidators[tc.field.Type.Name]
 	if got := v(tc.value, tc.field, ctx); got.Validity != tc.want {
 		if got.Validity == Valid {
-			t.Errorf("%s(%q, %s, ctx) got Valid, want %s", funcname, tc.value, tc.field.Name, tc.want)
+			t.Errorf("%s(%q, %q, ctx) got Valid, want %s", funcname, tc.value, tc.field.Name, tc.want)
 		} else {
-			t.Errorf("%s(%q, %s, ctx) want %s got %s %s", funcname, tc.value, tc.field.Name, tc.want, got.Validity, got.Message)
+			t.Errorf("%s(%q, %q, ctx) want %s got %s %s", funcname, tc.value, tc.field.Name, tc.want, got.Validity, got.Message)
 		}
 	}
 }
@@ -160,8 +163,8 @@ func TestValidateDate(t *testing.T) {
 		{field: QsoDateOffField, value: "20200317", want: Valid},
 		{field: QslrdateField, value: "19991231", want: Valid},
 		{field: QslsdateField, value: "20000229", want: Valid},
-		{field: QrzcomQsoUploadDateField, value: "21000101", want: Valid},
-		{field: LotwQslrdateField, value: "23450607", want: Valid},
+		{field: QrzcomQsoUploadDateField, value: "22000101", want: Valid}, // future date, ctx.Now is zero
+		{field: LotwQslrdateField, value: "23450607", want: Valid},        // future date, ctx.Now is zero
 		{field: QsoDateField, value: "19000101", want: InvalidError},
 		{field: QsoDateField, value: "19800100", want: InvalidError},
 		{field: QsoDateOffField, value: "202012", want: InvalidError},
@@ -198,6 +201,74 @@ func TestValidateTime(t *testing.T) {
 	}
 	for _, tc := range tests {
 		testValidator(t, tc, emptyCtx, "ValidateTime")
+	}
+}
+
+func TestValidateDateRelative(t *testing.T) {
+	ctx := ValidationContext{
+		Now:        time.Date(2023, time.October, 31, 12, 34, 56, 0, time.UTC),
+		FieldValue: emptyCtx.FieldValue}
+	tests := []validateTest{
+		{field: QsoDateField, value: "19991231", want: Valid},
+		{field: QsoDateOffField, value: "20000101", want: Valid},
+		{field: QslrdateField, value: "20231030", want: Valid},
+		{field: QslsdateField, value: "20231031", want: Valid},
+		{field: QrzcomQsoUploadDateField, value: "20231101", want: InvalidWarning}, // future date
+		{field: LotwQslrdateField, value: "23450607", want: InvalidWarning},        // future date
+		{field: QsoDateField, value: "19000101", want: InvalidError},
+		{field: QsoDateField, value: "19800100", want: InvalidError},
+		{field: QsoDateOffField, value: "202012", want: InvalidError},
+		{field: QsoDateOffField, value: "21000229", want: InvalidError},
+		{field: QslrdateField, value: "1031", want: InvalidError},
+		{field: QslsdateField, value: "2001-02-03", want: InvalidError},
+		{field: QrzcomQsoUploadDateField, value: "01/02/2003", want: InvalidError},
+		{field: LotwQslrdateField, value: "01022003", want: InvalidError},
+		{field: LotwQslsdateField, value: "20220431", want: InvalidError},
+	}
+	for _, tc := range tests {
+		testValidator(t, tc, ctx, "ValidateDate")
+	}
+}
+
+func TestValidateTimeRelative(t *testing.T) {
+	now := time.Date(2023, time.October, 31, 12, 34, 56, 0, time.UTC)
+	yesterday := "20231030"
+	today := "20231031"
+	tomorrow := "20231101" // no warning, since the date field will warn
+	tests := []struct {
+		timeValue, dateValue string
+		want                 Validity
+	}{
+		{timeValue: "1516", dateValue: yesterday, want: Valid},
+		{timeValue: "235959", dateValue: yesterday, want: Valid},
+		{timeValue: "1234", dateValue: today, want: Valid},
+		{timeValue: "123456", dateValue: today, want: Valid},
+		{timeValue: "1314", dateValue: today, want: InvalidWarning},
+		{timeValue: "123457", dateValue: today, want: InvalidWarning},
+		{timeValue: "1235", dateValue: today, want: InvalidWarning},
+		{timeValue: "1516", dateValue: today, want: InvalidWarning},
+		{timeValue: "0123", dateValue: tomorrow, want: Valid},
+		{timeValue: "000000", dateValue: tomorrow, want: Valid},
+	}
+	tdFields := []struct{ tf, df Field }{
+		{tf: TimeOnField, df: QsoDateField}, {tf: TimeOffField, df: QsoDateOffField},
+	}
+	for _, tc := range tests {
+		for _, td := range tdFields {
+			ctx := ValidationContext{
+				Now: now,
+				FieldValue: func(name string) string {
+					if name == td.df.Name {
+						return tc.dateValue
+					}
+					if name == td.tf.Name {
+						return tc.timeValue
+					}
+					return ""
+				},
+			}
+			testValidator(t, validateTest{field: td.tf, value: tc.timeValue, want: tc.want}, ctx, "ValidateTime")
+		}
 	}
 }
 

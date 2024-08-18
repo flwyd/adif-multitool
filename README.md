@@ -645,12 +645,13 @@ specification allows some fields to have values which do not match the
 enumerated options, for example the `SUBMODE` field says “use enumeration values
 for interoperability” but the type is string, allowing any value.  These
 warnings will be printed to standard error with `adifmt validate` but will not
-block the logfile from being printed to standard output.
+block the logfile from being printed to standard output.  Dates and times in the
+future (based on the computer’s current wall clock) will print a warning; there
+is not currently a way to override the current time.
 
 The `--required-fields` option provides a list of fields which must be present in
 a valid record.  Multiple fields may be comma-separated or the option given
-several times.
-For example, checking a contest log might use
+several times.  For example, checking a contest log might use
 `adifmt validate --reqiured-fields qso_date,time_on,call,band,mode,srx_string`
 
 Some but not all validation errors can be corrected with [`adifmt fix`](#fix).

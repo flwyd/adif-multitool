@@ -1,0 +1,18 @@
+# tests that certain unknown enum values are warnings, not errors
+! adifmt validate -output csv input.csv
+cmp stderr golden.err
+! stdout .
+
+-- input.csv --
+CALL,BAND,MODE,CONT,DXCC,STATE
+K1A,11m,AM,NA,291,VT
+K2A,20m,INVALID,NA,1,NY
+K3A,70CM,fm,XY,999,AB
+-- golden.err --
+ERROR on input.csv record 1: BAND unknown value "11m" for enumeration Band
+ERROR on input.csv record 2: MODE unknown value "INVALID" for enumeration Mode
+ERROR on input.csv record 2: STATE value "NY" is not valid for DXCC="1"
+ERROR on input.csv record 3: CONT unknown value "XY" for enumeration Continent
+ERROR on input.csv record 3: DXCC unknown value "999" for enumeration DXCC_Entity_Code
+WARNING on input.csv record 3: STATE has value "AB" but Primary_Administrative_Subdivision doesn't define any values for DXCC="999"
+Error running validate: validate got 5 errors and 1 warnings

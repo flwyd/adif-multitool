@@ -1,0 +1,26 @@
+# tests that out-of-range or syntactically invalid numbers are errors
+! adifmt validate -output csv input.csv
+cmp stderr golden.err
+! stdout .
+
+-- input.csv --
+CALL,FREQ,CQZ,ITUZ,K_INDEX
+K1A,7.123.4,0,0,0
+K2A,-14.150,-1,-1,-1
+K3A,29,41,91,10
+K4A,1234567,40,90,9
+K5A,14.3,32.1,FF,4.0
+-- golden.err --
+ERROR on input.csv record 1: FREQ invalid decimal "7.123.4": strconv.ParseFloat: parsing "7.123.4": invalid syntax
+ERROR on input.csv record 1: CQZ value 0 below minimum 1
+ERROR on input.csv record 1: ITUZ value 0 below minimum 1
+ERROR on input.csv record 2: CQZ value -1 below minimum 1
+ERROR on input.csv record 2: ITUZ value -1 below minimum 1
+ERROR on input.csv record 2: K_INDEX value -1 below minimum 0
+ERROR on input.csv record 3: CQZ value 41 above maximum 40
+ERROR on input.csv record 3: ITUZ value 91 above maximum 90
+ERROR on input.csv record 3: K_INDEX value 10 above maximum 9
+ERROR on input.csv record 5: CQZ invalid integer "32.1"
+ERROR on input.csv record 5: ITUZ invalid number "FF"
+ERROR on input.csv record 5: K_INDEX invalid integer "4.0"
+Error running validate: validate got 12 errors and 0 warnings
