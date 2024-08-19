@@ -60,8 +60,10 @@ func ComparatorForField(f Field, locale language.Tag) FieldComparator {
 		}
 	case IOTARefNoDataType.Name, POTARefDataType.Name, SOTARefDataType.Name, WWFFRefDataType.Name:
 		c = compareStringsBasic
-	case AwardListDataType.Name, CreditListDataType.Name, GridSquareListDataType.Name, POTARefListDataType.Name, SecondarySubdivisionListDataType.Name, SponsoredAwardListDataType.Name:
-		c = compareStringLists
+	case AwardListDataType.Name, CreditListDataType.Name, GridSquareListDataType.Name, POTARefListDataType.Name, SponsoredAwardListDataType.Name:
+		c = compareStringLists(",")
+	case SecondarySubdivisionListDataType.Name:
+		c = compareStringLists(":")
 	default:
 		c = compareStringsBasic
 	}
@@ -294,19 +296,21 @@ func compareBands(a, b string) (int, error) {
 	return 1, nil
 }
 
-func compareStringLists(a, b string) (int, error) {
-	alist := strings.Split(strings.ToUpper(a), ",")
-	blist := strings.Split(strings.ToUpper(b), ",")
-	sort.Strings(alist) // treat foo,bar as equal to bar,foo
-	sort.Strings(blist)
-	min := len(alist)
-	if len(blist) > len(alist) {
-		min = len(b)
-	}
-	for i := 0; i < min; i++ {
-		if c, err := compareStringsBasic(alist[i], blist[i]); c != 0 || err != nil {
-			return c, err
+func compareStringLists(sep string) FieldComparator {
+	return func(a, b string) (int, error) {
+		alist := strings.Split(strings.ToUpper(a), sep)
+		blist := strings.Split(strings.ToUpper(b), sep)
+		sort.Strings(alist) // treat foo,bar as equal to bar,foo
+		sort.Strings(blist)
+		min := len(alist)
+		if len(blist) < len(alist) {
+			min = len(blist)
 		}
+		for i := 0; i < min; i++ {
+			if c, err := compareStringsBasic(alist[i], blist[i]); c != 0 || err != nil {
+				return c, err
+			}
+		}
+		return len(alist) - len(blist), nil
 	}
-	return len(alist) - len(blist), nil
 }

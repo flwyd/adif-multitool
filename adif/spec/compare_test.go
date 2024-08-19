@@ -123,6 +123,59 @@ func TestCompareStringsBasic(t *testing.T) {
 	}
 }
 
+func TestCompareStringLists(t *testing.T) {
+	tests := []struct {
+		name  string
+		field Field
+		want  comparisonCheck
+		vals  []string
+	}{
+		{
+			name: "empty string equal", field: AwardGrantedField, want: shouldCompareEqual,
+			vals: []string{"", ""},
+		},
+		{
+			name: "empty string less", field: CreditGrantedField, want: shouldCompareLess,
+			vals: []string{"", "CQDX", "DXCC,IOTA"},
+		},
+		{
+			name: "sublist less different order", field: CreditGrantedField, want: shouldCompareLess,
+			vals: []string{"", "CQDX", "DXCC,CQDX", "CQDX,IOTA,DXCC"},
+		},
+		{
+			name: "identical lists", field: VuccGridsField, want: shouldCompareEqual,
+			vals: []string{"AB34,AB44", "AB34,AB44"},
+		},
+		{
+			name: "same list different order", field: VuccGridsField, want: shouldCompareEqual,
+			vals: []string{"AB34,AB44", "AB44,AB34"},
+		},
+		{
+			name: "sublist less", field: CreditGrantedField, want: shouldCompareLess,
+			vals: []string{"", "CQDX", "CQDX,DXCC", "CQDX,DXCC,IOTA"},
+		},
+		{
+			name: "different case", field: PotaRefField, want: shouldCompareEqual,
+			vals: []string{"US-4567,US-0791", "us-4567,us-0791", "Us-4567,uS-0791"},
+		},
+		{
+			name: "single secondary subdivision syntax equal", field: UsacaCountiesField, want: shouldCompareEqual,
+			vals: []string{"CA,Los Angeles", "CA,LOS ANGELES"},
+		},
+		{
+			name: "multiple secondary subdivision syntax equal", field: MyUsacaCountiesField, want: shouldCompareEqual,
+			vals: []string{"KS,Wyandotte:MO,Jackson", "MO,Jackson:KS,Wyandotte"},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			c := ComparatorForField(tc.field, language.Greek)
+			tc.want(t, c, tc.vals...)
+		})
+	}
+}
+
 func TestCompareStringsLocale(t *testing.T) {
 	tests := []struct {
 		name  string
