@@ -26,6 +26,7 @@ type TSVIO struct {
 	CRLF               bool
 	EscapeSpecial      bool
 	IgnoreEmptyHeaders bool
+	OmitHeader         bool
 }
 
 func NewTSVIO() *TSVIO { return &TSVIO{} }
@@ -127,12 +128,14 @@ func (o *TSVIO) Write(l *Logfile, w io.Writer) error {
 		}
 		return nil
 	}
-	for i, h := range order {
-		if _, err := out.WriteString(o.escape(h)); err != nil {
-			return fmt.Errorf("writing TSV header: %w", err)
-		}
-		if err := writeDelim(i); err != nil {
-			return fmt.Errorf("writing TSV header: %w", err)
+	if !o.OmitHeader {
+		for i, h := range order {
+			if _, err := out.WriteString(o.escape(h)); err != nil {
+				return fmt.Errorf("writing TSV header: %w", err)
+			}
+			if err := writeDelim(i); err != nil {
+				return fmt.Errorf("writing TSV header: %w", err)
+			}
 		}
 	}
 	for _, r := range l.Records {

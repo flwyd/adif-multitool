@@ -165,3 +165,38 @@ Switzerland",",comma notes,,,"
 		}
 	}
 }
+
+func TestCSVOmitHeader(t *testing.T) {
+	l := NewLogfile()
+	l.Comment = "CSV ignores comments"
+	l.AddRecord(NewRecord(
+		Field{Name: "QSO_DATE", Value: "19901031", Type: TypeDate},
+		Field{Name: "TIME_ON", Value: "1234", Type: TypeTime},
+		Field{Name: "BAND", Value: "40M"},
+		Field{Name: "CALLSIGN", Value: "W1AW"},
+		Field{Name: "NAME", Value: "Hiram Percy Maxim", Type: TypeString},
+		Field{Name: "FREQ", Value: "7.054"},
+	)).AddRecord(NewRecord(
+		Field{Name: "QSO_DATE", Value: "20221224"},
+		Field{Name: "TIME_ON", Value: "095846"},
+		Field{Name: "BAND", Value: "1.25cm", Type: TypeEnumeration},
+		Field{Name: "CALLSIGN", Value: "N0P", Type: TypeString},
+		Field{Name: "NAME", Value: "Santa Claus"},
+		Field{Name: "NOTES_INTL", Value: `Þhrough the /❄\ bringing 🎁 \to the child\re\n`},
+	))
+	l.Records[1].SetComment("Record comment")
+	want := `19901031,1234,40M,W1AW,Hiram Percy Maxim,7.054,
+20221224,095846,1.25cm,N0P,Santa Claus,,Þhrough the /❄\ bringing 🎁 \to the child\re\n
+`
+	csv := NewCSVIO()
+	csv.OmitHeader = true
+	out := &strings.Builder{}
+	if err := csv.Write(l, out); err != nil {
+		t.Errorf("Write(%v) got error %v", l, err)
+	} else {
+		got := out.String()
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("Write(%v) had diff with expected:\n%s", l, diff)
+		}
+	}
+}

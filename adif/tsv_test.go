@@ -183,3 +183,38 @@ func TestTSVEscapeSpecialCharacters(t *testing.T) {
 		}
 	}
 }
+
+func TestTSVOmitHeader(t *testing.T) {
+	l := NewLogfile()
+	l.Comment = "TSV ignores comments"
+	l.FieldOrder = []string{"QSO_DATE", "TIME_ON", "BAND", "CALL"}
+	l.AddRecord(NewRecord(
+		Field{Name: "TIME_ON", Value: "1234", Type: TypeTime},
+		Field{Name: "QSO_DATE", Value: "19901031", Type: TypeDate},
+		Field{Name: "NAME", Value: "Hiram Percy Maxim", Type: TypeString},
+		Field{Name: "BAND", Value: "40M"},
+		Field{Name: "FREQ", Value: "7.054"},
+		Field{Name: "CALL", Value: "W1AW"},
+	)).AddRecord(NewRecord(
+		Field{Name: "notes_intl", Value: "Þhrough the /❄\\ bringing 🎁 \\to the child\\re\\n"},
+		Field{Name: "qso_date", Value: "20221224"},
+		Field{Name: "call", Value: "N0P", Type: TypeString},
+		Field{Name: "time_on", Value: "095846"},
+		Field{Name: "band", Value: "1.25cm", Type: TypeEnumeration},
+		Field{Name: "name", Value: "Santa \"St. Nick\" Claus"},
+	))
+	l.Records[1].SetComment("Record comment")
+	want := "19901031\t1234\t40M\tW1AW\tHiram Percy Maxim\t7.054\t\n" +
+		"20221224\t095846\t1.25cm\tN0P\tSanta \"St. Nick\" Claus\t\tÞhrough the /❄\\ bringing 🎁 \\to the child\\re\\n\n"
+	tsv := NewTSVIO()
+	tsv.OmitHeader = true
+	out := &strings.Builder{}
+	if err := tsv.Write(l, out); err != nil {
+		t.Errorf("Write(%v) got error %v", l, err)
+	} else {
+		got := out.String()
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("Write(%v) had diff with expected:\n%s", l, diff)
+		}
+	}
+}

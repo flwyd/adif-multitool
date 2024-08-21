@@ -121,6 +121,7 @@ func (c csvConfig) AddFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&c.io.RequireFullRecord, "csv-require-all-fields", false, "CSV files: error if fewer fields in a record than in header")
 	fs.BoolVar(&c.io.TrimLeadingSpace, "csv-trim-space", false, "CSV files: ignore leading space in fields")
 	fs.BoolVar(&c.io.CRLF, "csv-crlf", false, "CSV files: output MS Windows line endings")
+	fs.BoolVar(&c.io.OmitHeader, "csv-omit-header", false, "CSV files: don't output the header line")
 }
 
 type jsonConfig struct{ io *adif.JSONIO }
@@ -145,5 +146,6 @@ func (c tsvConfig) IO() adif.ReadWriter { return c.io }
 func (c tsvConfig) AddFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&c.io.CRLF, "tsv-crlf", false, "TSV files: output MS Windows line endings")
 	fs.BoolVar(&c.io.EscapeSpecial, "tsv-escape-special", false, "TSV files: accept and produce \\t \\r \\n and \\\\ escapes in fields")
-	fs.BoolVar(&c.io.IgnoreEmptyHeaders, "tsv-ignore-empty-headers", false, "TSV files: do not return error if a TSV file has an empty header field")
+	fs.BoolVar(&c.io.IgnoreEmptyHeaders, "tsv-ignore-empty-headers", false, "TSV files: don't return error if a TSV file has an empty header field")
+	fs.BoolVar(&c.io.OmitHeader, "tsv-omit-header", false, "TSV files: don't output the header line")
 }

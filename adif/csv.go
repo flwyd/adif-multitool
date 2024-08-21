@@ -29,6 +29,7 @@ type CSVIO struct {
 	LazyQuotes        bool
 	RequireFullRecord bool
 	TrimLeadingSpace  bool
+	OmitHeader        bool
 }
 
 func NewCSVIO() *CSVIO {
@@ -114,8 +115,10 @@ func (o *CSVIO) Write(l *Logfile, out io.Writer) error {
 	c.Comma = o.Comma
 	c.UseCRLF = o.CRLF
 	// CSV header row
-	if err := c.Write(order); err != nil {
-		return fmt.Errorf("writing CSV header to %s: %w", l, err)
+	if !o.OmitHeader {
+		if err := c.Write(order); err != nil {
+			return fmt.Errorf("writing CSV header to %s: %w", l, err)
+		}
 	}
 	row := make([]string, len(order))
 	for i, r := range l.Records {
