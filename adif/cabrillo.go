@@ -319,28 +319,34 @@ func (o *CabrilloIO) getCategories(l *Logfile) map[string]string {
 	}
 	if cats["MODE"] == "" {
 		modes := fieldValues(l, "MODE")
-		var mode string
-		if len(modes) == 1 {
-			switch maps.Keys(modes)[0] {
-			case "CW":
-				mode = "CW"
+		var phone, fm, cw, rtty, digi int
+		for m := range modes {
+			switch m {
 			case "SSB", "AM", "DIGITALVOICE":
-				mode = "SSB"
+				phone++
 			case "FM":
-				mode = "FM"
+				fm++
+			case "CW":
+				cw++
 			case "RTTY":
-				mode = "RTTY"
+				rtty++
 			default:
-				mode = "DIGI"
+				digi++
 			}
-		} else if len(modes) > 1 {
+		}
+		var mode string
+		if fm == len(modes) {
+			mode = "FM"
+		} else if phone+fm == len(modes) {
+			mode = "SSB"
+		} else if cw == len(modes) {
+			mode = "CW"
+		} else if rtty == len(modes) {
+			mode = "RTTY"
+		} else if digi+rtty == len(modes) {
 			mode = "DIGI"
-			for m := range modes {
-				if m == "CW" || m == "SSB" || m == "FM" || m == "AM" {
-					mode = "MIXED"
-					break
-				}
-			}
+		} else {
+			mode = "MIXED"
 		}
 		cats["MODE"] = mode
 	}
