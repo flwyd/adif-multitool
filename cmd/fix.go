@@ -103,7 +103,7 @@ func fixField(f adif.Field, r *adif.Record, l *adif.Logfile) adif.Field {
 }
 
 func fieldType(f adif.Field, l *adif.Logfile) spec.DataType {
-	if fs, ok := spec.Fields[strings.ToUpper(f.Name)]; ok {
+	if fs, ok := spec.FieldNamed(f.Name); ok {
 		return fs.Type
 	}
 	t := f.Type

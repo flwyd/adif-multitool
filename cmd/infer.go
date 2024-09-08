@@ -329,8 +329,12 @@ func inferProgramRef(wantSig string) inferrer {
 		if !strings.EqualFold(sig.Value, wantSig) {
 			return false
 		}
-		v := spec.TypeValidators[spec.Fields[name].Type.Name]
-		if v(siginfo.Value, spec.Fields[name], spec.ValidationContext{}).Validity != spec.Valid {
+		f, ok := spec.FieldNamed(name)
+		if !ok {
+			return false
+		}
+		v := spec.TypeValidators[f.Type.Name]
+		if v(siginfo.Value, f, spec.ValidationContext{}).Validity != spec.Valid {
 			return false
 		}
 		r.Set(adif.Field{Name: name, Value: siginfo.Value})

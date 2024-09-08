@@ -14,6 +14,8 @@
 
 package spec
 
+import "strings"
+
 type Field struct {
 	Name       string
 	Type       DataType
@@ -33,3 +35,9 @@ func (f Field) Enum() Enumeration {
 }
 
 var Fields = make(map[string]Field)
+
+func FieldNamed(s string) (f Field, ok bool) {
+	// TOODO generate this with a switch
+	f, ok = Fields[strings.ToUpper(s)]
+	return
+}

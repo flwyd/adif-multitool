@@ -17,7 +17,6 @@ package cmd
 import (
 	"errors"
 	"sort"
-	"strings"
 
 	"github.com/flwyd/adif-multitool/adif"
 	"github.com/flwyd/adif-multitool/adif/spec"
@@ -50,8 +49,7 @@ func runSort(ctx *Context, args []string) error {
 			mults[i] = 1
 		}
 		fields[i] = n
-		n = strings.ToUpper(n)
-		if f, ok := spec.Fields[n]; ok {
+		if f, ok := spec.FieldNamed(n); ok {
 			comps[i] = spec.ComparatorForField(f, ctx.Locale)
 		} // else resolve dynamically
 	}

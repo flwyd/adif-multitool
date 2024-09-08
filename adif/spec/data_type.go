@@ -24,3 +24,9 @@ type DataType struct {
 
 // DataTypes allows lookups by DataType.Name and DataType.Indicator.
 var DataTypes = make(map[string]DataType)
+
+func DataTypeNamed(s string) (t DataType, ok bool) {
+	// TODO generate this method with a switch
+	t, ok = DataTypes[s]
+	return
+}

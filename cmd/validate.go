@@ -93,7 +93,7 @@ func runValidate(ctx *Context, args []string) error {
 						}
 					}
 				}
-				if fs, ok := spec.Fields[f.Name]; ok {
+				if fs, ok := spec.FieldNamed(f.Name); ok {
 					validateSpec(spec.TypeValidators[fs.Type.Name], fs)
 				} else if u, ok := acc.Out.GetUserdef(f.Name); ok {
 					if len(u.EnumValues) > 0 || u.Min != 0.0 || u.Max != 0.0 {

@@ -49,7 +49,7 @@ func runFlatten(ctx *Context, args []string) error {
 		if delims[n] != "" {
 			continue
 		}
-		f, ok := spec.Fields[n]
+		f, ok := spec.FieldNamed(n)
 		if !ok {
 			return fmt.Errorf("unknown field %q", n)
 		}

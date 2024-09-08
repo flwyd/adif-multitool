@@ -45,7 +45,7 @@ func (r recordEvalContext) Cast(name, value string) adif.Field {
 	f, ok := r.record.Get(name)
 	f.Value = value
 	if !ok {
-		if sf, ok := spec.Fields[strings.ToUpper(name)]; ok {
+		if sf, ok := spec.FieldNamed(name); ok {
 			f.Type, _ = adif.DataTypeFromIndicator(sf.Type.Indicator)
 		}
 	}
@@ -55,8 +55,8 @@ func (r recordEvalContext) Cast(name, value string) adif.Field {
 func (r recordEvalContext) Compare(a, b adif.Field) (int, error) {
 	var f spec.Field
 	var ok bool
-	if f, ok = spec.Fields[strings.ToUpper(a.Name)]; !ok {
-		if f, ok = spec.Fields[strings.ToUpper(b.Name)]; !ok {
+	if f, ok = spec.FieldNamed(a.Name); !ok {
+		if f, ok = spec.FieldNamed(b.Name); !ok {
 			f = spec.Field{Name: strings.ToUpper(a.Name), Type: spec.DataTypes[a.Type.String()]}
 		}
 	}

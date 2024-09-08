@@ -71,3 +71,9 @@ func (e Enumeration) ScopeProperty() string {
 }
 
 var Enumerations = make(map[string]Enumeration)
+
+func EnumerationNamed(s string) (e Enumeration, ok bool) {
+	// TODO generate this with a switch
+	e, ok = Enumerations[s]
+	return
+}
