@@ -145,7 +145,7 @@ func buildContext(fs *flag.FlagSet, prepare func(l *adif.Logfile)) *cmd.Context 
 	fs.BoolVar(&ctx.SuppressAppHeaders, "suppress-app-headers", false,
 		"Don't output app-defined headers, to comply with ADIF 3.1.4 spec")
 	fs.Var(&ctx.UserdefFields, "userdef",
-		fmt.Sprintf("define a USERDEF `field` name and optional type, range, or enum (multi)\nfield formats: STRING_F:S NUMBER_F{0:360} ENUM_F:{A,B,C}\ntype indicators: %s#Data_Types", spec.ADIFSpecURL))
+		fmt.Sprintf("define a USERDEF `field` name and optional type, range, or enum (multi)\nfield formats: STRING_F:S NUMBER_F,{0:360} ENUM_F,{A,B,C}\ntype indicators: %s#Data_Types", spec.ADIFSpecURL))
 	return ctx
 }
 
