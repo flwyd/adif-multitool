@@ -1,0 +1,81 @@
+# Tests Cabrillo conversion of BARTG RTTY spec from
+# https://bartg.org.uk/wp/wp-content/uploads/2021/01/sample-bartg-hf-rtty.pdf
+
+env MY_EXCHANGE='rst:rst_sent=599 nr:stx time:stx_string'
+env THEIR_EXCHANGE='rst:rst_rcvd nr:srx time:srx_string'
+
+# BARTG HF RTTY: conversion from Cabrillo to Cabrillo
+exec adifmt cat --output cabrillo --cabrillo-my-exchange $MY_EXCHANGE --cabrillo-their-exchange $THEIR_EXCHANGE bartg-rtty-example.cabrillo
+cmp stdout bartg-rtty-example-formatted.cabrillo
+! stderr .
+
+# BARTG HF RTTY: conversion from Cabrillo to TSV
+exec adifmt cat --output tsv --cabrillo-my-exchange $MY_EXCHANGE --cabrillo-their-exchange $THEIR_EXCHANGE bartg-rtty-example.cabrillo
+cmp stdout bartg-rtty-example.tsv
+! stderr .
+
+-- bartg-rtty-example.cabrillo --
+START-OF-LOG: 3.0
+CREATED-BY: DXLog.net v2.5.5
+CONTEST: BARTG-RTTY
+CALLSIGN: GW4SKA
+CATEGORY-OPERATOR: SOAB
+CATEGORY-TRANSMITTER: ONE
+CATEGORY-POWER: HIGH
+CATEGORY-BAND: ALL
+CATEGORY-MODE: RTTY
+CLAIMED-SCORE: 8
+CLUB: BARTG
+NAME: John Barber
+ADDRESS: Llwyn Onn, 49 Blackmill Road
+ADDRESS: Bryncethin, Bridgend
+ADDRESS: CF32 9YN, Wales
+OPERATORS: GW4SKA
+SOAPBOX:
+QSO: 14093 RY 2020-03-21 1728 GW4SKA 599 0001 1728 GB50TG 599 0002 1728
+QSO: 14093 RY 2020-03-21 1728 GW4SKA 599 0002 1728 XU1ABC 599 0010 1728
+END-OF-LOG:
+-- bartg-rtty-example-formatted.cabrillo --
+START-OF-LOG: 3.0
+X-INSTRUCTIONS: Fill out headers following contest instructions
+X-INSTRUCTIONS: Delete any unnecessary headers
+X-INSTRUCTIONS: Double-check QSO lines, keeping columns in order
+X-INSTRUCTIONS: Report bugs at https://github.com/flwyd/adif-multitool
+CREATED-BY: ADIF Multitool (devel)
+SOAPBOX:
+CONTEST: BARTG-RTTY
+CALLSIGN: GW4SKA
+CLUB: BARTG
+OPERATORS: GW4SKA
+NAME: John Barber
+EMAIL:
+ADDRESS: Llwyn Onn, 49 Blackmill Road
+ADDRESS: Bryncethin, Bridgend
+ADDRESS: CF32 9YN, Wales
+ADDRESS-CITY:
+ADDRESS-STATE-PROVINCE:
+ADDRESS-POSTALCODE:
+ADDRESS-COUNTRY:
+GRID-LOCATOR:
+LOCATION:
+CLAIMED-SCORE: 8
+OFFTIME:
+CATEGORY-ASSISTED:
+CATEGORY-BAND: 20M
+CATEGORY-MODE: RTTY
+CATEGORY-OPERATOR: SOAB
+CATEGORY-OVERLAY:
+CATEGORY-POWER: HIGH
+CATEGORY-STATION:
+CATEGORY-TIME:
+CATEGORY-TRANSMITTER: ONE
+X-INSTRUCTIONS: See contest rules for expected category values
+X-Q:                          --info sent--------- --info rcvd---------
+X-Q: freq  mo date       time call   rst nr   time call   rst nr   time
+QSO: 14093 RY 2020-03-21 1728 GW4SKA 599 0001 1728 GB50TG 599 0002 1728
+QSO: 14093 RY 2020-03-21 1728 GW4SKA 599 0002 1728 XU1ABC 599 0010 1728
+END-OF-LOG:
+-- bartg-rtty-example.tsv --
+FREQ	MODE	QSO_DATE	TIME_ON	STATION_CALLSIGN	RST_SENT	STX	STX_STRING	CALL	RST_RCVD	SRX	SRX_STRING	BAND	OPERATOR	CONTEST_ID
+14.093	RTTY	20200321	1728	GW4SKA	599	0001	1728	GB50TG	599	0002	1728	20m	GW4SKA	BARTG-RTTY
+14.093	RTTY	20200321	1728	GW4SKA	599	0002	1728	XU1ABC	599	0010	1728	20m	GW4SKA	BARTG-RTTY

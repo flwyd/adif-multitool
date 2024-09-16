@@ -178,6 +178,7 @@ func usage(fs *flag.FlagSet, term string) func() {
 			c.AddFlags(cfs)
 			cfs.SetOutput(out)
 			cfs.PrintDefaults()
+			fmt.Fprint(out, c.Help())
 		} else {
 			fmt.Fprintln(out, "Formats:", strings.Join(adif.FormatNames(), ", "))
 			fmt.Fprintf(out, "To see options specific to a format, run\n%s help formatname\n", fs.Name())

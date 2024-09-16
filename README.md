@@ -178,21 +178,48 @@ logs for ham radio contests.  ADIF Multitool can convert to and from Carbillo,
 but this is a lossy process: many ADIF fields are not included in Cabrillo and
 some Cabrillo values don't perfectly map to ADIF like the `DIGI` mode and the
 transmitter ID field.  The latter is imported as an app-specific field,
- `APP_CABRILLO_TRANSMITTER_ID`.
-
-The flags `--cabrillo-my-exchange-field` and `--cabrillo-their-exchange-field`
-represent the contest exchange, e.g. `adifmt cat
---cabrillo-their-exchange-field=ARRL_SECT
---cabrillo-my-exchange-field=MY_ARRL_SECT field_day.adi`.  If the source log
-file does not have the exchange your station set, a single value can be used for
-all QSOs like `--cabrillo-my-exchange=WTX`.  If the flags are not given, the
-`SRX_STRING`/`SRX` and `STX_STRING`/`STX` are used for their/my exchange.
+`APP_CABRILLO_TRANSMITTER_ID`.
 
 Cabrillo contacts starting with `X-QSO:` rather than `QSO:` are imported with an
 `APP_CABRILLO_XQSO` boolean field set; if this field is set and true (`Y`) then
 `X-QSO:` will be used for export.  These contacts are used by contest organizers
-to confirm contacts without granting credit, e.g. if they were made with too high
-a power for the submitting station’s category.
+to confirm contacts without granting credit, e.g. if they were made with too
+high a power for the submitting station’s category.
+
+When converting to or from Cabrillo, the relevant fields for the contest must be
+provided as options.  The “core” fields—frequency/band, mode, date, time,
+your station’s callsign, and the contacted station’s callsign—are always
+included.  You need to provide the field(s) or values for your exchange as
+`--cabrillo-my-exchange` and the contacted station’s exchange fields as
+`--cabrillo-their-exchange`.  If additional fields are needed at the end of the
+QSO (typically transmitter ID) use `--cabrillo-extra-field`.  Each of these
+options can be given multiple times for multiple fields, or given once with a
+quoted space-delimited list of fields.  The syntax for each field is
+`header:field_a/field_b?=default`, with each portion optional, but either at
+least one field or a default value must be specified.  See the next section for
+full examples.
+
+* `header:` provides a short name for the field which appears in a comment
+  (`X-Q:` line) above the QSO list to make it easy to see what the fields mean.
+  Examples: `rst:`, `exch:`, `name:`.
+* `field1` or `field1/field2` specifies which ADIF field should provide the
+  value for the Cabrillo field.  If there is no value in `field1`, `field2` is
+  used.  There is no limit on the number of fields.  Field names are
+  case-insensitive.  Examples: `RST_SENT`, `STX/STX_STRING`,
+  `srx_string/arrl_section/state`.
+* `?` makes a field optional.  If there is no data in any of the fields and no
+  default set, one or more `-` characters will be used in the Cabrillo file to
+  mark the absence of a value, since Cabrillo is space-separated.  If `?` is not
+  present in a field definition, conversion to Cabrillo will fail if no ADIF
+  field has a value for a record.  Note that only one `?` at the end of the
+  field list is required.  Examples: `IOTA?`, `srx/srx_string?`.
+* `=default` provides a default value if no ADIF field is set.  A default value
+  may be provided without any fields if an exchange is the same for the whole
+  contest, e.g. your name or location, though this will result in the field
+  being discarded during import from Cabrillo.  Examples: `=Hiram` (Contest
+  exchange is name), `MY_GRIDSQUARE=FN31PR` (use grid locator if present, use
+  `FN31PR` if not set), `arrl_section/state=DX` (use `ARRL_SECTION` or `STATE`
+  field if set, otherwise log exchange as `DX`).
 
 When converting from Cabrillo, header fields like `CLUB` and `CATEGORY-OVERLAY`
 are preserved as ADIF headers with `APP_CABRILLO_` prefixes, e.g.
@@ -216,6 +243,134 @@ your log file carefully and
 [report any conversion bugs](https://github.com/flwyd/adif-multitool/issues).
 Cabrillo 3.0 is currently the only supported format for import or export;
 Cabrillo 2.0 support could be added if there is demand.
+
+##### Common Cabrillo exchanges
+
+Rather than exhaustively list every contest and a Cabrillo template, the
+following are options for exchanges formats which are in common use.  Find the
+exchange used by your contest.  Contest exchanges can typically be found on
+[WA7BNM Contest Calendar](https://contestcalendar.com/); [LY1VP maintains many
+Cabrillo file examples](https://www.qrz.lt/ly1vp/ataskaitu_formatai/cabrillo/qso-template.html).
+
+The headers (text before `:`) in field definitions are printed in an `X-Q:`
+comment for easy visual field alignment.  Example output for an ARRL Field Day
+log might look like
+
+```
+X-Q:                          --info sent--- --info rcvd----
+X-Q: freq  mo date       time call class sec call  class sec
+QSO: 21345 PH 2024-06-22 2345 VE3Z 1B    ONN W1AW  10A   CT
+QSO: 7015  CW 2024-06-23 0015 VE3Z 1B    ONN K1USN 2A    MA
+```
+
+###### WWROF example with transmitter ID
+
+This set of options outputs the
+[example in the Cabrillo specification](https://wwrof.org/cabrillo/cabrillo-qso-data/)
+which has the logging station sending a numeric value, the contacted station
+sending a two-letter state, and a transmitter ID (`0` or `1`) as an extra field.
+RST signal reports are also in the exchange.
+
+`--cabrillo-my-exchange 'rst:RST_SENT exch:STX/STX_STRING'
+--cabrillo-their-exchange 'rst:RST_RCVD exch:STATE'
+--cabrillo-extra-field 't:APP_CABRILLO_TRANSMITTER_ID'`
+
+###### Signal report and location
+
+This example prefers `SRX_STRING`, e.g. county abbreviations in a state QSO
+party, then `STATE`.  A different location field like `ARRL_SECTION` could be
+used.  Use `STX_STRING/MY_STATE=NY` to provide `NY` as your default exchange.
+
+`--cabrillo-my-exchange 'rst:RST_SENT exch:STX_STRING/MY_STATE'
+--cabrillo-their-exchange 'rst:RST_RCVD exch:SRX_STRING/STATE'`
+
+###### Name and location
+
+Operator name (rather than signal report) is used by North America QSO Party,
+some other state QSO parties, and a variety of international contests.  ADIF
+Multitool will insert an underscore in any multi-word exchange value like
+`PEGGY_SUE`.  Make sure to use your own name as default.
+
+`--cabrillo-my-exchange 'name:MY_NAME=Napoleon exch:STX_STRING/MY_STATE'
+--cabrillo-their-exchange 'name:NAME exch:SRX_STRING/STATE'`
+
+###### ARRL Field Day
+
+ARRL Field Day, Winter Field Day, and some other contests use a station
+classifier and ARRL section.  There is no `MY_CLASS` field in ADIF, so it’s
+provided with just a default (and therefore would not be imported to ADIF).
+Change `3A` and `PAC` to your station’s class and section.
+
+`--cabrillo-my-exchange 'class:=3A sec:MY_ARRL_SECTION=PAC'
+--cabrillo-their-exchange 'class:CLASS sec:ARRL_SECTION'`
+
+###### Just grid square
+
+VHF+ contests often only exchange callsign and grid locator.
+
+`--cabrillo-my-exchange 'exch:MY_GRIDSQUARE'
+--cabrillo-their-exchange 'exch:GRIDSQUARE'`
+
+###### Signal report and serial number
+
+For numeric exchanges, typically auto-incrementing.  Used by many CQ magazine
+and RSGB contests.  Uses `=59` as a default so perfunctory signal reports don’t
+need to be logged.
+
+`--cabrillo-my-exchange 'rst:RST_SENT=59 nr:STX'
+--cabrillo-their-exchange 'rst:RST_RCVD=59 nr:SRX'`
+
+###### Signal report and exchange text
+
+When no more-specific field fits, use `STX_STRING` (your exchange) and
+`SRX_STRING` (their exchange).  This makes contest logging simple.
+
+`--cabrillo-my-exchange 'rst:RST_SENT exch:STX_STRING'
+--cabrillo-their-exchange 'rst:RST_RCVD exch:SRX_STRING'`
+
+If data might be a serial number or might be a string, use both:
+
+`--cabrillo-my-exchange 'rst:RST_SENT exch:STX/STX_STRING'
+--cabrillo-their-exchange 'rst:RST_RCVD exch:SRX/SRX_STRING'`
+
+###### Serial number and IOTA island ID
+
+This exchange is used by the RSGB IOTA contest, and is an example of an optional
+field (for stations which aren’t on an island).
+
+`--cabrillo-my-exchange 'rst:RST_SENT ex1:STX ex2:MY_IOTA?'
+--cabrillo-their-exchange 'rst:RST_RCVD ex1:SRX ex2:IOTA?'`
+
+###### Serial number, precedence, check, ARRL section
+
+This four-part exchange is used in ARRL Sweepstakes contests.  Both precedence
+and check have ADIF fields, `MY_PRECEDENCE` and `MY_CHECK` are not part of the
+ADIF 3.1.4 specification.
+
+`--cabrillo-my-exchange 'nr:stx p:my_precedence ck:my_check sec:my_arrl_section'
+--cabrillo-their-exchange 'nr:srx p:precedence ck:check sec:arrl_section'`
+
+###### User-defined field
+
+The RSGB Club Calls contest exchange includes signal report, serial number,
+club status (broadcasting from club headquarters, associated with a club, or
+not associated with a club), and the club the station is associated with.
+Since neither the status nor club are ADIF fields, only one can use `SRX_STRING`
+so a user-defined enumeration field `RSGB_STATUS` is added.  Note that status
+and club aren’t part of the logging station’s side of the exchange, per
+[RSGB Cabrillo example](https://www.rsgbcc.org/hf/rules/2021/Cabrillo-Information.shtml).
+(Alternatively, the `CLASS` and `CHECK` fields could perhaps be used.)
+
+`--cabrillo-my-exchange 'rst:RST_SENT nr:STX'
+--cabrillo-their-exchange 'rst:RST_RCVD nr:SRX status:RSGB_STATUS club:SRX_STRING?'
+--userdef 'RSGB_STATUS,{HQ,CM,NC}'`
+
+###### DARC WAE QTC
+
+QTC Traffic, as used in the DARC Worked All Europe contest, is not yet supported
+since there are two separate sets of fields encoded in the same log.  If you are
+interested in support, please open a GitHub issue and describe how this data is
+stored in an ADIF file.
 
 #### International text and Unicode
 

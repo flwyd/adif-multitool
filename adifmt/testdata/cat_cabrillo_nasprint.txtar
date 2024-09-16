@@ -1,0 +1,67 @@
+# Tests Cabrillo conversion of NA Sprint spec from
+# https://www.qrz.lt/ly1vp/ataskaitu_formatai/cabrillo/qso-template.html
+
+# No field for my ex1, shouldn't end up in TSV
+env MY_EXCHANGE='nr:stx ex1:=JEFF ex2:my_state?=TX'
+env THEIR_EXCHANGE='nr:srx ex1:name ex2:state'
+
+# NA Sprint: conversion from Cabrillo to Cabrillo
+exec adifmt cat --output cabrillo --cabrillo-my-exchange $MY_EXCHANGE --cabrillo-their-exchange $THEIR_EXCHANGE nasprint-example.cabrillo
+cmp stdout nasprint-example-formatted.cabrillo
+! stderr .
+
+# NA Sprint: conversion from Cabrillo to TSV
+exec adifmt cat --output tsv --cabrillo-my-exchange $MY_EXCHANGE --cabrillo-their-exchange $THEIR_EXCHANGE nasprint-example.cabrillo
+cmp stdout nasprint-example.tsv
+! stderr .
+
+-- nasprint-example.cabrillo --
+START-OF-LOG: 3.0
+X-Q:                            ----------info sent----------- ----------info rcvd----------- 
+X-Q: freq    mo date       time call       nr   ex1        ex2 call       nr   ex1        ex2
+X-Q: *****   ** yyyy-mm-dd nnnn ********** nnnn aaaaaaaaaa aaa ********** nnnn aaaaaaaaaa aaa
+QSO: 14042   CW 1999-09-05 0000 N5TJ          1 JEFF       TX  N6TR          1 TREE       OR
+QSO: 14042.5 CW 1999-09-05 0001 N5TJ          2 JEFF       TX  W1AW         42 HIRAM      CT
+END-OF-LOG:
+-- nasprint-example-formatted.cabrillo --
+START-OF-LOG: 3.0
+X-INSTRUCTIONS: Fill out headers following contest instructions
+X-INSTRUCTIONS: Delete any unnecessary headers
+X-INSTRUCTIONS: Double-check QSO lines, keeping columns in order
+X-INSTRUCTIONS: Report bugs at https://github.com/flwyd/adif-multitool
+CREATED-BY: ADIF Multitool (devel)
+SOAPBOX:
+CONTEST:
+CALLSIGN: N5TJ
+CLUB:
+OPERATORS:
+NAME:
+EMAIL:
+ADDRESS:
+ADDRESS-CITY:
+ADDRESS-STATE-PROVINCE:
+ADDRESS-POSTALCODE:
+ADDRESS-COUNTRY:
+GRID-LOCATOR:
+LOCATION:
+CLAIMED-SCORE: 0
+OFFTIME:
+CATEGORY-ASSISTED:
+CATEGORY-BAND: 20M
+CATEGORY-MODE: CW
+CATEGORY-OPERATOR:
+CATEGORY-OVERLAY:
+CATEGORY-POWER:
+CATEGORY-STATION:
+CATEGORY-TIME:
+CATEGORY-TRANSMITTER:
+X-INSTRUCTIONS: See contest rules for expected category values
+X-Q:                            --info sent----- --info rcvd------
+X-Q: freq    mo date       time call nr ex1  ex2 call nr ex1   ex2
+QSO: 14042   CW 1999-09-05 0000 N5TJ 1  JEFF TX  N6TR 1  TREE  OR
+QSO: 14042.5 CW 1999-09-05 0001 N5TJ 2  JEFF TX  W1AW 42 HIRAM CT
+END-OF-LOG:
+-- nasprint-example.tsv --
+FREQ	MODE	QSO_DATE	TIME_ON	STATION_CALLSIGN	STX	MY_STATE	CALL	SRX	NAME	STATE	BAND
+14.042	CW	19990905	0000	N5TJ	1	TX	N6TR	1	TREE	OR	20m
+14.0425	CW	19990905	0001	N5TJ	2	TX	W1AW	42	HIRAM	CT	20m

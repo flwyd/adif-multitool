@@ -1,0 +1,180 @@
+# Tests simple Cabrillo conversion
+# Example QSO data from https://wwrof.org/cabrillo/cabrillo-qso-data/
+
+# conversion from Cabrillo to Cabrillo
+exec adifmt cat --output cabrillo --cabrillo-my-exchange rst:rst_sent --cabrillo-my-exchange exch:stx --cabrillo-their-exchange rst:rst_rcvd --cabrillo-their-exchange exch:state --cabrillo-extra-field t:app_cabrillo_transmitter_id wwrof-example.cabrillo
+cmp stdout wwrof-example.cabrillo
+! stderr .
+
+# conversion from Cabrillo to TSV
+exec adifmt cat --output tsv --cabrillo-my-exchange rst:rst_sent --cabrillo-my-exchange exch:stx --cabrillo-their-exchange rst:rst_rcvd --cabrillo-their-exchange exch:state --cabrillo-extra-field t:app_cabrillo_transmitter_id wwrof-example.cabrillo
+cmp stdout wwrof-example.tsv
+! stderr .
+
+# conversion from Cabrillo to ADI
+exec adifmt cat --output adi --adi-field-separator=newline --adi-record-separator=2newline --cabrillo-my-exchange rst:rst_sent --cabrillo-my-exchange exch:stx --cabrillo-their-exchange rst:rst_rcvd --cabrillo-their-exchange exch:state --cabrillo-extra-field t:app_cabrillo_transmitter_id wwrof-example.cabrillo
+cmp stdout wwrof-example.adi
+! stderr .
+
+# conversion from Cabrillo (with tab-delimited fields) to ADI
+exec adifmt cat --output adi --adi-field-separator=newline --adi-record-separator=2newline --cabrillo-my-exchange rst:rst_sent --cabrillo-my-exchange exch:stx --cabrillo-their-exchange rst:rst_rcvd --cabrillo-their-exchange exch:state --cabrillo-extra-field t:app_cabrillo_transmitter_id wwrof-tabs.cabrillo
+cmp stdout wwrof-example.adi
+! stderr .
+
+# conversion from ADI to Cabrillo using tab as delimiter
+exec adifmt cat --output cabrillo --cabrillo-delimiter-tab --cabrillo-my-exchange rst:rst_sent --cabrillo-my-exchange exch:stx --cabrillo-their-exchange rst:rst_rcvd --cabrillo-their-exchange exch:state --cabrillo-extra-field t:app_cabrillo_transmitter_id wwrof-example.adi
+cmp stdout wwrof-tabs.cabrillo
+! stderr .
+
+-- wwrof-example.cabrillo --
+START-OF-LOG: 3.0
+X-INSTRUCTIONS: Fill out headers following contest instructions
+X-INSTRUCTIONS: Delete any unnecessary headers
+X-INSTRUCTIONS: Double-check QSO lines, keeping columns in order
+X-INSTRUCTIONS: Report bugs at https://github.com/flwyd/adif-multitool
+CREATED-BY: ADIF Multitool (devel)
+SOAPBOX: Please pass the soap.
+SOAPBOX: Not soap, radio.
+CONTEST: TEST-CONTEST
+CALLSIGN: HC8N
+CLUB: The Cabrillo Radio Club
+OPERATORS: W1A
+NAME: Hiram Percey
+EMAIL: ham@example.com
+ADDRESS: 225 Main Street
+ADDRESS: Newington, CT 06111
+ADDRESS-CITY:
+ADDRESS-STATE-PROVINCE:
+ADDRESS-POSTALCODE:
+ADDRESS-COUNTRY:
+GRID-LOCATOR: FN31pr
+LOCATION: Your mom's house
+CLAIMED-SCORE: 123
+OFFTIME:
+CATEGORY-ASSISTED:
+CATEGORY-BAND: 80M
+CATEGORY-MODE: SSB
+CATEGORY-OPERATOR: MULTI-OP
+CATEGORY-OVERLAY: YOUTH
+CATEGORY-POWER: LOW
+CATEGORY-STATION: FIXED
+CATEGORY-TIME: 6-HOURS
+CATEGORY-TRANSMITTER: ONE
+X-MAX-POWER: 100
+X-INSTRUCTIONS: See contest rules for expected category values
+X-Q:                         --info sent-- --info rcvd--
+X-Q: freq mo date       time call rst exch call rst exch t
+QSO: 3799 PH 1999-03-06 0711 HC8N 59  700  W1AW 59  CT   0
+QSO: 3799 PH 1999-03-06 0712 HC8N 59  700  N5KO 59  CA   0
+END-OF-LOG:
+-- wwrof-tabs.cabrillo --
+START-OF-LOG: 3.0
+X-INSTRUCTIONS: Fill out headers following contest instructions
+X-INSTRUCTIONS: Delete any unnecessary headers
+X-INSTRUCTIONS: Double-check QSO lines, keeping columns in order
+X-INSTRUCTIONS: Report bugs at https://github.com/flwyd/adif-multitool
+CREATED-BY: ADIF Multitool (devel)
+SOAPBOX: Please pass the soap.
+SOAPBOX: Not soap, radio.
+CONTEST: TEST-CONTEST
+CALLSIGN: HC8N
+CLUB: The Cabrillo Radio Club
+OPERATORS: W1A
+NAME: Hiram Percey
+EMAIL: ham@example.com
+ADDRESS: 225 Main Street
+ADDRESS: Newington, CT 06111
+ADDRESS-CITY:
+ADDRESS-STATE-PROVINCE:
+ADDRESS-POSTALCODE:
+ADDRESS-COUNTRY:
+GRID-LOCATOR: FN31pr
+LOCATION: Your mom's house
+CLAIMED-SCORE: 123
+OFFTIME:
+CATEGORY-ASSISTED:
+CATEGORY-BAND: 80M
+CATEGORY-MODE: SSB
+CATEGORY-OPERATOR: MULTI-OP
+CATEGORY-OVERLAY: YOUTH
+CATEGORY-POWER: LOW
+CATEGORY-STATION: FIXED
+CATEGORY-TIME: 6-HOURS
+CATEGORY-TRANSMITTER: ONE
+X-MAX-POWER: 100
+X-INSTRUCTIONS: See contest rules for expected category values
+X-Q: 				sent	sent	sent	rcvd	rcvd	rcvd
+X-Q: freq	mo	date	time	call	rst	exch	call	rst	exch	t
+QSO: 3799	PH	1999-03-06	0711	HC8N	59	700	W1AW	59	CT	0
+QSO: 3799	PH	1999-03-06	0712	HC8N	59	700	N5KO	59	CA	0
+END-OF-LOG:
+-- wwrof-example.tsv --
+FREQ	MODE	QSO_DATE	TIME_ON	STATION_CALLSIGN	RST_SENT	STX	CALL	RST_RCVD	STATE	APP_CABRILLO_TRANSMITTER_ID	BAND	OPERATOR	CONTEST_ID	GRIDSQUARE
+3.799	SSB	19990306	0711	HC8N	59	700	W1AW	59	CT	0	80m	W1A	TEST-CONTEST	FN31pr
+3.799	SSB	19990306	0712	HC8N	59	700	N5KO	59	CA	0	80m	W1A	TEST-CONTEST	FN31pr
+-- wwrof-example.adi --
+Generated with 2 records by https://github.com/flwyd/adif-multitool
+
+<APP_CABRILLO_ADDRESS:36:S>225 Main Street
+Newington, CT 06111
+<APP_CABRILLO_CALLSIGN:4:S>HC8N
+<APP_CABRILLO_CATEGORY_BAND:3:S>80M
+<APP_CABRILLO_CATEGORY_MODE:3:S>SSB
+<APP_CABRILLO_CATEGORY_OPERATOR:8:S>MULTI-OP
+<APP_CABRILLO_CATEGORY_OVERLAY:5:S>YOUTH
+<APP_CABRILLO_CATEGORY_POWER:3:S>LOW
+<APP_CABRILLO_CATEGORY_STATION:5:S>FIXED
+<APP_CABRILLO_CATEGORY_TIME:7:S>6-HOURS
+<APP_CABRILLO_CATEGORY_TRANSMITTER:3:S>ONE
+<APP_CABRILLO_CLAIMED_SCORE:3:S>123
+<APP_CABRILLO_CLUB:23:S>The Cabrillo Radio Club
+<APP_CABRILLO_CONTEST:12:S>TEST-CONTEST
+<APP_CABRILLO_CREATED_BY:22:S>ADIF Multitool (devel)
+<APP_CABRILLO_EMAIL:15:S>ham@example.com
+<APP_CABRILLO_GRID_LOCATOR:6:S>FN31pr
+<APP_CABRILLO_LOCATION:16:S>Your mom's house
+<APP_CABRILLO_NAME:12:S>Hiram Percey
+<APP_CABRILLO_OPERATORS:3:S>W1A
+<APP_CABRILLO_SOAPBOX:39:S>Please pass the soap.
+Not soap, radio.
+<APP_CABRILLO_X_MAX_POWER:3:S>100
+<ADIF_VER:5>3.1.4
+<CREATED_TIMESTAMP:15>23450607 080910
+<PROGRAMID:6>adifmt
+<PROGRAMVERSION:7>(devel)
+<EOH>
+
+<FREQ:5:N>3.799
+<MODE:3:E>SSB
+<QSO_DATE:8:D>19990306
+<TIME_ON:4:T>0711
+<STATION_CALLSIGN:4>HC8N
+<RST_SENT:2>59
+<STX:3:N>700
+<CALL:4>W1AW
+<RST_RCVD:2>59
+<STATE:2>CT
+<APP_CABRILLO_TRANSMITTER_ID:1:N>0
+<BAND:3:E>80m
+<OPERATOR:3:S>W1A
+<CONTEST_ID:12:S>TEST-CONTEST
+<GRIDSQUARE:6:S>FN31pr
+<EOR>
+
+<FREQ:5:N>3.799
+<MODE:3:E>SSB
+<QSO_DATE:8:D>19990306
+<TIME_ON:4:T>0712
+<STATION_CALLSIGN:4>HC8N
+<RST_SENT:2>59
+<STX:3:N>700
+<CALL:4>N5KO
+<RST_RCVD:2>59
+<STATE:2>CA
+<APP_CABRILLO_TRANSMITTER_ID:1:N>0
+<BAND:3:E>80m
+<OPERATOR:3:S>W1A
+<CONTEST_ID:12:S>TEST-CONTEST
+<GRIDSQUARE:6:S>FN31pr
+<EOR>
+

@@ -1,0 +1,108 @@
+# Tests Cabrillo conversion of Sweepstakes spec from
+# https://www.qrz.lt/ly1vp/ataskaitu_formatai/cabrillo/qso-template.html
+
+# MY_CHECK and MY_PRECEDENCE aren't in ADIF 3.1.4 spec
+env MY_EXCHANGE='nr:stx p:my_precedence ck:my_check sec:my_arrl_section'
+env THEIR_EXCHANGE='nr:srx p:precedence ck:check sec:arrl_section'
+
+# ARRL Sweepstakes: conversion from Cabrillo to Cabrillo
+exec adifmt cat --output cabrillo --cabrillo-my-exchange $MY_EXCHANGE --cabrillo-their-exchange $THEIR_EXCHANGE sweepstakes-example.cabrillo
+cmp stdout sweepstakes-example-formatted.cabrillo
+! stderr .
+
+# ARRL Sweepstakes: conversion from Cabrillo to TSV
+exec adifmt cat --output tsv --cabrillo-my-exchange $MY_EXCHANGE --cabrillo-their-exchange $THEIR_EXCHANGE sweepstakes-example.cabrillo
+cmp stdout sweepstakes-example.tsv
+! stderr .
+
+
+-- sweepstakes-example.cabrillo --
+START-OF-LOG: 3.0
+CONTEST: ARRL-SS-CW
+CALLSIGN: N5KO
+CATEGORY-ASSISTED: NON-ASSISTED
+CATEGORY-OPERATOR: MULTI-OP
+CATEGORY-POWER: HIGH
+LOCATION: SCV
+CATEGORY-TRANSMITTER: ONE
+CLAIMED-SCORE: 160
+OPERATORS: N5KO K6AW
+CLUB: Northern California Contest Club
+NAME: Trey Garlough
+ADDRESS: 7375 Oak Ridge Road
+ADDRESS-CITY: Aptos
+ADDRESS-STATE-PROVINCE: CA
+ADDRESS-POSTALCODE: 95003
+ADDRESS-COUNTRY: USA
+SOAPBOX: The ARRL November Sweepstakes is my favorite contest.  It really
+SOAPBOX: is fun to get on and try to make a clean sweep.
+QSO: 21042 CW 1997-11-01 2101 N5KO          1 B 74 SCV WA2VRR        1 A 74 VA
+QSO: 21042 CW 1997-11-01 2102 N5KO          2 B 74 SCV NJ2L          2 B 81 WNY
+QSO: 21042 CW 1997-11-01 2102 N5KO          3 B 74 SCV K9ZO          2 A 69 IL
+QSO: 21042 CW 1997-11-01 2103 N5KO          4 B 74 SCV K7QQ          3 A 62 IL
+QSO: 21042 CW 1997-11-01 2103 N5KO          5 B 74 SCV W4YE          5 A 74 VA
+QSO: 21042 CW 1997-11-01 2104 N5KO          6 B 74 SCV K3SV          3 B 71 EPA
+QSO: 21042 CW 1997-11-01 2105 N5KO          7 B 74 SCV K2GS          3 A 89 ENY
+QSO: 21042 CW 1997-11-01 2106 N5KO          8 B 74 SCV KX1E          3 A 56 ME
+QSO: 21042 CW 1997-11-01 2106 N5KO          9 B 74 SCV N0EID         2 Q 82 MO
+QSO: 21042 CW 1997-11-01 2107 N5KO         10 B 74 SCV N4AF         12 B 58 NC
+END-OF-LOG:
+-- sweepstakes-example-formatted.cabrillo --
+START-OF-LOG: 3.0
+X-INSTRUCTIONS: Fill out headers following contest instructions
+X-INSTRUCTIONS: Delete any unnecessary headers
+X-INSTRUCTIONS: Double-check QSO lines, keeping columns in order
+X-INSTRUCTIONS: Report bugs at https://github.com/flwyd/adif-multitool
+CREATED-BY: ADIF Multitool (devel)
+SOAPBOX: The ARRL November Sweepstakes is my favorite contest.  It really
+SOAPBOX: is fun to get on and try to make a clean sweep.
+CONTEST: ARRL-SS-CW
+CALLSIGN: N5KO
+CLUB: Northern California Contest Club
+OPERATORS: N5KO K6AW
+NAME: Trey Garlough
+EMAIL:
+ADDRESS: 7375 Oak Ridge Road
+ADDRESS-CITY: Aptos
+ADDRESS-STATE-PROVINCE: CA
+ADDRESS-POSTALCODE: 95003
+ADDRESS-COUNTRY: USA
+GRID-LOCATOR:
+LOCATION: SCV
+CLAIMED-SCORE: 160
+OFFTIME:
+CATEGORY-ASSISTED: NON-ASSISTED
+CATEGORY-BAND: 15M
+CATEGORY-MODE: CW
+CATEGORY-OPERATOR: MULTI-OP
+CATEGORY-OVERLAY:
+CATEGORY-POWER: HIGH
+CATEGORY-STATION:
+CATEGORY-TIME:
+CATEGORY-TRANSMITTER: ONE
+X-INSTRUCTIONS: See contest rules for expected category values
+X-Q:                          --info sent----- --info rcvd-------
+X-Q: freq  mo date       time call nr p ck sec call   nr p ck sec
+QSO: 21042 CW 1997-11-01 2101 N5KO 1  B 74 SCV WA2VRR 1  A 74 VA
+QSO: 21042 CW 1997-11-01 2102 N5KO 2  B 74 SCV NJ2L   2  B 81 WNY
+QSO: 21042 CW 1997-11-01 2102 N5KO 3  B 74 SCV K9ZO   2  A 69 IL
+QSO: 21042 CW 1997-11-01 2103 N5KO 4  B 74 SCV K7QQ   3  A 62 IL
+QSO: 21042 CW 1997-11-01 2103 N5KO 5  B 74 SCV W4YE   5  A 74 VA
+QSO: 21042 CW 1997-11-01 2104 N5KO 6  B 74 SCV K3SV   3  B 71 EPA
+QSO: 21042 CW 1997-11-01 2105 N5KO 7  B 74 SCV K2GS   3  A 89 ENY
+QSO: 21042 CW 1997-11-01 2106 N5KO 8  B 74 SCV KX1E   3  A 56 ME
+QSO: 21042 CW 1997-11-01 2106 N5KO 9  B 74 SCV N0EID  2  Q 82 MO
+QSO: 21042 CW 1997-11-01 2107 N5KO 10 B 74 SCV N4AF   12 B 58 NC
+END-OF-LOG:
+-- sweepstakes-example.tsv --
+FREQ	MODE	QSO_DATE	TIME_ON	STATION_CALLSIGN	STX	MY_PRECEDENCE	MY_CHECK	MY_ARRL_SECTION	CALL	SRX	PRECEDENCE	CHECK	ARRL_SECTION	BAND	CONTEST_ID
+21.042	CW	19971101	2101	N5KO	1	B	74	SCV	WA2VRR	1	A	74	VA	15m	ARRL-SS-CW
+21.042	CW	19971101	2102	N5KO	2	B	74	SCV	NJ2L	2	B	81	WNY	15m	ARRL-SS-CW
+21.042	CW	19971101	2102	N5KO	3	B	74	SCV	K9ZO	2	A	69	IL	15m	ARRL-SS-CW
+21.042	CW	19971101	2103	N5KO	4	B	74	SCV	K7QQ	3	A	62	IL	15m	ARRL-SS-CW
+21.042	CW	19971101	2103	N5KO	5	B	74	SCV	W4YE	5	A	74	VA	15m	ARRL-SS-CW
+21.042	CW	19971101	2104	N5KO	6	B	74	SCV	K3SV	3	B	71	EPA	15m	ARRL-SS-CW
+21.042	CW	19971101	2105	N5KO	7	B	74	SCV	K2GS	3	A	89	ENY	15m	ARRL-SS-CW
+21.042	CW	19971101	2106	N5KO	8	B	74	SCV	KX1E	3	A	56	ME	15m	ARRL-SS-CW
+21.042	CW	19971101	2106	N5KO	9	B	74	SCV	N0EID	2	Q	82	MO	15m	ARRL-SS-CW
+21.042	CW	19971101	2107	N5KO	10	B	74	SCV	N4AF	12	B	58	NC	15m	ARRL-SS-CW

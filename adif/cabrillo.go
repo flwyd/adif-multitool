@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -35,23 +36,30 @@ import (
 // details about header values.
 type CabrilloIO struct {
 	Callsign, Contest, Club, CreatedBy, Email,
-	GridLocator, Location, Name, Address, Soapbox, MyExchange string
-	Operators                                             []string
-	LowPowerMax, QRPPowerMax                              int
-	MinReportedOfftime                                    time.Duration
-	Categories                                            map[string]string
-	TheirExchangeField, TheirExchangeAlt, MyExchangeField string
+	GridLocator, Location, Name, Address, Soapbox string
+	Operators                              []string
+	LowPowerMax, QRPPowerMax, ClaimedScore int
+	MinReportedOfftime                     time.Duration
+	Categories                             map[string]string
+	MyExchange, TheirExchange, ExtraFields CabrilloFieldList
+	TabDelimiter                           bool
 }
 
 func NewCabrilloIO() *CabrilloIO {
-	return &CabrilloIO{LowPowerMax: 100, QRPPowerMax: 5, Categories: make(map[string]string)}
+	return &CabrilloIO{
+		LowPowerMax:   100,
+		QRPPowerMax:   5,
+		Categories:    make(map[string]string),
+		MyExchange:    make(CabrilloFieldList, 0),
+		TheirExchange: make(CabrilloFieldList, 0),
+		ExtraFields:   make(CabrilloFieldList, 0),
+	}
 }
 
 func (_ *CabrilloIO) String() string { return "cabrillo" }
 
 func (o *CabrilloIO) Read(in io.Reader) (*Logfile, error) {
-	headers := make(map[string]string) // this doesn't preserve header order in ADIF
-	qsos := make([]cabrilloQSO, 0)
+	headers := make(map[string]string)
 	s := bufio.NewScanner(in)
 	readLine := func() (k, v string, err error) {
 		if !s.Scan() {
@@ -77,7 +85,7 @@ func (o *CabrilloIO) Read(in io.Reader) (*Logfile, error) {
 			err = fmt.Errorf("invalid Cabrillo line %q", line)
 			return
 		}
-		v = strings.TrimPrefix(v, " ")
+		v = strings.Trim(v, " ")
 		return
 	}
 	start, version, err := readLine()
@@ -90,6 +98,8 @@ func (o *CabrilloIO) Read(in io.Reader) (*Logfile, error) {
 	if v, err := strconv.ParseFloat(version, 64); err != nil || v != 3.0 {
 		return nil, fmt.Errorf("don't know how to parse Cabrillo version %q", version)
 	}
+	l := NewLogfile()
+	conf := o.toConfig()
 	for {
 		k, v, err := readLine()
 		if err != nil {
@@ -102,12 +112,14 @@ func (o *CabrilloIO) Read(in io.Reader) (*Logfile, error) {
 			break
 		}
 		if k == "QSO" || k == "X-QSO" {
-			q, err := parseCabrilloQSO(v)
+			r, err := conf.toADIF(v)
 			if err != nil {
 				return nil, err
 			}
-			q.xQSO = k == "X-QSO"
-			qsos = append(qsos, q)
+			if k == "X-QSO" {
+				r.Set(Field{Name: "APP_CABRILLO_XQSO", Value: "Y", Type: TypeBoolean})
+			}
+			l.AddRecord(r)
 		} else if v != "" && k != "X-INSTRUCTIONS" && k != "X-Q" {
 			if vv, ok := headers[k]; ok {
 				headers[k] = vv + "\n" + v
@@ -131,31 +143,28 @@ func (o *CabrilloIO) Read(in io.Reader) (*Logfile, error) {
 	if v := headers["GRID-LOCATOR"]; v != "" && !strings.ContainsAny(v, " ,&") {
 		fromHeaders = append(fromHeaders, Field{Name: "GRIDSQUARE", Value: v, Type: TypeString})
 	}
-	l := NewLogfile()
-	for _, q := range qsos {
-		r, err := o.toRecord(q)
-		if err != nil {
-			return nil, err
+	for _, f := range fromHeaders {
+		for _, r := range l.Records {
+			if v, ok := r.Get(f.Name); !ok || v.Value != "" {
+				r.Set(f)
+			}
 		}
-		for _, f := range fromHeaders {
-			r.Set(f)
-		}
-		l.AddRecord(r)
 	}
-	for k, v := range headers {
+	headorder := maps.Keys(headers)
+	slices.Sort(headorder)
+	for _, k := range headorder {
+		v := headers[k]
 		l.Header.Set(Field{Name: "APP_CABRILLO_" + strings.ReplaceAll(k, "-", "_"), Value: v, Type: TypeString})
 	}
 	return l, nil
 }
 
 func (o *CabrilloIO) Write(l *Logfile, out io.Writer) error {
-	qsos := make([]cabrilloQSO, len(l.Records))
-	for i, r := range l.Records {
-		if q, err := o.toCabrilloQSO(r); err != nil {
-			return err
-		} else {
-			qsos[i] = q
-		}
+	var qlines [][2]string
+	var err error
+	qlines, err = o.toConfig().toLines(l)
+	if err != nil {
+		return err
 	}
 	headers := make(map[string]string)
 	for _, f := range l.Header.Fields() {
@@ -166,7 +175,21 @@ func (o *CabrilloIO) Write(l *Logfile, out io.Writer) error {
 	w := bufio.NewWriter(out)
 	writeLine := func(k, v string) error {
 		for _, line := range splitLines.Split(v, -1) {
-			if _, err := w.WriteString(fmt.Sprintf("%s: %s\n", k, line)); err != nil {
+			if _, err := w.WriteString(k); err != nil {
+				return err
+			}
+			if _, err := w.WriteRune(':'); err != nil {
+				return err
+			}
+			if line != "" {
+				if _, err := w.WriteRune(' '); err != nil {
+					return err
+				}
+				if _, err := w.WriteString(line); err != nil {
+					return err
+				}
+			}
+			if _, err := w.WriteRune('\n'); err != nil {
 				return err
 			}
 		}
@@ -213,7 +236,9 @@ func (o *CabrilloIO) Write(l *Logfile, out io.Writer) error {
 	} else if o.Location != "" {
 		headers["LOCATION"] = o.Location
 	}
-	setHeader("CLAIMED-SCORE", "")
+	if s, ok := headers["CLAIMED-SCORE"]; !ok || s == "" || s == "0" {
+		setHeader("CLAIMED-SCORE", fmt.Sprintf("%d", o.ClaimedScore))
+	}
 	// TODO compute offtimes
 	setHeader("OFFTIME", "")
 	cats := o.getCategories(l)
@@ -224,7 +249,7 @@ func (o *CabrilloIO) Write(l *Logfile, out io.Writer) error {
 			setHeader("CATEGORY-"+k, v)
 		}
 	}
-	headerOrder := []string{"SOAPBOX", "CONTEST", "CALLSIGN", "CLUB", "OPERATORS", "NAME", "EMAIL", "ADDRESS", "GRID-LOCATOR", "LOCATION", "CLAIMED-SCORE", "OFFTIME"}
+	headerOrder := []string{"SOAPBOX", "CONTEST", "CALLSIGN", "CLUB", "OPERATORS", "NAME", "EMAIL", "ADDRESS", "ADDRESS-CITY", "ADDRESS-STATE-PROVINCE", "ADDRESS-POSTALCODE", "ADDRESS-COUNTRY", "GRID-LOCATOR", "LOCATION", "CLAIMED-SCORE", "OFFTIME"}
 	categoryOrder := maps.Keys(CabrilloCategoryValues)
 	sort.Strings(categoryOrder)
 	for _, c := range categoryOrder {
@@ -241,7 +266,7 @@ func (o *CabrilloIO) Write(l *Logfile, out io.Writer) error {
 	if err := writeLine("CREATED-BY", o.CreatedBy); err != nil {
 		return err
 	}
-	wrote := make(map[string]bool)
+	wrote := map[string]bool{"CREATED-BY": true}
 	for _, h := range headerOrder {
 		if err := writeLine(h, headers[h]); err != nil {
 			return err
@@ -258,48 +283,8 @@ func (o *CabrilloIO) Write(l *Logfile, out io.Writer) error {
 	if err := writeLine("X-INSTRUCTIONS", "See contest rules for expected category values"); err != nil {
 		return err
 	}
-	// space-align QSO fields
-	var widths [11]int
-	for i, s := range qsoHeader {
-		widths[i] = len(s)
-	}
-	qstrs := make([][11]string, len(qsos))
-	for j, q := range qsos {
-		qstrs[j] = [11]string{q.freq, q.mode, q.date, q.time, q.myCall, q.myRST, q.myExch, q.theirCall, q.theirRST, q.theirExch, q.txmitID}
-		for i, s := range qstrs[j] {
-			widths[i] = maxInt(widths[i], len(s))
-		}
-	}
-	align := func(q [11]string) string {
-		var r strings.Builder
-		for i, f := range q {
-			if i != 0 {
-				r.WriteRune(' ')
-			}
-			r.WriteString(f)
-			for j := widths[i] - len(f); j > 0; j-- {
-				r.WriteRune(' ')
-			}
-		}
-		return r.String()
-	}
-	// write QSO field guide and space-aligned QSO records
-	isoff := widths[0] + widths[1] + widths[2] + widths[3] + 4
-	iroff := widths[4] + widths[5] + widths[6] + 2 - len("--info sent")
-	trail := widths[7] + widths[8] + widths[9] + 2 - len("--info rcvd")
-	info := strings.Repeat(" ", isoff) + "--info sent" + strings.Repeat("-", iroff) + " --info rcvd" + strings.Repeat("-", trail)
-	if err := writeLine("X-Q", info); err != nil {
-		return err
-	}
-	if err := writeLine("X-Q", align(qsoHeader)); err != nil {
-		return err
-	}
-	for i, q := range qsos {
-		k := "QSO"
-		if q.xQSO {
-			k = "X-QSO"
-		}
-		if err := writeLine(k, align(qstrs[i])); err != nil {
+	for _, q := range qlines {
+		if err := writeLine(q[0], q[1]); err != nil {
 			return err
 		}
 	}
@@ -388,113 +373,20 @@ func (o *CabrilloIO) getCategories(l *Logfile) map[string]string {
 	return cats
 }
 
-// qsoHeader contains column names to print above space-aligned QSO columns.
-// See https://wwrof.org/cabrillo/cabrillo-qso-data/
-// Note that the site's example has this row starting with "QSO:" but that
-// is incorrect, since these are not part of an actual QSO.
-var qsoHeader = [11]string{
-	"freq", "mo", "date", "time", "call", "rst", "exch", "call", "rst", "exch", "t"}
-
-type cabrilloQSO struct {
-	freq, mode, date, time, myCall, myRST, myExch, theirCall, theirRST, theirExch, txmitID string
-	xQSO                                                                                   bool
-}
-
-func parseCabrilloQSO(line string) (cabrilloQSO, error) {
-	qso := cabrilloQSO{}
-	order := []*string{
-		&qso.freq, &qso.mode, &qso.date, &qso.time,
-		&qso.myCall, &qso.myRST, &qso.myExch,
-		&qso.theirCall, &qso.theirRST, &qso.theirExch,
-		&qso.txmitID, // transmitter ID is optional
+func (o *CabrilloIO) toConfig() cabrilloConfig {
+	c := cabrilloConfig{fields: make(CabrilloFieldList, 0), useTabs: o.TabDelimiter,
+		coreLen: len(cabCoreFields), myLen: len(o.MyExchange) + 1, theirLen: len(o.TheirExchange) + 1, extraLen: len(o.ExtraFields)}
+	c.fields = append(c.fields, cabCoreFields...)
+	myCall := cabFieldMyCall
+	if o.Callsign != "" {
+		myCall.Default = o.Callsign
 	}
-	chunks := strings.Fields(line)
-	if len(order) != len(chunks) && len(order)-1 != len(chunks) {
-		return qso, fmt.Errorf("want %d fields in Cabrillo QSO, got %d in %q", len(order), len(chunks), line)
-	}
-	for i, s := range chunks {
-		*order[i] = s
-	}
-	return qso, nil
-}
-
-func firstFieldValue(r *Record, fnames ...string) (string, error) {
-	for _, n := range fnames {
-		if n != "" { // e.g. unset MyExchangeField
-			if f, ok := r.Get(n); ok && f.Value != "" {
-				return f.Value, nil
-			}
-		}
-	}
-	return "", fmt.Errorf("missing %s in %v", strings.Join(fnames, ", "), r)
-}
-
-func (o *CabrilloIO) toCabrilloQSO(r *Record) (cabrilloQSO, error) {
-	q := cabrilloQSO{}
-	if f, ok := r.Get("BAND"); ok && f.Value != "" {
-		if q.freq, ok = cabrilloBandsRev[strings.ToLower(f.Value)]; !ok {
-			return q, fmt.Errorf("invalid band %q for Cabrillo", f.Value)
-		}
-	}
-	if mhz, err := r.ParseFloat("FREQ"); err == nil && mhz > 0 && mhz < 30 {
-		mhzf, _ := r.Get("FREQ")
-		q.freq = mhzToKhz(mhzf.Value)
-	}
-	if q.freq == "" {
-		return q, fmt.Errorf("missing FREQ or BAND in %v", r)
-	}
-	if f, ok := r.Get("MODE"); ok && f.Value != "" {
-		switch strings.ToUpper(f.Value) {
-		case "CW":
-			q.mode = "CW"
-		case "RTTY", "RTTYM":
-			q.mode = "RY"
-		case "SSB", "AM", "DIGITALVOICE":
-			q.mode = "PH" // TODO verify DIGITALVOICE counts as phone
-		case "FM":
-			q.mode = "FM"
-		default:
-			q.mode = "DG" // most modes are digital
-		}
-	} else {
-		return q, fmt.Errorf("missing MODE in %v", r)
-	}
-	if d, err := r.ParseDate("QSO_DATE"); err != nil {
-		return q, fmt.Errorf("invalid QSO_DATE: %w", err)
-	} else {
-		q.date = d.Format("2006-01-02")
-	}
-	var err error
-	if q.time, err = firstFieldValue(r, "TIME_ON"); err != nil {
-		return q, err
-	}
-	if q.myCall, err = firstFieldValue(r, "STATION_CALLSIGN", "OPERATOR"); err != nil {
-		return q, err
-	}
-	if q.myRST, err = firstFieldValue(r, "RST_SENT"); err != nil {
-		return q, err
-	}
-	if q.myExch, err = firstFieldValue(r, o.MyExchangeField, "STX_STRING", "STX"); err != nil {
-		return q, err
-	}
-	if q.theirCall, err = firstFieldValue(r, "CALL"); err != nil {
-		return q, err
-	}
-	if q.theirRST, err = firstFieldValue(r, "RST_RCVD"); err != nil {
-		return q, err
-	}
-	if q.theirExch, err = firstFieldValue(r, o.TheirExchangeField, "SRX_STRING", "SRX", o.TheirExchangeAlt); err != nil {
-		return q, err
-	}
-	// TODO is there a beter ADIF field for this?
-	q.txmitID = "0"
-	if f, ok := r.Get("APP_CABRILLO_TRANSMITTER_ID"); ok && (f.Value == "0" || f.Value == "1") {
-		q.txmitID = f.Value
-	}
-	if x, err := r.ParseBool("APP_CABRILLO_XQSO"); err == nil {
-		q.xQSO = x
-	}
-	return q, nil
+	c.fields = append(c.fields, myCall)
+	c.fields = append(c.fields, o.MyExchange...)
+	c.fields = append(c.fields, cabFieldTheirCall)
+	c.fields = append(c.fields, o.TheirExchange...)
+	c.fields = append(c.fields, o.ExtraFields...)
+	return c
 }
 
 func mhzToKhz(mhz string) string {
@@ -516,121 +408,57 @@ func mhzToKhz(mhz string) string {
 	}
 }
 
-func (o *CabrilloIO) toRecord(q cabrilloQSO) (*Record, error) {
-	r := NewRecord()
-	if band := cabrilloBands[strings.ToUpper(q.freq)]; band != "" {
-		r.Set(Field{Name: "BAND", Value: band, Type: TypeString})
-	} else {
-		f, err := strconv.ParseFloat(q.freq, 64)
-		if err != nil {
-			return nil, fmt.Errorf("invalid frequency %q: %w", q.freq, err)
-		}
-		// Cabrillo frequencies are in kHz, ADIF are in MHz
-		r.Set(Field{Name: "FREQ", Value: strconv.FormatFloat(f/1000.0, 'f', -1, 64), Type: TypeNumber})
-		var mb string
-		if f > 1800 && f < 2000 {
-			mb = "160m"
-		} else if f > 3500 && f < 4000 {
-			mb = "80m"
-		} else if f > 7000 && f < 7300 {
-			mb = "40m"
-		} else if f > 14000 && f < 14350 {
-			mb = "20m"
-		} else if f > 21000 && f < 21450 {
-			mb = "15m"
-		} else if f > 28000 && f < 29700 {
-			mb = "10m"
-		}
-		if mb != "" {
-			r.Set(Field{Name: "BAND", Value: mb, Type: TypeString})
-		}
+type bandRange struct {
+	cabrilloName, adifName string
+	lo, hi                 float64
+}
+
+func (b bandRange) compare(f float64) int {
+	if b.lo <= f && b.hi >= f {
+		return 0
 	}
-	m := cabrilloModes[q.mode]
-	if m == "" {
-		return nil, fmt.Errorf("invalid Cabrillo mode %q", q.mode)
+	if b.hi < f {
+		return -1
 	}
-	r.Set(Field{Name: "MODE", Value: m, Type: TypeString})
-	d, err := time.ParseInLocation("2006-01-02", q.date, time.UTC)
-	if err != nil {
-		return nil, fmt.Errorf("invalid date %q: %w", q.date, err)
+	return 1
+}
+
+func findBandFreq(freq float64) (bandRange, bool) {
+	i, ok := slices.BinarySearchFunc(cabrilloRanges, freq, bandRange.compare)
+	if !ok {
+		return bandRange{}, false
 	}
-	r.Set(Field{Name: "QSO_DATE", Value: d.Format("20060102"), Type: TypeDate})
-	t, err := time.ParseInLocation("1504", q.time, time.UTC)
-	if err != nil {
-		return nil, fmt.Errorf("invalid time %q: %w", q.time, err)
-	}
-	r.Set(Field{Name: "TIME_ON", Value: t.Format("1504"), Type: TypeTime})
-	if !cabrilloCallPat.MatchString(q.myCall) {
-		return nil, fmt.Errorf("invalid callsign %q", q.myCall)
-	}
-	r.Set(Field{Name: "STATION_CALLSIGN", Value: q.myCall, Type: TypeString})
-	if !cabrilloRSTPat.MatchString(q.myRST) {
-		return nil, fmt.Errorf("invalid RST %q", q.myRST)
-	}
-	r.Set(Field{Name: "RST_SENT", Value: q.myRST, Type: TypeString})
-	if o.MyExchangeField == "" {
-		r.Set(Field{Name: "STX_STRING", Value: q.myExch, Type: TypeString})
-		if !isAllDigits(q.myExch) {
-			r.Set(Field{Name: "STX", Value: q.myExch, Type: TypeNumber})
-		}
-	} else {
-		r.Set(Field{Name: o.MyExchangeField, Value: q.myExch, Type: TypeString})
-	}
-	if !cabrilloCallPat.MatchString(q.theirCall) {
-		return nil, fmt.Errorf("invalid callsign %q", q.theirCall)
-	}
-	r.Set(Field{Name: "CALL", Value: q.theirCall, Type: TypeString})
-	if !cabrilloRSTPat.MatchString(q.theirRST) {
-		return nil, fmt.Errorf("invalid RST %q", q.theirRST)
-	}
-	r.Set(Field{Name: "RST_RCVD", Value: q.theirRST, Type: TypeString})
-	if o.TheirExchangeField == "" {
-		r.Set(Field{Name: "SRX_STRING", Value: q.theirExch, Type: TypeString})
-		if isAllDigits(q.theirExch) {
-			r.Set(Field{Name: "SRX", Value: q.theirExch, Type: TypeNumber})
-		}
-	} else {
-		r.Set(Field{Name: o.TheirExchangeField, Value: q.theirExch, Type: TypeString})
-	}
-	if q.txmitID != "" {
-		if q.txmitID != "0" && q.txmitID != "1" {
-			return nil, fmt.Errorf("invalid transmitter ID %q", q.txmitID)
-		}
-		r.Set(Field{Name: "APP_CABRILLO_TRANSMITTER_ID", Value: q.txmitID, Type: TypeNumber})
-	}
-	if q.xQSO {
-		r.Set(Field{Name: "APP_CABRILLO_XQSO", Value: "Y", Type: TypeBoolean})
-	}
-	return r, nil
+	return cabrilloRanges[i], true
 }
 
 var (
-	cabrilloBands = map[string]string{
-		"1800":  "160m",
-		"3500":  "80m",
-		"7000":  "40m",
-		"14000": "20m",
-		"21000": "15m",
-		"28000": "10m",
-		"50":    "6m",
-		"70":    "4m",
-		"144":   "2m",
-		"222":   "1.25m",
-		"432":   "70cm",
-		"902":   "33cm",
-		"1.2G":  "23cm",
-		"2.3G":  "13cm",
-		"3.4G":  "9cm",
-		"5.7G":  "6cm",
-		"10G":   "3cm",
-		"24G":   "1.25cm",
-		"47G":   "6mm",
-		"75G":   "4mm",
-		"122G":  "2.5mm",
-		"134G":  "2mm",
-		"241G":  "1mm",
-		"LIGHT": "submm",
+	cabrilloRanges = []bandRange{
+		{cabrilloName: "1800", adifName: "160m", lo: 1.8, hi: 2.0},
+		{cabrilloName: "3500", adifName: "80m", lo: 3.5, hi: 4.0},
+		{cabrilloName: "7000", adifName: "40m", lo: 7.0, hi: 7.3},
+		{cabrilloName: "14000", adifName: "20m", lo: 14.0, hi: 14.35},
+		{cabrilloName: "21000", adifName: "15m", lo: 21.0, hi: 21.45},
+		{cabrilloName: "28000", adifName: "10m", lo: 28.0, hi: 29.7},
+		{cabrilloName: "50", adifName: "6m", lo: 50.0, hi: 54.0},
+		{cabrilloName: "70", adifName: "4m", lo: 70.0, hi: 71.0},
+		{cabrilloName: "144", adifName: "2m", lo: 144.0, hi: 148.0},
+		{cabrilloName: "222", adifName: "1.25m", lo: 222.0, hi: 225.0},
+		{cabrilloName: "432", adifName: "70cm", lo: 420.0, hi: 450.0},
+		{cabrilloName: "902", adifName: "33cm", lo: 902.0, hi: 928.0},
+		{cabrilloName: "1.2G", adifName: "23cm", lo: 1240.0, hi: 1300.0},
+		{cabrilloName: "2.3G", adifName: "13cm", lo: 2300.0, hi: 2450.0},
+		{cabrilloName: "3.4G", adifName: "9cm", lo: 3300.0, hi: 3500.0},
+		{cabrilloName: "5.7G", adifName: "6cm", lo: 5650.0, hi: 5925.0},
+		{cabrilloName: "10G", adifName: "3cm", lo: 10000.0, hi: 10500.0},
+		{cabrilloName: "24G", adifName: "1.25cm", lo: 24000.0, hi: 24250.0},
+		{cabrilloName: "47G", adifName: "6mm", lo: 47000.0, hi: 47200.0},
+		{cabrilloName: "75G", adifName: "4mm", lo: 75500.0, hi: 81000.0},
+		{cabrilloName: "122G", adifName: "2.5mm", lo: 119980.0, hi: 123000.0},
+		{cabrilloName: "134G", adifName: "2mm", lo: 134000.0, hi: 149000.0},
+		{cabrilloName: "241G", adifName: "1mm", lo: 241000.0, hi: 250000.0},
+		{cabrilloName: "LIGHT", adifName: "submm", lo: 300000.0, hi: 7500000.0},
 	}
+	cabrilloBands    = map[string]string{}
 	cabrilloBandsRev = map[string]string{}
 	// CATEGORY-BAND uses wavelength in meters up to 2m, but QSOs use the lowest frequency on the band.
 	// Both QSOs and the category use the same values for 222 MHz and up.
@@ -721,7 +549,392 @@ var (
 )
 
 func init() {
-	for k, v := range cabrilloBands {
-		cabrilloBandsRev[v] = k
+	for _, b := range cabrilloRanges {
+		cabrilloBands[b.cabrilloName] = b.adifName
+		cabrilloBandsRev[b.adifName] = b.cabrilloName
 	}
 }
+
+/*
+	CabrilloField represents a field in a Cabrillo file which will appear in a column.
+
+The data in a CabrilloField can come from one field, a series of ADIF fields,
+or be set to a default value, e.g. an exchange used throughout a contest.  A
+field optionally has a header, shown only for informational purposes.  Fields
+are required by default, but may be made optional, in which case one or more
+hyphens will be used in the output if the ADIF fields are all empty.
+*/
+type CabrilloField struct {
+	TryFields  []string
+	Default    string
+	Header     string
+	AllowEmpty bool
+}
+
+const CabrilloFieldExample = "header:field_a/field_b?=default"
+
+var cabrilloFieldSyntax = regexp.MustCompile(`^([^:]*:)?(\w+(?:/\w+)*)?(\??)(=\S+)?$`)
+
+func (c *CabrilloField) String() string {
+	var s strings.Builder
+	if c.Header != "" {
+		s.WriteString(c.Header)
+		s.WriteRune(':')
+	}
+	for i, x := range c.TryFields {
+		if i > 0 {
+			s.WriteRune('/')
+		}
+		s.WriteString(x)
+	}
+	if c.Default != "" {
+		s.WriteRune('=')
+		s.WriteString(c.Default)
+	}
+	if c.AllowEmpty {
+		s.WriteRune('?')
+	}
+	return s.String()
+}
+
+func parseCabrilloField(v string) (CabrilloField, error) {
+	g := cabrilloFieldSyntax.FindStringSubmatch(v)
+	if g == nil {
+		return CabrilloField{}, fmt.Errorf("%q did not match format %s", v, CabrilloFieldExample)
+	}
+	try := strings.Split(g[2], "/")
+	def := strings.TrimPrefix(g[4], "=")
+	if len(try) == 0 && def == "" {
+		return CabrilloField{}, fmt.Errorf("%v did not specify field name(s) or =default value", v)
+	}
+	return CabrilloField{Header: strings.TrimSuffix(g[1], ":"), TryFields: try, AllowEmpty: g[3] == "?", Default: def}, nil
+}
+
+func (c *CabrilloField) fromADIF(r *Record) (string, error) {
+	var v string
+	for _, t := range c.TryFields {
+		if v != "" {
+			break
+		}
+		t = strings.ToUpper(t)
+		switch t {
+		default:
+			if f, ok := r.Get(t); ok && f.Value != "" {
+				v = strings.ReplaceAll(strings.TrimSpace(f.Value), " ", "_")
+			}
+		case "QSO_DATE", "QSO_DATE_OFF":
+			d, err := r.ParseDate(t)
+			if err != nil {
+				return "", err
+			}
+			v = d.Format("2006-01-02")
+		case "TIME_ON", "TIME_OFF":
+			d, err := r.ParseTime(t)
+			if err != nil {
+				return "", err
+			}
+			v = d.Format("1504")
+		case "FREQ":
+			if n, err := r.ParseFloat(t); err != nil {
+				continue
+			} else if n >= 30 { // Cabrillo uses band names above 30 MHz
+				b, ok := findBandFreq(n)
+				if !ok {
+					continue
+				}
+				v = b.cabrilloName
+			} else {
+				f, _ := r.Get(t) // ParseFloat already determined it's set
+				// string-to-string to avoid floating point precision issues
+				v = mhzToKhz(f.Value)
+			}
+		case "BAND":
+			if f, ok := r.Get(t); ok && f.Value != "" {
+				if b, ok := cabrilloBandsRev[strings.ToLower(f.Value)]; !ok {
+					return "", fmt.Errorf("invalid band %q for Cabrillo", f.Value)
+				} else {
+					v = b
+				}
+			}
+		case "MODE":
+			if f, ok := r.Get(t); ok && f.Value != "" {
+				switch strings.ToUpper(f.Value) {
+				case "CW":
+					v = "CW"
+				case "RTTY", "RTTYM":
+					v = "RY"
+				case "SSB", "AM", "DIGITALVOICE":
+					v = "PH" // TODO verify DIGITALVOICE counts as phone
+				case "FM":
+					v = "FM"
+				default:
+					v = "DG" // most modes are digital
+				}
+			}
+		}
+	}
+	if v == "" { // no TryFields value was present and/or valid
+		v = c.Default
+	}
+	if v == "" { // Default was empty
+		if !c.AllowEmpty {
+			return "", fmt.Errorf("missing %s in %s", strings.Join(c.TryFields, ","), r)
+		}
+		v = strings.Repeat("-", maxInt(len(c.Header), 1))
+	}
+	return v, nil
+}
+
+func (c *CabrilloField) toADIF(val string) (Field, error) {
+	if val == "" {
+		val = c.Default
+	}
+	var f Field
+	var fieldErr error
+	for _, t := range c.TryFields {
+		switch strings.ToUpper(t) {
+		case "QSO_DATE", "QSO_DATE_OFF":
+			if d, err := time.ParseInLocation("2006-01-02", val, time.UTC); err != nil {
+				fieldErr = fmt.Errorf("invalid Cabrillo date %q: %w", val, err)
+			} else {
+				f = Field{Name: t, Value: d.Format("20060102"), Type: TypeDate}
+			}
+		case "TIME_ON", "TIME_OFF":
+			if _, err := time.ParseInLocation("1504", val, time.UTC); err != nil {
+				fieldErr = fmt.Errorf("invalid hhmm time %q: %w", val, err)
+			} else {
+				f = Field{Name: t, Value: val, Type: TypeTime}
+			}
+		case "FREQ":
+			if b, ok := cabrilloBands[strings.ToUpper(val)]; ok {
+				f = Field{Name: "BAND", Value: b, Type: TypeEnumeration}
+				break
+			}
+			if khz, err := strconv.ParseFloat(val, 64); err != nil {
+				fieldErr = fmt.Errorf("invalid frequency %q kHz: %w", val, err)
+			} else if khz/1000 < cabrilloRanges[0].lo {
+				fieldErr = fmt.Errorf("frequency %s kHz too low", val)
+			} else {
+				f = Field{Name: t, Value: strconv.FormatFloat(khz/1000.0, 'f', -1, 64), Type: TypeNumber}
+			}
+		case "BAND":
+			if b, ok := cabrilloBands[strings.ToUpper(val)]; !ok {
+				fieldErr = fmt.Errorf("unknown Cabrillo band %q", val)
+			} else {
+				f = Field{Name: t, Value: b, Type: TypeEnumeration}
+			}
+		case "MODE":
+			f = Field{Name: t, Value: cabrilloModes[strings.ToUpper(val)], Type: TypeEnumeration}
+		case "SRX", "STX":
+			if _, err := strconv.ParseInt(val, 10, 64); err != nil {
+				fieldErr = fmt.Errorf("non-numeric serial number %q: %w", val, err)
+			} else {
+				f = Field{Name: t, Value: val, Type: TypeNumber}
+			}
+		case "APP_CABRILLO_TRANSMITTER_ID":
+			if len(val) != 1 || !isAllDigits(val) {
+				fieldErr = fmt.Errorf("invalid transmitter ID %q", val)
+			} else {
+				f = Field{Name: t, Value: val, Type: TypeNumber}
+			}
+		default:
+			// TODO check spec type, validate format
+			if strings.HasSuffix(val, "-") && val == strings.Repeat("-", len(val)) {
+				val = ""
+			}
+			f = Field{Name: t, Value: val}
+		}
+		if f.Name != "" {
+			break
+		}
+	}
+	if f.Name == "" {
+		return f, fieldErr
+	}
+	return f, nil
+}
+
+/*
+CabrilloFieldList is a slice of CabrilloFields.  Repeated appearances of a flag
+append to the list, or a single flag value can have multiple fields separated by
+whitespace.  The syntax is:
+
+  - header:field_a=default (single labeled field, default value)
+  - field_a/field_b? (two possible fields, allow empty, no header)
+  - header:=default (no lookup, same value for all QSOs)
+  - header:field_a/field_b?=default (the works)
+
+Examples: "rst:rst_sent=59" "srx_string/state?" "exch:=CT"
+*/
+type CabrilloFieldList []CabrilloField
+
+func (l *CabrilloFieldList) String() string {
+	s := make([]string, len(*l))
+	for i, f := range *l {
+		s[i] = f.String()
+	}
+	return strings.Join(s, " ")
+}
+
+func (l *CabrilloFieldList) Set(v string) error {
+	sp := strings.Fields(v)
+	for _, s := range sp {
+		f, err := parseCabrilloField(s)
+		if err != nil {
+			return err
+		}
+		*l = append(*l, f)
+	}
+	return nil
+}
+
+func (l *CabrilloFieldList) Get() any { return *l }
+
+type cabrilloConfig struct {
+	// core, my, their, extra
+	fields CabrilloFieldList
+	// TODO just have four lists of fields and a method to combine them?
+	coreLen, myLen, theirLen, extraLen int
+	useTabs                            bool
+}
+
+func (c cabrilloConfig) toADIF(qso string) (*Record, error) {
+	cols := strings.Fields(qso)
+	if len(cols) != len(c.fields) {
+		return nil, fmt.Errorf("got %d fields, expected %d %s in %q", len(cols), len(c.fields), &c.fields, qso)
+	}
+	r := NewRecord()
+	for i, f := range c.fields {
+		v, err := f.toADIF(cols[i])
+		if err != nil {
+			return nil, err
+		}
+		r.Set(v)
+	}
+	if _, ok := r.Get("BAND"); !ok {
+		if f, err := r.ParseFloat("FREQ"); err == nil {
+			if b, ok := findBandFreq(f); ok {
+				r.Set(Field{Name: "BAND", Value: b.adifName, Type: TypeEnumeration})
+			}
+		}
+	}
+	return r, nil
+}
+
+func (c cabrilloConfig) toCabrillo(r *Record) (cabrilloRecord, error) {
+	cr := cabrilloRecord{fields: make([]string, len(c.fields))}
+	for i, f := range c.fields {
+		v, err := f.fromADIF(r)
+		if err != nil {
+			return cabrilloRecord{}, err
+		}
+		cr.fields[i] = v
+	}
+	if x, err := r.ParseBool("APP_CABRILLO_XQSO"); err == nil {
+		cr.xQSO = x
+	}
+	return cr, nil
+}
+
+func (c cabrilloConfig) toLines(l *Logfile) ([][2]string, error) {
+	h := make([]string, len(c.fields))
+	for i, f := range c.fields {
+		h[i] = f.Header
+	}
+	crs := make([]cabrilloRecord, len(l.Records))
+	for i, r := range l.Records {
+		cr, err := c.toCabrillo(r)
+		if err != nil {
+			return nil, err
+		}
+		crs[i] = cr
+	}
+	formatLine := func(s []string) string { return strings.Join(s, "\t") }
+	sentRcvd := strings.Repeat("\t", c.coreLen-1) + strings.Repeat("\tsent", c.myLen) + strings.Repeat("\trcvd", c.theirLen)
+	if !c.useTabs {
+		widths := make([]int, len(c.fields))
+		for i, s := range h {
+			widths[i] = len(s)
+		}
+		for _, r := range crs {
+			for i, s := range r.fields {
+				widths[i] = maxInt(widths[i], len(s))
+			}
+		}
+		formatLine = func(s []string) string {
+			var r strings.Builder
+			for i, f := range s {
+				if i != 0 {
+					r.WriteRune(' ')
+				}
+				r.WriteString(f)
+				if i < len(widths)-1 {
+					for j := widths[i] - len(f); j > 0; j-- {
+						r.WriteRune(' ')
+					}
+				}
+			}
+			return r.String()
+		}
+		// TODO this would be better with four field slices and a method to combine a slice
+		var corelen, sentlen, rcvdlen int
+		for i := 0; i < c.coreLen; i++ {
+			corelen += widths[i]
+			corelen++ // space between fields
+		}
+		for i := 0; i < c.myLen; i++ {
+			sentlen += widths[c.coreLen+i]
+			if i != 0 {
+				sentlen++ // space between fields
+			}
+		}
+		for i := 0; i < c.theirLen; i++ {
+			rcvdlen += widths[c.coreLen+c.myLen+i]
+			if i != 0 {
+				rcvdlen++ // space between fields
+			}
+		}
+		isent := "--info sent"
+		if sentlen < len(isent) {
+			isent = "--sent"
+		}
+		isent += strings.Repeat("-", maxInt(sentlen-len(isent), 0))
+		ircvd := "--info rcvd"
+		if rcvdlen < len(ircvd) {
+			ircvd = "--rcvd"
+		}
+		ircvd += strings.Repeat("-", maxInt(rcvdlen-len(ircvd), 0))
+		sentRcvd = strings.Repeat(" ", corelen) + isent + " " + ircvd
+	}
+	lines := make([][2]string, len(l.Records)+2)
+	lines[0][0] = "X-Q"
+	lines[0][1] = sentRcvd
+	lines[1][0] = "X-Q"
+	lines[1][1] = formatLine(h)
+	for i, cr := range crs {
+		if cr.xQSO {
+			lines[i+2][0] = "X-QSO"
+		} else {
+			lines[i+2][0] = "QSO"
+		}
+		lines[i+2][1] = formatLine(cr.fields)
+	}
+	return lines, nil
+}
+
+type cabrilloRecord struct {
+	fields []string
+	xQSO   bool
+}
+
+var (
+	cabFieldFreq      = CabrilloField{TryFields: []string{"FREQ", "BAND"}, Header: "freq"}
+	cabFieldMode      = CabrilloField{TryFields: []string{"MODE"}, Header: "mo"}
+	cabFieldDate      = CabrilloField{TryFields: []string{"QSO_DATE", "QSO_DATE_OFF"}, Header: "date"}
+	cabFieldTime      = CabrilloField{TryFields: []string{"TIME_ON", "TIME_OFF"}, Header: "time"}
+	cabFieldMyCall    = CabrilloField{TryFields: []string{"STATION_CALLSIGN", "OPERATOR", "STATION_OWNER"}, Header: "call"}
+	cabFieldTheirCall = CabrilloField{TryFields: []string{"CALL"}, Header: "call"}
+	cabCoreFields     = []CabrilloField{cabFieldFreq, cabFieldMode, cabFieldDate, cabFieldTime}
+)
+
+// Good list of Cabrillo templates: https://www.qrz.lt/ly1vp/ataskaitu_formatai/cabrillo/qso-template.html

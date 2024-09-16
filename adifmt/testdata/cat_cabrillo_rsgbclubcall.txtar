@@ -1,0 +1,93 @@
+# Tests Cabrillo conversion of RSGB Club Calls contest from
+# https://www.rsgbcc.org/hf/rules/2021/Cabrillo-Information.shtml
+# Rules at https://www.rsgbcc.org/hf/rules/2024/rclubcalls.shtml
+
+# Exchange includes signal, serial number, club status (HQ, CM, NC), and club
+# affiliation (4-letter abbreviation for the club), but the example Cabrillo
+# file only has the status and club of the contacted station.  Since there are
+# three exchanged values and two don't have fields, use SRX_STRING for club
+# and a user-defined enum field RSGB_STATUS for the first.
+env MY_EXCHANGE='rst:RST_SENT nr:STX'
+env THEIR_EXCHANGE='rst:RST_RCVD nr:SRX status:RSGB_STATUS club:SRX_STRING?'
+
+# RSGSB clubcall: conversion from Cabrillo to Cabrillo
+exec adifmt cat --userdef=RSGB_STATUS,{HQ,CM,NC} --output cabrillo --cabrillo-my-exchange $MY_EXCHANGE --cabrillo-their-exchange $THEIR_EXCHANGE clubcall-example.cabrillo
+cmp stdout clubcall-example-formatted.cabrillo
+! stderr .
+
+# RSGB clubcall: conversion from Cabrillo to TSV
+exec adifmt cat --userdef=RSGB_STATUS,{HQ,CM,NC} --output tsv --cabrillo-my-exchange $MY_EXCHANGE --cabrillo-their-exchange $THEIR_EXCHANGE clubcall-example.cabrillo
+cmp stdout clubcall-example.tsv
+! stderr .
+
+-- clubcall-example.cabrillo --
+START-OF-LOG: 3.0
+CONTEST: RSGB-CLUB-CALLS
+CALLSIGN: GX3RCV
+OPERATORS: G4BUO
+NAME: Dave Lawley G4BUO
+ADDRESS: The Shack
+ADDRESS: Aerial Road
+ADDRESS: Anytown
+ADDRESS: Borset BO45 8TU
+SOAPBOX: K3, dipole
+QSO: 1953 PH 2016-11-12 2100 GX3RCV 59 001 GX4RFR 59 002 HQ FRAR
+QSO: 1953 PH 2016-11-12 2101 GX3RCV 59 002 G3SDC 59 001 CM DMUN
+QSO: 1953 PH 2016-11-12 2102 GX3RCV 59 003 G3AB 59 005 NC ----
+QSO: 1881 CW 2016-11-12 2117 GX3RCV 599 005 G4LMW 599 012 CM NEWB
+QSO: 1881 CW 2016-11-12 2118 GX3RCV 599 006 F5VEX 599 007 NC ----
+QSO: 1881 CW 2016-11-12 2119 GX3RCV 599 007 GB3HQ 599 022 HQ RSGB
+END-OF-LOG:
+-- clubcall-example-formatted.cabrillo --
+START-OF-LOG: 3.0
+X-INSTRUCTIONS: Fill out headers following contest instructions
+X-INSTRUCTIONS: Delete any unnecessary headers
+X-INSTRUCTIONS: Double-check QSO lines, keeping columns in order
+X-INSTRUCTIONS: Report bugs at https://github.com/flwyd/adif-multitool
+CREATED-BY: ADIF Multitool (devel)
+SOAPBOX: K3, dipole
+CONTEST: RSGB-CLUB-CALLS
+CALLSIGN: GX3RCV
+CLUB:
+OPERATORS: G4BUO
+NAME: Dave Lawley G4BUO
+EMAIL:
+ADDRESS: The Shack
+ADDRESS: Aerial Road
+ADDRESS: Anytown
+ADDRESS: Borset BO45 8TU
+ADDRESS-CITY:
+ADDRESS-STATE-PROVINCE:
+ADDRESS-POSTALCODE:
+ADDRESS-COUNTRY:
+GRID-LOCATOR:
+LOCATION:
+CLAIMED-SCORE: 0
+OFFTIME:
+CATEGORY-ASSISTED:
+CATEGORY-BAND: 160M
+CATEGORY-MODE: MIXED
+CATEGORY-OPERATOR:
+CATEGORY-OVERLAY:
+CATEGORY-POWER:
+CATEGORY-STATION:
+CATEGORY-TIME:
+CATEGORY-TRANSMITTER:
+X-INSTRUCTIONS: See contest rules for expected category values
+X-Q:                         --info sent--- --info rcvd---------------
+X-Q: freq mo date       time call   rst nr  call   rst nr  status club
+QSO: 1953 PH 2016-11-12 2100 GX3RCV 59  001 GX4RFR 59  002 HQ     FRAR
+QSO: 1953 PH 2016-11-12 2101 GX3RCV 59  002 G3SDC  59  001 CM     DMUN
+QSO: 1953 PH 2016-11-12 2102 GX3RCV 59  003 G3AB   59  005 NC     ----
+QSO: 1881 CW 2016-11-12 2117 GX3RCV 599 005 G4LMW  599 012 CM     NEWB
+QSO: 1881 CW 2016-11-12 2118 GX3RCV 599 006 F5VEX  599 007 NC     ----
+QSO: 1881 CW 2016-11-12 2119 GX3RCV 599 007 GB3HQ  599 022 HQ     RSGB
+END-OF-LOG:
+-- clubcall-example.tsv --
+FREQ	MODE	QSO_DATE	TIME_ON	STATION_CALLSIGN	RST_SENT	STX	CALL	RST_RCVD	SRX	RSGB_STATUS	SRX_STRING	BAND	OPERATOR	CONTEST_ID
+1.953	SSB	20161112	2100	GX3RCV	59	001	GX4RFR	59	002	HQ	FRAR	160m	G4BUO	RSGB-CLUB-CALLS
+1.953	SSB	20161112	2101	GX3RCV	59	002	G3SDC	59	001	CM	DMUN	160m	G4BUO	RSGB-CLUB-CALLS
+1.953	SSB	20161112	2102	GX3RCV	59	003	G3AB	59	005	NC		160m	G4BUO	RSGB-CLUB-CALLS
+1.881	CW	20161112	2117	GX3RCV	599	005	G4LMW	599	012	CM	NEWB	160m	G4BUO	RSGB-CLUB-CALLS
+1.881	CW	20161112	2118	GX3RCV	599	006	F5VEX	599	007	NC		160m	G4BUO	RSGB-CLUB-CALLS
+1.881	CW	20161112	2119	GX3RCV	599	007	GB3HQ	599	022	HQ	RSGB	160m	G4BUO	RSGB-CLUB-CALLS

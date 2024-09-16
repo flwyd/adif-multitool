@@ -93,83 +93,92 @@ END-OF-LOG:
 	wantFields := [][]Field{
 		{
 			{Name: "FREQ", Value: "14.234", Type: TypeNumber},
-			{Name: "BAND", Value: "20m", Type: TypeString},
-			{Name: "MODE", Value: "SSB", Type: TypeString},
+			{Name: "MODE", Value: "SSB", Type: TypeEnumeration},
 			{Name: "QSO_DATE", Value: "20231031", Type: TypeDate},
 			{Name: "TIME_ON", Value: "1234", Type: TypeTime},
-			{Name: "STATION_CALLSIGN", Value: "W1AW", Type: TypeString},
-			{Name: "RST_SENT", Value: "57", Type: TypeString},
-			{Name: "MY_ARRL_SECT", Value: "CT", Type: TypeString},
-			{Name: "CALL", Value: "AA1A", Type: TypeString},
-			{Name: "RST_RCVD", Value: "48", Type: TypeString},
-			{Name: "ARRL_SECT", Value: "PAC", Type: TypeString},
+			{Name: "STATION_CALLSIGN", Value: "W1AW" /*, Type: TypeString*/},
+			{Name: "RST_SENT", Value: "57" /*, Type: TypeString*/},
+			{Name: "MY_ARRL_SECT", Value: "CT" /*, Type: TypeString*/},
+			{Name: "CALL", Value: "AA1A" /*, Type: TypeString*/},
+			{Name: "RST_RCVD", Value: "48" /*, Type: TypeString*/},
+			{Name: "ARRL_SECT", Value: "PAC" /*, Type: TypeString*/},
 			{Name: "APP_CABRILLO_TRANSMITTER_ID", Value: "0", Type: TypeNumber},
+			{Name: "BAND", Value: "20m", Type: TypeEnumeration},
 			{Name: "CONTEST_ID", Value: "TEST-CONTEST-ID", Type: TypeString},
 			{Name: "GRIDSQUARE", Value: "FN31", Type: TypeString},
 		}, {
 			{Name: "FREQ", Value: "7.012", Type: TypeNumber},
-			{Name: "BAND", Value: "40m", Type: TypeString},
-			{Name: "MODE", Value: "CW", Type: TypeString},
+			{Name: "MODE", Value: "CW", Type: TypeEnumeration},
 			{Name: "QSO_DATE", Value: "20231101", Type: TypeDate},
 			{Name: "TIME_ON", Value: "0123", Type: TypeTime},
-			{Name: "STATION_CALLSIGN", Value: "W1AW", Type: TypeString},
-			{Name: "RST_SENT", Value: "599", Type: TypeString},
-			{Name: "MY_ARRL_SECT", Value: "CT", Type: TypeString},
-			{Name: "CALL", Value: "WX0YZ", Type: TypeString},
-			{Name: "RST_RCVD", Value: "432", Type: TypeString},
-			{Name: "ARRL_SECT", Value: "MN", Type: TypeString},
+			{Name: "STATION_CALLSIGN", Value: "W1AW" /*, Type: TypeString*/},
+			{Name: "RST_SENT", Value: "599" /*, Type: TypeString*/},
+			{Name: "MY_ARRL_SECT", Value: "CT" /*, Type: TypeString*/},
+			{Name: "CALL", Value: "WX0YZ" /*, Type: TypeString*/},
+			{Name: "RST_RCVD", Value: "432" /*, Type: TypeString*/},
+			{Name: "ARRL_SECT", Value: "MN" /*, Type: TypeString*/},
 			{Name: "APP_CABRILLO_TRANSMITTER_ID", Value: "1", Type: TypeNumber},
+			{Name: "BAND", Value: "40m", Type: TypeEnumeration},
 			{Name: "CONTEST_ID", Value: "TEST-CONTEST-ID", Type: TypeString},
 			{Name: "GRIDSQUARE", Value: "FN31", Type: TypeString},
 		}, {
-			{Name: "BAND", Value: "23cm", Type: TypeString},
-			{Name: "MODE", Value: "DIGITAL", Type: TypeString},
+			{Name: "BAND", Value: "23cm", Type: TypeEnumeration},
+			{Name: "MODE", Value: "DIGITAL", Type: TypeEnumeration},
 			{Name: "QSO_DATE", Value: "20231101", Type: TypeDate},
 			{Name: "TIME_ON", Value: "1415", Type: TypeTime},
-			{Name: "STATION_CALLSIGN", Value: "W1AW", Type: TypeString},
-			{Name: "RST_SENT", Value: "23", Type: TypeString},
-			{Name: "MY_ARRL_SECT", Value: "CT", Type: TypeString},
-			{Name: "CALL", Value: "N7N", Type: TypeString},
-			{Name: "RST_RCVD", Value: "45", Type: TypeString},
-			{Name: "ARRL_SECT", Value: "WWA", Type: TypeString},
+			{Name: "STATION_CALLSIGN", Value: "W1AW" /*, Type: TypeString*/},
+			{Name: "RST_SENT", Value: "23" /*, Type: TypeString*/},
+			{Name: "MY_ARRL_SECT", Value: "CT" /*, Type: TypeString*/},
+			{Name: "CALL", Value: "N7N" /*, Type: TypeString*/},
+			{Name: "RST_RCVD", Value: "45" /*, Type: TypeString*/},
+			{Name: "ARRL_SECT", Value: "WWA" /*, Type: TypeString*/},
 			{Name: "APP_CABRILLO_TRANSMITTER_ID", Value: "1", Type: TypeNumber},
 			{Name: "CONTEST_ID", Value: "TEST-CONTEST-ID", Type: TypeString},
 			{Name: "GRIDSQUARE", Value: "FN31", Type: TypeString},
 		}, {
-			{Name: "BAND", Value: "1.25m", Type: TypeString},
-			{Name: "MODE", Value: "FM", Type: TypeString},
+			{Name: "BAND", Value: "1.25m", Type: TypeEnumeration},
+			{Name: "MODE", Value: "FM", Type: TypeEnumeration},
 			{Name: "QSO_DATE", Value: "20231031", Type: TypeDate},
 			{Name: "TIME_ON", Value: "2345", Type: TypeTime},
-			{Name: "STATION_CALLSIGN", Value: "W1AW/M", Type: TypeString},
-			{Name: "RST_SENT", Value: "59", Type: TypeString},
-			{Name: "MY_ARRL_SECT", Value: "CT", Type: TypeString},
-			{Name: "CALL", Value: "KJ4LMN", Type: TypeString},
-			{Name: "RST_RCVD", Value: "59", Type: TypeString},
-			{Name: "ARRL_SECT", Value: "NC", Type: TypeString},
+			{Name: "STATION_CALLSIGN", Value: "W1AW/M" /*, Type: TypeString*/},
+			{Name: "RST_SENT", Value: "59" /*, Type: TypeString*/},
+			{Name: "MY_ARRL_SECT", Value: "CT" /*, Type: TypeString*/},
+			{Name: "CALL", Value: "KJ4LMN" /*, Type: TypeString*/},
+			{Name: "RST_RCVD", Value: "59" /*, Type: TypeString*/},
+			{Name: "ARRL_SECT", Value: "NC" /*, Type: TypeString*/},
 			{Name: "APP_CABRILLO_TRANSMITTER_ID", Value: "0", Type: TypeNumber},
 			{Name: "CONTEST_ID", Value: "TEST-CONTEST-ID", Type: TypeString},
 			{Name: "GRIDSQUARE", Value: "FN31", Type: TypeString},
 		}, {
 			{Name: "FREQ", Value: "21.123", Type: TypeNumber},
-			{Name: "BAND", Value: "15m", Type: TypeString},
-			{Name: "MODE", Value: "RTTY", Type: TypeString},
+			{Name: "MODE", Value: "RTTY", Type: TypeEnumeration},
 			{Name: "QSO_DATE", Value: "20231031", Type: TypeDate},
 			{Name: "TIME_ON", Value: "1920", Type: TypeTime},
-			{Name: "STATION_CALLSIGN", Value: "W1AW/M", Type: TypeString},
-			{Name: "RST_SENT", Value: "46", Type: TypeString},
-			{Name: "MY_ARRL_SECT", Value: "RI", Type: TypeString},
-			{Name: "CALL", Value: "EA1OU", Type: TypeString},
-			{Name: "RST_RCVD", Value: "53", Type: TypeString},
-			{Name: "ARRL_SECT", Value: "DX", Type: TypeString},
+			{Name: "STATION_CALLSIGN", Value: "W1AW/M" /*, Type: TypeString*/},
+			{Name: "RST_SENT", Value: "46" /*, Type: TypeString*/},
+			{Name: "MY_ARRL_SECT", Value: "RI" /*, Type: TypeString*/},
+			{Name: "CALL", Value: "EA1OU" /*, Type: TypeString*/},
+			{Name: "RST_RCVD", Value: "53" /*, Type: TypeString*/},
+			{Name: "ARRL_SECT", Value: "DX" /*, Type: TypeString*/},
 			{Name: "APP_CABRILLO_TRANSMITTER_ID", Value: "0", Type: TypeNumber},
+			{Name: "BAND", Value: "15m", Type: TypeEnumeration},
 			{Name: "APP_CABRILLO_XQSO", Value: "Y", Type: TypeBoolean},
 			{Name: "CONTEST_ID", Value: "TEST-CONTEST-ID", Type: TypeString},
 			{Name: "GRIDSQUARE", Value: "FN31", Type: TypeString},
 		},
 	}
 	cab := &CabrilloIO{
-		MyExchangeField:    "MY_ARRL_SECT",
-		TheirExchangeField: "ARRL_SECT",
+		MyExchange: []CabrilloField{
+			{TryFields: []string{"RST_SENT"}, Header: "rst"},
+			{TryFields: []string{"MY_ARRL_SECT"}, Default: "CT", Header: "exch"},
+		},
+		TheirExchange: []CabrilloField{
+			{TryFields: []string{"RST_RCVD"}, Header: "rst"},
+			{TryFields: []string{"ARRL_SECT"}, Header: "exch"},
+		},
+		ExtraFields: []CabrilloField{
+			{TryFields: []string{"APP_CABRILLO_TRANSMITTER_ID"}, Header: "t", Default: "0"},
+		},
 	}
 	parsed, err := cab.Read(strings.NewReader(input))
 	if err != nil {
@@ -263,28 +272,32 @@ X-INSTRUCTIONS: Delete any unnecessary headers
 X-INSTRUCTIONS: Double-check QSO lines, keeping columns in order
 X-INSTRUCTIONS: Report bugs at https://github.com/flwyd/adif-multitool
 CREATED-BY: cabrillo_test
-SOAPBOX: 
+SOAPBOX:
 CONTEST: TEST-CONTEST-ID
 CALLSIGN: W1AW (3 records) W1AW/M (1 records)
 CLUB: Amateur Radio Relay League
-OPERATORS: 
+OPERATORS:
 NAME: Ham Operator
 EMAIL: ham@example.com
 ADDRESS: 225 Main Street
 ADDRESS: Newington, CT 06111
+ADDRESS-CITY:
+ADDRESS-STATE-PROVINCE:
+ADDRESS-POSTALCODE:
+ADDRESS-COUNTRY:
 GRID-LOCATOR: FN31
 LOCATION: CT
 CLAIMED-SCORE: 42
-OFFTIME: 
-CATEGORY-ASSISTED: 
+OFFTIME:
+CATEGORY-ASSISTED:
 CATEGORY-BAND: ALL
 CATEGORY-MODE: MIXED
-CATEGORY-OPERATOR: 
+CATEGORY-OPERATOR:
 CATEGORY-OVERLAY: CLASSIC
-CATEGORY-POWER: 
-CATEGORY-STATION: 
-CATEGORY-TIME: 
-CATEGORY-TRANSMITTER: 
+CATEGORY-POWER:
+CATEGORY-STATION:
+CATEGORY-TIME:
+CATEGORY-TRANSMITTER:
 X-INSTRUCTIONS: See contest rules for expected category values
 X-Q:                            --info sent---- --info rcvd----
 X-Q: freq    mo date       time call   rst exch call   rst exch t
@@ -292,17 +305,26 @@ QSO: 7234    PH 2023-10-31 1234 W1AW   57  CT   AA1A   48  PAC  0
 QSO: 14046.1 CW 2023-11-01 0123 W1AW   599 CT   WX0YZ  432 MN   1
 QSO: 1.2G    DG 2023-11-01 1415 W1AW   23  CT   N7N    45  WWA  1
 QSO: 222     FM 2023-10-31 2345 W1AW/M 59  CT   KJ4LMN 59  NC   0
-END-OF-LOG: 
+END-OF-LOG:
 `
 	cab := &CabrilloIO{
-		CreatedBy:          "cabrillo_test",
-		Contest:            "TEST-CONTEST-ID",
-		Email:              "ham@example.com",
-		GridLocator:        "FN31",
-		Name:               "Ham Operator",
-		MyExchange:         "CT",
-		MyExchangeField:    "MY_ARRL_SECT",
-		TheirExchangeField: "ARRL_SECT"}
+		CreatedBy:   "cabrillo_test",
+		Contest:     "TEST-CONTEST-ID",
+		Email:       "ham@example.com",
+		GridLocator: "FN31",
+		Name:        "Ham Operator",
+		MyExchange: []CabrilloField{
+			{TryFields: []string{"RST_SENT"}, Header: "rst"},
+			{TryFields: []string{"MY_ARRL_SECT"}, Default: "CT", Header: "exch"},
+		},
+		TheirExchange: []CabrilloField{
+			{TryFields: []string{"RST_RCVD"}, Header: "rst"},
+			{TryFields: []string{"ARRL_SECT"}, Header: "exch"},
+		},
+		ExtraFields: []CabrilloField{
+			{TryFields: []string{"APP_CABRILLO_TRANSMITTER_ID"}, Header: "t", Default: "0"},
+		},
+	}
 	out := &strings.Builder{}
 	if err := cab.Write(l, out); err != nil {
 		t.Errorf("Write(%v) got error %v", l, err)
@@ -440,15 +462,15 @@ func TestInferrCabrilloCategories(t *testing.T) {
 	}
 
 	cab := &CabrilloIO{
-		CreatedBy:          "cabrillo_test",
-		Contest:            "TEST-CONTEST-ID",
-		Email:              "ham@example.com",
-		GridLocator:        "FN31",
-		Name:               "Ham Operator",
-		LowPowerMax:        42,
-		QRPPowerMax:        5,
-		MyExchangeField:    "STX_STRING",
-		TheirExchangeField: "SRX_STRING"}
+		CreatedBy:     "cabrillo_test",
+		Contest:       "TEST-CONTEST-ID",
+		Email:         "ham@example.com",
+		GridLocator:   "FN31",
+		Name:          "Ham Operator",
+		LowPowerMax:   42,
+		QRPPowerMax:   5,
+		MyExchange:    CabrilloFieldList{mustParseCabrilloField("STX_STRING")},
+		TheirExchange: CabrilloFieldList{mustParseCabrilloField("SRX_STRING")}}
 	calls := []string{"A1AA", "B2BB", "C3CC", "D4DD"}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -494,4 +516,12 @@ func TestInferrCabrilloCategories(t *testing.T) {
 			}
 		})
 	}
+}
+
+func mustParseCabrilloField(s string) CabrilloField {
+	f, err := parseCabrilloField(s)
+	if err != nil {
+		panic(err)
+	}
+	return f
 }
