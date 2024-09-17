@@ -1,0 +1,65 @@
+# Tests that filenames can come before or after flags (or both) but filenames
+# can't come in the middle of flags.
+
+# File before flags
+exec adifmt cat foo.tsv bar.tsv --output json --json-indent 2
+cmp stdout combined.json
+! stderr .
+
+# File after flags
+exec adifmt cat --output json --json-indent 2 foo.tsv bar.tsv
+cmp stdout combined.json
+! stderr .
+
+# One file before and one after
+exec adifmt cat foo.tsv --output json --json-indent 2 bar.tsv
+cmp stdout combined.json
+! stderr .
+
+# First filename stops flag parsing, so if there are flags leftover you'll get
+# a file-not-found error.
+! exec adifmt cat --output json foo.tsv --json-indent 2 bar.tsv
+! stdout .
+stderr '--json-indent: no such file'
+
+# Double dash stops flag parsing
+cp foo.tsv -with-hyphen.tsv
+exec adifmt cat --output json --json-indent 2 -- -with-hyphen.tsv bar.tsv
+cmp stdout combined.json
+! stderr .
+
+-- foo.tsv --
+CALL	MODE
+K1A	CW
+W2B	SSB
+-- bar.tsv --
+CALL	MODE
+K3C	FM
+W4D	RTTY
+-- combined.json --
+{
+  "HEADER": {
+    "ADIF_VER": "3.1.4",
+    "CREATED_TIMESTAMP": "23450607 080910",
+    "PROGRAMID": "adifmt",
+    "PROGRAMVERSION": "(devel)"
+  },
+  "RECORDS": [
+    {
+      "CALL": "K1A",
+      "MODE": "CW"
+    },
+    {
+      "CALL": "W2B",
+      "MODE": "SSB"
+    },
+    {
+      "CALL": "K3C",
+      "MODE": "FM"
+    },
+    {
+      "CALL": "W4D",
+      "MODE": "RTTY"
+    }
+  ]
+}

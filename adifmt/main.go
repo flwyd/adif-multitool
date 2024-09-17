@@ -29,6 +29,7 @@ import (
 	"github.com/flwyd/adif-multitool/adif"
 	"github.com/flwyd/adif-multitool/adif/spec"
 	"github.com/flwyd/adif-multitool/cmd"
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -104,8 +105,14 @@ func runMain(prepare func(l *adif.Logfile)) int {
 	if c.Configure != nil {
 		c.Configure(ctx, fs)
 	}
-	fs.Parse(os.Args[2:])
-	err := c.Run(ctx, fs.Args())
+	// filenames can come before or after flags, but not interspersed
+	args := os.Args[2:]
+	firstflag := slices.IndexFunc(args, func(s string) bool { return strings.HasPrefix(s, "-") })
+	nonflags := args[0:firstflag]
+	args = args[firstflag:]
+	fs.Parse(args)
+	nonflags = append(nonflags, fs.Args()...)
+	err := c.Run(ctx, nonflags)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error running %s: %v\n", name, err)
 		return 1

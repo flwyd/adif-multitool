@@ -47,7 +47,7 @@ found, try `go run github.com/flwyd/adif-multitool/adifmt help`
 To do something useful with ADIF Multitool, the syntax is
 
 ```
-adifmt command [options] files...
+adifmt command [files...] [options] [files...]
 ```
 
 For example, the `cat` command concatenates all input files and outputs ADIF
@@ -60,10 +60,10 @@ adifmt cat log1.adi log2.adi > combined.adi
 prints all of the records in the two `logX.adi` files to the `combined.adi`
 file.
 
-Flags control input and output options.  For example, to print records with
-a UNIX newline between fields, two newlines between records, use lower case for
-all field names, and add user defined fields `gain_db` (range ±100) and
-`radio_color` (values black, white, or gray):
+Options (also known as flags) control input and output options.  For example,
+to print records with a UNIX newline between fields, two newlines between
+records, use lower case for all field names, and add user defined fields
+`gain_db` (range ±100) and `radio_color` (values black, white, or gray):
 
 ```sh
 adifmt cat --adi-field-separator=newline \
@@ -73,6 +73,10 @@ adifmt cat --adi-field-separator=newline \
   --userdef='radio_color,{black,white,gray}' \
   log1.csv
 ```
+
+File names to process can come before or after the options list, but cannot be
+intermixed.  A `--` by itself ends option parsing, which allows working with a
+log file whose name starts with `-` (hyphen/minus/dash).
 
 Multiple input and output formats are supported (currently ADI and ADX per the
 ADIF spec, Cabrillo according to the WWROF spec, CSV and TSV with field names
@@ -844,10 +848,10 @@ Features I plan to add:
 *   Option for `save` to append records to an existing ADIF file.
 *   Count the total number of records or the number of distinct values of a
     field.  (The total number of records can currently be counted with
-    `--output=tsv`, piping the output to `wc -l`, and subtracting 1 for the
-    header row.)  This could match the format of the “Report” comment in the
-    test QSOs file produced with the ADIF spec.
-*   Support for Cabrillo 2.0 format.
+    `--output=tsv --tsv-omit-header` and piping the output to `wc -l`.)  This
+    could match the format of the “Report” comment in the test QSOs file
+    produced with the ADIF spec.
+*   Support for Cabrillo 2.0 format if needed.
 
 See the [issues page](https://github.com/flwyd/adif-multitool/issues) for more
 ideas or to suggest your own.
