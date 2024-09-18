@@ -69,7 +69,8 @@ Comment about Santa on the Air <CALL:3>N0P <QSO_DATE:8>20221224 <BAND:2>2m <EOR>
 		{
 			name:     "infer ADX",
 			filename: "out.adx",
-			want:     xml.Header + `<ADX><HEADER><!--Test comment--><ADIF_VER>3.1.4</ADIF_VER><PROGRAMID>test save</PROGRAMID><PROGRAMVERSION>5.6.7</PROGRAMVERSION></HEADER><RECORDS><RECORD><CALL>W1AW</CALL><QSO_DATE>19870605</QSO_DATE><BAND>40m</BAND></RECORD><RECORD><!--Comment about Santa on the Air--><CALL>N0P</CALL><QSO_DATE>20221224</QSO_DATE><BAND>2m</BAND></RECORD></RECORDS></ADX>`,
+			want: xml.Header + `<ADX><HEADER><!--Test comment--><ADIF_VER>3.1.4</ADIF_VER><PROGRAMID>test save</PROGRAMID><PROGRAMVERSION>5.6.7</PROGRAMVERSION></HEADER><RECORDS><RECORD><CALL>W1AW</CALL><QSO_DATE>19870605</QSO_DATE><BAND>40m</BAND></RECORD><RECORD><!--Comment about Santa on the Air--><CALL>N0P</CALL><QSO_DATE>20221224</QSO_DATE><BAND>2m</BAND></RECORD></RECORDS></ADX>
+`,
 		},
 		{
 			name:     "infer CSV",

@@ -233,7 +233,8 @@ Inverted L antenna, 70' above ground
     </RECORD>
   </RECORDS>
   <!--The <last> word.-->
-</ADX>`
+</ADX>
+`
 	adx := NewADXIO()
 	adx.Indent = 2
 	out := &strings.Builder{}

@@ -247,5 +247,8 @@ func (o *ADXIO) Write(l *Logfile, out io.Writer) error {
 	if err := e.EncodeElement(&f, start); err != nil {
 		return fmt.Errorf("error writing ADX file %s: %w", l.Filename, err)
 	}
+	if _, err := out.Write([]byte("\n")); err != nil {
+		return fmt.Errorf("error writing ADX file %s: %w", l.Filename, err)
+	}
 	return nil
 }
