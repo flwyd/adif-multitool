@@ -20,11 +20,13 @@ env:
   ACTIONS_RUNNER_DEBUG: true
   ACTIONS_STEP_LOG: true
 
-# Only create automatic releases for prerelease (e.g. v0.1.2-rc0) tags because
-# GitHub only includes "verified" commits in automatic release notes which seems
-# orthogonal to "what changes are in this release."
-# See https://github.com/orgs/community/discussions/31628
 on:
+  # Allow manual workflow run.
+  workflow_dispatch:
+  # Only create automatic releases for prerelease (e.g. v0.1.2-rc0) tags because
+  # GitHub only includes "verified" commits in automatic release notes which
+  # seems orthogonal to "what changes are in this release."
+  # See https://github.com/orgs/community/discussions/31628
   push:
     tags:
       - v[0-9]+.*-*
