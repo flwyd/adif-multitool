@@ -108,6 +108,9 @@ func runMain(prepare func(l *adif.Logfile)) int {
 	// filenames can come before or after flags, but not interspersed
 	args := os.Args[2:]
 	firstflag := slices.IndexFunc(args, func(s string) bool { return strings.HasPrefix(s, "-") })
+	if firstflag < 0 {
+		firstflag = len(args)
+	}
 	nonflags := args[0:firstflag]
 	args = args[firstflag:]
 	fs.Parse(args)

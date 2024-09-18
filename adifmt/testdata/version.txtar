@@ -1,0 +1,11 @@
+# Tests the version command.
+
+exec adifmt version
+cmp stdout expected.txt
+! stderr .
+
+-- expected.txt --
+adifmt version (devel)
+Built from git revision (unknown)
+ADIF version 3.1.4 from https://adif.org/314/ADIF_314.htm
+See https://github.com/flwyd/adif-multitool for details
