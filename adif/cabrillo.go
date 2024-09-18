@@ -374,13 +374,18 @@ func (o *CabrilloIO) getCategories(l *Logfile) map[string]string {
 }
 
 func (o *CabrilloIO) toConfig() cabrilloConfig {
-	c := cabrilloConfig{fields: make(CabrilloFieldList, 0), useTabs: o.TabDelimiter,
-		coreLen: len(cabCoreFields), myLen: len(o.MyExchange) + 1, theirLen: len(o.TheirExchange) + 1, extraLen: len(o.ExtraFields)}
-	c.fields = append(c.fields, cabCoreFields...)
 	myCall := cabFieldMyCall
 	if o.Callsign != "" {
 		myCall.Default = o.Callsign
 	}
+	c := cabrilloConfig{
+		useTabs:  o.TabDelimiter,
+		coreLen:  len(cabCoreFields),
+		myLen:    len(o.MyExchange) + 1,
+		theirLen: len(o.TheirExchange) + 1,
+		extraLen: len(o.ExtraFields)}
+	// TODO use slices.Concat in go1.22
+	c.fields = append(c.fields, cabCoreFields...)
 	c.fields = append(c.fields, myCall)
 	c.fields = append(c.fields, o.MyExchange...)
 	c.fields = append(c.fields, cabFieldTheirCall)
@@ -792,8 +797,7 @@ func (l *CabrilloFieldList) Get() any { return *l }
 
 type cabrilloConfig struct {
 	// core, my, their, extra
-	fields CabrilloFieldList
-	// TODO just have four lists of fields and a method to combine them?
+	fields                             CabrilloFieldList
 	coreLen, myLen, theirLen, extraLen int
 	useTabs                            bool
 }
@@ -876,7 +880,6 @@ func (c cabrilloConfig) toLines(l *Logfile) ([][2]string, error) {
 			}
 			return r.String()
 		}
-		// TODO this would be better with four field slices and a method to combine a slice
 		var corelen, sentlen, rcvdlen int
 		for i := 0; i < c.coreLen; i++ {
 			corelen += widths[i]
