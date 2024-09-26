@@ -118,6 +118,125 @@ adifmt fix log1.adi \
 creates a file named `minimal.csv` with just the date, time, and callsign from
 each record in the input file `log1.adi`.
 
+## Practical examples
+
+The following examples transform data into a format expected by a particular
+program or ham radio activity.  For details on how they work, see documentation
+for individual commands or formats below.  For contest log examples, see the
+[Cabrillo](#cabrillo) section.  Contributions of useful pipelines are welcome.
+
+### Add station and location to a log
+
+This example uses `edit` to add several fields to a POTA log saved in CSV
+format.  It then uses `fix` to remove the `:` from the time, transform the
+decimal (GPS) latitude and longitude to ADIF sexagesimal format and transforms
+`USA` and `CAN` country abbreviations to DXCC entity numbers.  `flatten` makes
+two copies of each record, one for park `US-0791` and one for park `US-4567`.
+`infer` then sets the band from the frequency, grid square (Maidenhead locator)
+based on the latitude and longitude, `STATION_CALLSIGN` field to the `OPERATOR`
+field, and `SIG` and `SIG_INFO` from the `POTA_REF` field.  (POTA doesn't
+require the country or latitude/longitude fields; they're included for
+illustration.) The input log might look like this:
+
+```csv
+TIME_ON,FREQ,MODE,CALL,STATE,COUNTRY
+12:34,7.012,CW,W1AW,CT,USA
+12:56,14.234,SSB,VA1XYZ,NS,CAN
+```
+
+```sh
+adiifmt edit mylog.csv \
+  --add qso_date=20240704 \
+  --add operator=WT0RJ \
+  --add my_pota_ref=US-0791,US-4567 \
+  --add my_state=DC --add my_country=USA \
+  --add my_lat=38.899736 --add my_lon=-77.063331 \
+| adifmt fix \
+| adifmt flatten --fields pota_ref,my_pota_ref \
+| adifmt infer --fields band,my_gridsquare,station_callsign
+```
+
+### ADIF to SOTA CSV
+
+This example uses `find` to filter out any records which don’t have `SOTA_REF`
+or `MY_SOTA_REF` fields, `edit` to add a `V2` field to each record (required by
+the SOTA uploader), `select` to output only the fields expected by the SOTA
+uploader and in the right order, `validate` to ensure fields are present and
+correctly formatted, and `save --csv-omit-header` to create a file with just
+the records, no file header.  If your log lacks frequencies, replace the `freq`
+field with `band`.  (Note that the SOTA uploader now accepts ADIF files, so you
+could just use the `find` command and upload directly.  This example may be
+useful if the data need to be further transformed or imported by a SOTA data
+analysis program.)
+
+```sh
+SOTA_CSV_ORDER=version,station_callsign,my_sota_ref,qso_date,time_on,freq,mode,call,sota_ref,comment
+adifmt find mylog.adi --if-not 'my_sota_ref=' --or-if-not 'sota_ref=' \
+| adifmt edit --set version=V2 \
+| adifmt select --fields $SOTA_CSV_ORDER \
+| adifmt validate --required-fields station_callsign,qso_date,time_on,freq,mode,call \
+| adifmt save --csv-omit-header --field-order $SOTA_CSV_ORDER sotalog.csv
+```
+
+The variable assignment syntax for `SOTA_CSV_ORDER` works on Mac and Linux.  On
+Windows PowerShell assign the variable as `$SOTA_CSV_ORDER =
+version,station_callsign,...`.  On Windows cmd.exe, assign it as
+`set SOTA_CSV_ORDER = version,station_callsign,...` and reference it as
+`%SOTA_CSV_ORDER%` rather than the `$` prefix.
+
+### Filter WARC bands
+
+This example uses `infer` to set the band from the frequency if the former
+isn’t set.  It then  uses `find` to filter out any contacts made on the
+[WARC bands](https://en.wikipedia.org/wiki/WARC_bands): 12, 17, 30, and 60
+meters.  Contesting is not allowed on those bands, so this is useful when
+preparing a contest submission from a general station log where contacts may
+have been made on bands not part of the contest.
+
+```sh
+adifmt infer --fields band mylog.adi \
+| adifmt find --if-not 'band=60m|30m|17m|12m'
+```
+
+### Set mode from frequency (U.S. band plan)
+
+This example sets the mode and submode based on the frequency, according to the
+U.S. band plan.  It assumes that CW and SSB are the only modes in use (no FM,
+AM, or digital), but can be extended if there are frequency ranges that you use
+exclusively for one mode.  `edit --add` will not overwrite the mode if it
+already has a value (`edit --set` would force the new value).
+
+```sh
+# US HF SSB (overlaps SSTV & AM) 80m: 3.6:4, 40m: 7.125:7.3, 20m:14.15:14.35,
+# 17m:18.11:18.168, 15m:21.2:21.45, 12m:24.93 to 24.99, 10m: 28.3:29
+# 6m 50.1:50.3 is CW/SSB, SSB calling 60.125, assume 60.120+ is SSB
+adifmt edit --if 'freq>3.6' --if 'freq<4' \
+  --or-if 'freq>7.125' --if 'freq<=7.3' \
+  --or-if 'freq>=14.15' --if 'freq<14.35' \
+  --or-if 'freq>=18.11' --if 'freq<18.168' \
+  --or-if 'freq>=21.2' --if 'freq<21.45' \
+  --or-if 'freq>=24.93' --if 'freq<24.99' \
+  --or-if 'freq>=28.3' --if 'freq<29' \
+  --or-if 'freq>=50.12' --if 'freq<50.3' \
+  --add mode=SSB |\
+
+# US HF CW (some digital could occur) low end of the band, below FT8 and friends
+adifmt edit --if 'freq>3.5' --if 'freq<3.7' \
+  --or-if 'freq>7' --if 'freq<7.07' \
+  --or-if 'freq>10.1' --if 'freq<10.3' \
+  --or-if 'freq>14' --if 'freq<14.07' \
+  --or-if 'freq>18.068' --if 'freq<18.1' \
+  --or-if 'freq>21' --if 'freq<21.07' \
+  --or-if 'freq>24.89' --if 'freq<14.91' \
+  --or-if 'freq>28' --if 'freq<28.07' \
+  --or-if 'freq>50.1' --if 'freq<50.12' \
+  --add mode=CW |\
+
+# SSB is usually LSB on 40m and below except 60m, USB on 20m and above
+adifmt edit --if mode=SSB --if 'freq<8' --if-not band=60m --add submode=LSB |\
+adifmt edit --if mode=SSB --if 'freq>=14' --or-if band=60m --add submode=USB
+```
+
 ## Features
 
 ### Input/Output formats
@@ -559,7 +678,7 @@ and a change:
 
 ```sh
 adifmt cat mylog.adi \
-  | adifmt edit --if 'mode=SSB' --if 'band>=20m' --add 'submode=USB' \
+  | adifmt edit --if 'mode=SSB' --if 'band>=20m' --or-if 'band=60m' --add 'submode=USB' \
   | adifmt edit --if 'mode=SSB' --if 'band=40m|80m|160m' --add 'submode=LSB' \
   | adifmt save fixed_sideband.adi
 ```
@@ -613,8 +732,8 @@ contacts on the border of a square as separate:
 
 ```sh
 adifmt flatten --fields VUCC_GRIDS --output tsv \
-  | adifmt select --fields VUCC_GRIDS --output tsv \
-  | tail +2 | sort | uniq -c
+  | adifmt select --fields VUCC_GRIDS --output tsv --tsv-omit-header \
+  | sort | uniq -c
 ```
 
 The `flatten` command will turn
@@ -762,8 +881,8 @@ find duplicate QSOs by date, band, and mode, use
 [uniq](https://man7.org/linux/man-pages/man1/uniq.1.html):
 
 ```sh
-adifmt select --fields call,qso_date,band,mode --output tsv mylog.adi \
-  | tail +2 | sort | uniq -d
+adifmt select --fields call,qso_date,band,mode --output tsv --tsv-omit-header mylog.adi \
+  | sort | uniq -d
 ```
 
 This is similar to a SQL `SELECT` clause, except it cannot (yet?) transform the
@@ -846,6 +965,7 @@ Features I plan to add:
     the same callsign on the same band with the same mode on the same Zulu day
     and the same `MY_SIG_INFO` value.
 *   Option for `save` to append records to an existing ADIF file.
+*   [FLE (fast log entry)](https://df3cb.com/fle/documentation/) format support.
 *   Count the total number of records or the number of distinct values of a
     field.  (The total number of records can currently be counted with
     `--output=tsv --tsv-omit-header` and piping the output to `wc -l`.)  This

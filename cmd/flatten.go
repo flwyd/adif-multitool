@@ -60,8 +60,10 @@ func runFlatten(ctx *Context, args []string) error {
 		delims[n] = d
 	}
 
-	out := adif.NewLogfile()
-	acc := accumulator{Out: out, Ctx: ctx}
+	acc, err := newAccumulator(ctx)
+	if err != nil {
+		return err
+	}
 	for _, f := range filesOrStdin(args) {
 		l, err := acc.read(f)
 		if err != nil {
@@ -90,14 +92,14 @@ func runFlatten(ctx *Context, args []string) error {
 				}
 			}
 			for _, e := range expn {
-				out.AddRecord(e)
+				acc.Out.AddRecord(e)
 			}
 		}
 	}
 	if err := acc.prepare(); err != nil {
 		return err
 	}
-	return write(ctx, out)
+	return write(ctx, acc.Out)
 }
 
 var typeDelims = map[spec.DataType]string{

@@ -146,6 +146,7 @@ func buildContext(fs *flag.FlagSet, prepare func(l *adif.Logfile)) *cmd.Context 
 
 	// General flags
 	fmtopts := "options: " + strings.Join(adif.FormatNames(), ", ")
+	fs.Var(&ctx.FieldOrder, "field-order", "Comma-separated `field` order for output (repeatable)")
 	fs.Var(&ctx.InputFormat, "input",
 		"input `format` when it cannot be inferred from file extension\n"+fmtopts)
 	fs.Var(&ctx.OutputFormat, "output",

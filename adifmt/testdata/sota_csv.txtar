@@ -1,0 +1,33 @@
+# ADI to CSV with field order matching the SOTA uploader expectations.
+# This pipeline is an example in README.md
+exec adifmt find mylog.adi --if-not 'my_sota_ref=' --or-if-not 'sota_ref='
+! stderr .
+stdin stdout
+exec adifmt edit --set version=V2
+! stderr .
+stdin stdout
+exec adifmt select --fields version,station_callsign,my_sota_ref,qso_date,time_on,freq,mode,call,sota_ref,comment
+! stderr .
+stdin stdout
+exec adifmt validate --required-fields station_callsign,qso_date,time_on,freq,mode,call
+! stderr .
+stdin stdout
+exec adifmt save --csv-omit-header --field-order version,station_callsign,my_sota_ref,qso_date,time_on,freq,mode,call,sota_ref,comment sotalog.csv
+cmp sotalog.csv expected.csv
+! stdout .
+stderr 'Wrote 3 records to sotalog.csv'
+
+-- mylog.adi --
+<ADIF_VER:5>3.1.4 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:6>adifmt <PROGRAMVERSION:7>(devel) <EOH>
+SOTA activator
+<QSO_DATE:8>20200101 <TIME_ON:4>0111 <MODE:2>FM <BAND:2>2m <FREQ:6>146.52 <CALL:3>K1A <STATE:2>CT <STATION_CALLSIGN:4>W1AW <MY_SOTA_REF:9>W1/MB-009 <MY_STATE:2>MA <COMMENT:24>Good signal, clear audio <EOR>
+Summit-to-summit
+<QSO_DATE:8>20210202 <TIME_ON:4>0222 <MODE:2>CW <FREQ:7>21.0123 <BAND:3>15m <CALL:3>W2B <STATE:2>CA <STATION_CALLSIGN:4>W1AW <RST_SENT:3>479 <RST_RCVD:3>559 <SOTA_REF:9>W6/SN-001 <MY_SOTA_REF:10>W4C/CM-009 <MY_STATE:2>NC <EOR>
+Not a SOTA contact
+<QSO_DATE:8>20220303 <TIME_ON:4>0333 <MODE:3>SSB <BAND:3>40m <FREQ:5>7.200 <CALL:3>K3C <STATE:2>PA <STATION_CALLSIGN:4>W1AW <MY_STATE:2>CT <EOR>
+SOTA chaser
+<QSO_DATE:8>20230404 <TIME_ON:4>0444 <MODE:3>FT8 <FREQ:6>14.074 <CALL:6>W4D/9H <STATION_CALLSIGN:4>W1AW <RST_SENT:3>-6 <RST_RCVD:3>-10 <SOTA_REF:9>9H/MA-001 <MY_STATE:2>CT <EOR>
+-- expected.csv --
+V2,W1AW,W1/MB-009,20200101,0111,146.52,FM,K1A,,"Good signal, clear audio"
+V2,W1AW,W4C/CM-009,20210202,0222,21.0123,CW,W2B,W6/SN-001,
+V2,W1AW,,20230404,0444,14.074,FT8,W4D/9H,9H/MA-001,

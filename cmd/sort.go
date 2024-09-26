@@ -53,26 +53,28 @@ func runSort(ctx *Context, args []string) error {
 			comps[i] = spec.ComparatorForField(f, ctx.Locale)
 		} // else resolve dynamically
 	}
-	out := adif.NewLogfile()
-	acc := accumulator{Out: out, Ctx: ctx}
+	acc, err := newAccumulator(ctx)
+	if err != nil {
+		return err
+	}
 	for _, f := range filesOrStdin(args) {
 		l, err := acc.read(f)
 		if err != nil {
 			return err
 		}
 		for _, r := range l.Records {
-			out.AddRecord(r)
+			acc.Out.AddRecord(r)
 		}
 	}
 	if err := acc.prepare(); err != nil {
 		return err
 	}
-	sort.SliceStable(out.Records, func(i, j int) bool {
-		a := out.Records[i]
-		b := out.Records[j]
+	sort.SliceStable(acc.Out.Records, func(i, j int) bool {
+		a := acc.Out.Records[i]
+		b := acc.Out.Records[j]
 		for k, comp := range comps {
 			if comp == nil {
-				if uf, _ := out.GetUserdef(fields[k]); uf.Type.Indicator() != "" {
+				if uf, _ := acc.Out.GetUserdef(fields[k]); uf.Type.Indicator() != "" {
 					f := spec.Field{Name: fields[k], Type: spec.DataTypes[uf.Type.Indicator()]}
 					comp = spec.ComparatorForField(f, ctx.Locale)
 				} else {
@@ -112,5 +114,5 @@ func runSort(ctx *Context, args []string) error {
 		}
 		return false
 	})
-	return write(ctx, out)
+	return write(ctx, acc.Out)
 }

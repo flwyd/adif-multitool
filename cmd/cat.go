@@ -14,15 +14,14 @@
 
 package cmd
 
-import (
-	"github.com/flwyd/adif-multitool/adif"
-)
-
 var Cat = Command{Name: "cat", Run: runCat,
 	Description: "Concatenate all input files to standard output"}
 
 func runCat(ctx *Context, args []string) error {
-	acc := accumulator{Out: adif.NewLogfile(), Ctx: ctx}
+	acc, err := newAccumulator(ctx)
+	if err != nil {
+		return err
+	}
 	for _, f := range filesOrStdin(args) {
 		l, err := acc.read(f)
 		if err != nil {

@@ -26,6 +26,7 @@ import (
 
 	"github.com/flwyd/adif-multitool/adif"
 	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 )
 
 var Save = Command{Name: "save", Run: runSave, Help: helpSave,
@@ -40,7 +41,7 @@ type SaveContext struct {
 
 func helpSave() string {
 	return `Unless options are set explicitly, existing files will not be overwritten and
-logfiles withoutout any records will not be saved (useful if validate failed).
+logfiles without any records will not be saved (useful if validate failed).
 
 File name may be a template with {FIELD} placeholders replaced by field values.
 For example, '{QSO_DATE}_{BAND}.adi' will create a separate file for each
@@ -74,6 +75,11 @@ func runSave(ctx *Context, args []string) error {
 	l, err := readFile(ctx, os.Stdin.Name())
 	if err != nil {
 		return err
+	}
+	if len(ctx.FieldOrder) > 0 {
+		ro := l.FieldOrder
+		l.FieldOrder = slices.Clone(ctx.FieldOrder)
+		updateFieldOrder(l, ro)
 	}
 	for _, u := range ctx.UserdefFields {
 		l.AddUserdef(u)
@@ -130,7 +136,9 @@ func runSave(ctx *Context, args []string) error {
 					return err
 				}
 			}
+			// TODO use newAccumulator?
 			logs[file] = adif.NewLogfile()
+			logs[file].FieldOrder = l.FieldOrder
 			for _, f := range l.Header.Fields() {
 				logs[file].Header.Set(f)
 			}

@@ -88,18 +88,20 @@ func runEdit(ctx *Context, args []string) error {
 	toTz := cctx.ToZone.Get()
 	adjustTz := fromTz.String() != toTz.String()
 	cond := cctx.Cond.Get()
-	out := adif.NewLogfile()
-	acc := accumulator{Out: out, Ctx: ctx}
+	acc, err := newAccumulator(ctx)
+	if err != nil {
+		return err
+	}
 	for _, f := range filesOrStdin(args) {
 		l, err := acc.read(f)
 		if err != nil {
 			return err
 		}
-		updateFieldOrder(out, l.FieldOrder)
+		updateFieldOrder(acc.Out, l.FieldOrder)
 		for _, r := range l.Records {
 			eval := recordEvalContext{record: r, lang: ctx.Locale}
 			if !cond.Evaluate(eval) {
-				out.AddRecord(r) // edit condition doesn't match, pass through
+				acc.Out.AddRecord(r) // edit condition doesn't match, pass through
 				continue
 			}
 			seen := make(map[string]string)
@@ -155,14 +157,14 @@ func runEdit(ctx *Context, args []string) error {
 						return fmt.Errorf("could not adjust time zone: %w", err)
 					}
 				}
-				out.AddRecord(rec)
+				acc.Out.AddRecord(rec)
 			}
 		}
 	}
 	if err := acc.prepare(); err != nil {
 		return err
 	}
-	return write(ctx, out)
+	return write(ctx, acc.Out)
 }
 
 func adjustTimeZone(r *adif.Record, from, to *time.Location) error {

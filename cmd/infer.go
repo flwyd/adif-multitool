@@ -130,14 +130,16 @@ func runInfer(ctx *Context, args []string) error {
 			return fmt.Errorf("don't know how to infer field %s\n%s", todo[i], helpInfer())
 		}
 	}
-	out := adif.NewLogfile()
-	acc := accumulator{Out: out, Ctx: ctx}
+	acc, err := newAccumulator(ctx)
+	if err != nil {
+		return err
+	}
 	for _, f := range filesOrStdin(args) {
 		l, err := acc.read(f)
 		if err != nil {
 			return err
 		}
-		updateFieldOrder(out, l.FieldOrder)
+		updateFieldOrder(acc.Out, l.FieldOrder)
 		for _, r := range l.Records {
 			did := make([]string, 0, len(todo))
 			for _, t := range todo {
@@ -157,13 +159,13 @@ func runInfer(ctx *Context, args []string) error {
 					r.SetComment(r.GetComment() + "\n" + c)
 				}
 			}
-			out.AddRecord(r)
+			acc.Out.AddRecord(r)
 		}
 	}
 	if err := acc.prepare(); err != nil {
 		return err
 	}
-	return write(ctx, out)
+	return write(ctx, acc.Out)
 }
 
 func inferBand(r *adif.Record, name string) bool {

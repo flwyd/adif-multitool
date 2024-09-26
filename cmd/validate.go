@@ -41,14 +41,16 @@ func runValidate(ctx *Context, args []string) error {
 	log := os.Stderr
 	var errors, warnings int
 	appFields := make(map[string]adif.DataType)
-	out := adif.NewLogfile()
-	acc := accumulator{Out: out, Ctx: ctx}
+	acc, err := newAccumulator(ctx)
+	if err != nil {
+		return err
+	}
 	for _, f := range filesOrStdin(args) {
 		l, err := acc.read(f)
 		if err != nil {
 			return err
 		}
-		updateFieldOrder(out, l.FieldOrder)
+		updateFieldOrder(acc.Out, l.FieldOrder)
 		for i, r := range l.Records {
 			vctx := spec.ValidationContext{
 				Now: now,
@@ -114,7 +116,7 @@ func runValidate(ctx *Context, args []string) error {
 					r.SetComment("adif-multitool: validate warnings: " + strings.Join(msgs, "; "))
 				}
 			}
-			out.AddRecord(r)
+			acc.Out.AddRecord(r)
 		}
 	}
 	if errors > 0 {
@@ -123,7 +125,7 @@ func runValidate(ctx *Context, args []string) error {
 	if err := acc.prepare(); err != nil {
 		return err
 	}
-	err := write(ctx, out)
+	err = write(ctx, acc.Out)
 	if warnings > 0 {
 		fmt.Fprintf(log, "validate got %d warnings\n", warnings)
 	}

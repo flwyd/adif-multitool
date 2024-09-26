@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/flwyd/adif-multitool/adif"
+	"golang.org/x/exp/slices"
 )
 
 func write(ctx *Context, l *adif.Logfile) error {
@@ -144,6 +145,17 @@ type accumulator struct {
 	Out      *adif.Logfile
 	Ctx      *Context
 	comments []string
+}
+
+func newAccumulator(c *Context) (*accumulator, error) {
+	a := accumulator{Out: adif.NewLogfile(), Ctx: c}
+	a.Out.FieldOrder = slices.Clone(c.FieldOrder)
+	for _, u := range c.UserdefFields {
+		if err := a.Out.AddUserdef(u); err != nil {
+			return nil, err
+		}
+	}
+	return &a, nil
 }
 
 func (a *accumulator) read(filename string) (*adif.Logfile, error) {

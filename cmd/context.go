@@ -35,6 +35,7 @@ type Context struct {
 	Out                io.Writer
 	Locale             language.Tag
 	CommandCtx         any
+	FieldOrder         FieldList
 	UserdefFields      UserdefFieldList
 	SuppressAppHeaders bool
 	Prepare            func(*adif.Logfile)

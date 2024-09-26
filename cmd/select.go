@@ -38,9 +38,11 @@ func runSelect(ctx *Context, args []string) error {
 	if len(con.Fields) == 0 {
 		return fmt.Errorf("no fields provided, try %s select -fields CALL,BAND", filepath.Base(os.Args[0]))
 	}
-	out := adif.NewLogfile()
-	out.FieldOrder = con.Fields
-	acc := accumulator{Out: out, Ctx: ctx}
+	acc, err := newAccumulator(ctx)
+	if err != nil {
+		return err
+	}
+	updateFieldOrder(acc.Out, con.Fields)
 	for _, f := range filesOrStdin(args) {
 		l, err := acc.read(f)
 		if err != nil {
@@ -54,12 +56,12 @@ func runSelect(ctx *Context, args []string) error {
 				}
 			}
 			if len(fields) > 0 {
-				out.AddRecord(adif.NewRecord(fields...))
+				acc.Out.AddRecord(adif.NewRecord(fields...))
 			}
 		}
 	}
 	if err := acc.prepare(); err != nil {
 		return err
 	}
-	return write(ctx, out)
+	return write(ctx, acc.Out)
 }

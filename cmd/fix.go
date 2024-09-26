@@ -42,32 +42,33 @@ func helpFix() string {
 }
 
 func runFix(ctx *Context, args []string) error {
-	// TODO add any needed flags
-	out := adif.NewLogfile()
-	acc := accumulator{Out: out, Ctx: ctx}
+	acc, err := newAccumulator(ctx)
+	if err != nil {
+		return err
+	}
 	for _, f := range filesOrStdin(args) {
 		l, err := acc.read(f)
 		if err != nil {
 			return err
 		}
-		updateFieldOrder(out, l.FieldOrder)
+		updateFieldOrder(acc.Out, l.FieldOrder)
 		for _, rec := range l.Records {
-			out.AddRecord(fixRecord(rec, l))
+			acc.Out.AddRecord(fixRecord(rec, l))
 		}
 	}
 	if err := acc.prepare(); err != nil {
 		return err
 	}
 	// fix again in case userdef fields were added
-	for _, r := range out.Records {
+	for _, r := range acc.Out.Records {
 		for _, f := range r.Fields() {
-			ff := fixField(f, r, out)
+			ff := fixField(f, r, acc.Out)
 			if f != ff {
 				r.Set(ff)
 			}
 		}
 	}
-	return write(ctx, out)
+	return write(ctx, acc.Out)
 }
 
 func fixRecord(r *adif.Record, l *adif.Logfile) *adif.Record {
