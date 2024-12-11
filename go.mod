@@ -5,14 +5,12 @@ go 1.18
 require github.com/abice/go-enum v0.5.4
 
 require (
+	github.com/rogpeppe/go-internal v1.12.0
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
-	golang.org/x/text v0.14.0
+	golang.org/x/text v0.21.0
 )
 
-require (
-	github.com/rogpeppe/go-internal v1.12.0 // indirect
-	golang.org/x/tools/cmd/cover v0.1.0-deprecated // indirect
-)
+require golang.org/x/tools/cmd/cover v0.1.0-deprecated // indirect
 
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
@@ -20,7 +18,7 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/golang/mock v1.6.0 // indirect
-	github.com/google/go-cmp v0.5.9
+	github.com/google/go-cmp v0.6.0
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
@@ -35,8 +33,8 @@ require (
 	github.com/stoewer/go-strcase v1.2.1
 	github.com/urfave/cli/v2 v2.23.7 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
-	golang.org/x/crypto v0.17.0 // indirect
-	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
-	golang.org/x/tools v0.12.1-0.20230815132531-74c255bcf846 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/mod v0.17.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 )
