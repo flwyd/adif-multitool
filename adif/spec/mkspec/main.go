@@ -12,6 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// mkspec generates Go source files from XML data describing a version of the
+// ADIF specification.  This should be run from the spec directory, i.e.
+// `cd adif/spec ; go run ./mkspec`.  If a URL is given as a program argument
+// the ZIP file at that URL will be downloaded and data extracted from the
+// `exports/xml/all.xml` file.  If a local filename is provided, it will be
+// parsed as XML.  If no command line argument is given, the current ADIF
+// version will be queried at https://adif.org.uk/adiflatestrelease.txt
 package main
 
 import (
@@ -22,9 +29,11 @@ import (
 	"go/format"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -194,43 +203,55 @@ type adifSpec struct {
 }
 
 func main() {
-	var content []byte
-	var filename string
 	if len(os.Args) > 1 {
-		filename = os.Args[1]
-		if strings.HasPrefix(filename, "https:") {
-			name, err := fetch(filename)
-			if err != nil {
-				log.Fatalf("Could not downoad %s: %v", filename, err)
-			}
-			c, err := xmlFromZip(name)
-			if err != nil {
-				log.Fatalf("Could not read all.xml from %s: %v", name, err)
-			}
-			content = c
-		} else {
-			c, err := os.ReadFile(filename)
-			if err != nil {
-				log.Fatalf("Could not read %s: %v", filename, err)
-			}
-			content = c
-		}
+		makeSpec(os.Args[1])
 	} else {
-		filename = os.Stdin.Name()
-		c, err := io.ReadAll(os.Stdin)
+		u := "https://adif.org.uk/adiflatestrelease.txt"
+		log.Printf("Checking latest ADIF version at %s", u)
+		res, err := http.Get(u)
+		if err != nil || res.StatusCode != 200 {
+			log.Fatalf("Error fetching latest version from %s: %v", u, err)
+		}
+		body, err := io.ReadAll(res.Body)
+		defer res.Body.Close()
 		if err != nil {
-			log.Fatalf("Could not read %s: %v", filename, err)
+			log.Fatalf("Error reading latest version from %s: %v", u, err)
+		}
+		ver, err := strconv.Atoi(string(body))
+		if err != nil {
+			log.Fatalf("Error reading latest version from %s: %v", u, err)
+		}
+		makeSpec(fmt.Sprintf("https://adif.org.uk/%d/resources", ver))
+	}
+}
+
+func makeSpec(fileOrUrl string) {
+	var content []byte
+	if strings.HasPrefix(fileOrUrl, "https:") {
+		name, err := fetch(fileOrUrl)
+		if err != nil {
+			log.Fatalf("Could not downoad %s: %v", fileOrUrl, err)
+		}
+		c, err := xmlFromZip(name)
+		if err != nil {
+			log.Fatalf("Could not read all.xml from %s: %v", name, err)
+		}
+		content = c
+	} else {
+		c, err := os.ReadFile(fileOrUrl)
+		if err != nil {
+			log.Fatalf("Could not read %s: %v", fileOrUrl, err)
 		}
 		content = c
 	}
 
-	spec := adifSpec{Source: filename}
+	spec := adifSpec{Source: fileOrUrl}
 	if err := xml.Unmarshal(content, &spec); err != nil {
-		log.Fatalf("XML decoding error in %s: %v", filename, err)
+		log.Fatalf("XML decoding error in %s: %v", fileOrUrl, err)
 	}
 	shortVer := strings.ReplaceAll(spec.Version, ".", "")
-	spec.SpecUrl = fmt.Sprintf("https://adif.org/%s/ADIF_%s.htm", shortVer, shortVer)
-	log.Printf("Parsed ADIF version %s from %s", spec.Version, filename)
+	spec.SpecUrl = fmt.Sprintf("https://adif.org.uk/%s/ADIF_%s.htm", shortVer, shortVer)
+	log.Printf("Parsed ADIF version %s from %s", spec.Version, fileOrUrl)
 	log.Printf("Version %s has %d data types, %d fields, %d enums", spec.Version,
 		len(spec.DataTypes.Records), len(spec.Fields.Fields), len(spec.Enumerations.Enums))
 	addCountryEnum(&spec.Enumerations)
@@ -245,7 +266,7 @@ func main() {
 
 func generateFile(filename, tmplPath string, spec *adifSpec) error {
 	name := path.Base(tmplPath)
-	log.Printf("generating %s from %s", filename, tmplPath)
+	log.Printf("Generating %s from %s", filename, tmplPath)
 	tmpl := template.New(name).Funcs(templateFuncs)
 	tmpl, err := tmpl.ParseFS(templates, tmplPath)
 	if err != nil {
