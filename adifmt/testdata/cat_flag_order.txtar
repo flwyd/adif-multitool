@@ -61,7 +61,7 @@ W4D	RTTY
 -- combined.json --
 {
   "HEADER": {
-    "ADIF_VER": "3.1.4",
+    "ADIF_VER": "3.1.5",
     "CREATED_TIMESTAMP": "23450607 080910",
     "PROGRAMID": "adifmt",
     "PROGRAMVERSION": "(devel)"
@@ -87,14 +87,14 @@ W4D	RTTY
 }
 -- combined.adi --
 Generated with 4 records by https://github.com/flwyd/adif-multitool
-<ADIF_VER:5>3.1.4 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:6>adifmt <PROGRAMVERSION:7>(devel) <EOH>
+<ADIF_VER:5>3.1.5 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:6>adifmt <PROGRAMVERSION:7>(devel) <EOH>
 <CALL:3>K1A <MODE:2>CW <EOR>
 <CALL:3>W2B <MODE:3>SSB <EOR>
 <CALL:3>K3C <MODE:2>FM <EOR>
 <CALL:3>W4D <MODE:4>RTTY <EOR>
 -- bar.adi --
 Generated with 2 records by https://github.com/flwyd/adif-multitool
-<ADIF_VER:5>3.1.4 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:6>adifmt <PROGRAMVERSION:7>(devel) <EOH>
+<ADIF_VER:5>3.1.5 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:6>adifmt <PROGRAMVERSION:7>(devel) <EOH>
 <CALL:3>K3C <MODE:2>FM <EOR>
 <CALL:3>W4D <MODE:4>RTTY <EOR>
 -- bar.adx --
@@ -102,7 +102,7 @@ Generated with 2 records by https://github.com/flwyd/adif-multitool
 <ADX>
  <HEADER>
   <!--Generated with 2 records by https://github.com/flwyd/adif-multitool-->
-  <ADIF_VER>3.1.4</ADIF_VER>
+  <ADIF_VER>3.1.5</ADIF_VER>
   <CREATED_TIMESTAMP>23450607 080910</CREATED_TIMESTAMP>
   <PROGRAMID>adifmt</PROGRAMID>
   <PROGRAMVERSION>(devel)</PROGRAMVERSION>

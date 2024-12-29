@@ -645,7 +645,7 @@ var (
 		Alpha3:      "SWZ",
 		Numeric:     "748",
 		EnglishName: "Eswatini",
-		DXCC:        []CountryEnum{CountrySwaziland},
+		DXCC:        []CountryEnum{CountryKingdomOfEswatini},
 	}
 
 	CountryCodeETH = ISO3166CountryCode{
@@ -1266,11 +1266,11 @@ var (
 		Alpha3:      "MUS",
 		Numeric:     "480",
 		EnglishName: "Mauritius",
-		DXCC:        []CountryEnum{CountryMauritius, CountryAgalegaStBrandonIslands, CountryRodriguezIsland},
+		DXCC:        []CountryEnum{CountryMauritius, CountryAgalegaStBrandonIslands, CountryRodriguesIsland},
 		Subdivisions: map[string]CountryEnum{
 			"AG": CountryAgalegaStBrandonIslands, // Agalega Islands
 			"CC": CountryAgalegaStBrandonIslands, // Cargados Carajos Shoals
-			"RO": CountryRodriguezIsland,
+			"RO": CountryRodriguesIsland,
 		},
 	}
 
@@ -1610,7 +1610,7 @@ var (
 		Alpha3:      "MKD",
 		Numeric:     "807",
 		EnglishName: "Republic of North Macedonia",
-		DXCC:        []CountryEnum{CountryMacedonia},
+		DXCC:        []CountryEnum{CountryNorthMacedoniaRepublicOf},
 	}
 
 	CountryCodeROU = ISO3166CountryCode{
@@ -1936,7 +1936,7 @@ var (
 		Alpha3:      "SXM",
 		Numeric:     "534",
 		EnglishName: "Sint Maarten (Dutch part)",
-		DXCC:        []CountryEnum{CountryStMaarten},
+		DXCC:        []CountryEnum{CountrySintMaarten},
 	}
 
 	CountryCodeSVK = ISO3166CountryCode{
@@ -1977,7 +1977,7 @@ var (
 		Alpha3:      "ZAF",
 		Numeric:     "710",
 		EnglishName: "South Africa",
-		DXCC:        []CountryEnum{CountrySouthAfrica},
+		DXCC:        []CountryEnum{CountryRepublicOfSouthAfrica},
 	}
 
 	CountryCodeSGS = ISO3166CountryCode{

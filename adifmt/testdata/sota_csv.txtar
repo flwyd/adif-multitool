@@ -18,7 +18,7 @@ cmp sotalog.csv expected.csv
 stderr 'Wrote 3 records to sotalog.csv'
 
 -- mylog.adi --
-<ADIF_VER:5>3.1.4 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:6>adifmt <PROGRAMVERSION:7>(devel) <EOH>
+<ADIF_VER:5>3.1.5 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:6>adifmt <PROGRAMVERSION:7>(devel) <EOH>
 SOTA activator
 <QSO_DATE:8>20200101 <TIME_ON:4>0111 <MODE:2>FM <BAND:2>2m <FREQ:6>146.52 <CALL:3>K1A <STATE:2>CT <STATION_CALLSIGN:4>W1AW <MY_SOTA_REF:9>W1/MB-009 <MY_STATE:2>MA <COMMENT:24>Good signal, clear audio <EOR>
 Summit-to-summit

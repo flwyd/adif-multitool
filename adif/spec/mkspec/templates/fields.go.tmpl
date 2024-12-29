@@ -24,7 +24,7 @@ var (
 	{{.Identifier}} = Field{
 		Name: {{.FieldName | printf "%q"}},
 		Type: {{with $type := .DataType}}{{if eq $type "CreditList,AwardList"}}CreditList{{else}}{{$type}}{{end}}DataType{{end}},
-		{{with .EnumName}}EnumName: {{printf "%q" .}},{{"\n"}}{{end}}
+		{{with .EnumName}}EnumName: {{if eq . "Credit,Award"}}"Credit"{{else}}{{printf "%q" .}}{{end}},{{"\n"}}{{end}}
 		{{- with .EnumScope}}EnumScope: {{printf "%q" .}},{{"\n"}}{{end}}
 		{{- if .HeaderField}}Header: true,{{"\n"}}{{end}}
 		{{- with .MinimumValue}}Minimum: {{printf "%q" .}},{{"\n"}}{{end}}

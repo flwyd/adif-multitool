@@ -1,7 +1,7 @@
 # Tests Cabrillo conversion of Sweepstakes spec from
 # https://www.qrz.lt/ly1vp/ataskaitu_formatai/cabrillo/qso-template.html
 
-# MY_CHECK and MY_PRECEDENCE aren't in ADIF 3.1.4 spec
+# MY_CHECK and MY_PRECEDENCE aren't in ADIF 3.1.5 spec
 env MY_EXCHANGE='nr:stx p:my_precedence ck:my_check sec:my_arrl_section'
 env THEIR_EXCHANGE='nr:srx p:precedence ck:check sec:arrl_section'
 

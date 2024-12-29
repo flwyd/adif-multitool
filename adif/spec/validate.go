@@ -335,11 +335,12 @@ func ValidateEnumeration(val string, f Field, ctx ValidationContext) Validation 
 	}
 	e := f.Enum()
 	if e.Name == "" {
-		if f.Name == DarcDokField.Name {
+		if f.Name == DarcDokField.Name || f.Name == MyDarcDokField.Name {
 			// ADIF spec says type is Enumeration but doesn't provide an enum
 			// See https://www.darc.de/der-club/referate/conteste/wag-contest/en/service/districtsdoks/
 			// It's supposed to be LNN (L = letter N = number) but special occasions
 			// allow values like ILERA and 50ESKILSTUNA so just accept anything
+			// TODO Ask adifdev why this enumeration isn't in the spec
 			return ValidateString(val, f, ctx)
 		}
 		return errorf("%s unknown enumeration %q", f.Name, f.EnumName)
