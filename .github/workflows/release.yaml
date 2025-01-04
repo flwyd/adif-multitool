@@ -125,4 +125,4 @@ jobs:
               and `adifmt-windows-386` for older 32-bit computers.
             * Linux users: Download `adifmt-linux-arm64` or `adifmt-linux-arm` \
               for Raspberry Pi or other embedded/mobile devices. Otherwise, \
-              download `adifmt-linux-amd64` (64-bit) or `adifmt-linux-386) (32).
+              download `adifmt-linux-amd64` (64-bit) or `adifmt-linux-386`) (32).
