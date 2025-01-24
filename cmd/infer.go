@@ -42,8 +42,10 @@ var inferrers = map[string]inferrer{
 	spec.ModeField.Name:            inferMode,
 	spec.CountryField.Name:         inferCountry,
 	spec.MyCountryField.Name:       inferCountry,
-	spec.DxccField.Name:            inferDxcc,
-	spec.MyDxccField.Name:          inferDxcc,
+	spec.DxccField.Name:            inferDXCC,
+	spec.MyDxccField.Name:          inferDXCC,
+	spec.CqzField.Name:             inferCQZone,
+	spec.MyCqZoneField.Name:        inferCQZone,
 	spec.GridsquareField.Name:      inferGridsquare,
 	spec.GridsquareExtField.Name:   inferGridsquare,
 	spec.MyGridsquareField.Name:    inferGridsquare,
@@ -82,6 +84,8 @@ func helpInfer() string {
 	fmt.Fprintf(res, fromfmt, spec.MyCountryField.Name, spec.MyDxccField.Name)
 	fmt.Fprintf(res, fromfmt, spec.DxccField.Name, spec.CountryField.Name)
 	fmt.Fprintf(res, fromfmt, spec.MyDxccField.Name, spec.MyCountryField.Name)
+	fmt.Fprintf(res, fromfmt, spec.CqzField.Name, spec.DxccField.Name)
+	fmt.Fprintf(res, fromfmt, spec.MyCqZoneField.Name, spec.MyDxccField.Name)
 	fmt.Fprintf(res, fromfmt, spec.CntyField.Name, spec.UsacaCountiesField.Name)
 	fmt.Fprintf(res, fromfmt, spec.MyCntyField.Name, spec.MyUsacaCountiesField.Name)
 	fmt.Fprintf(res, fromfmt, spec.UsacaCountiesField.Name, spec.CntyField.Name)
@@ -168,6 +172,13 @@ func runInfer(ctx *Context, args []string) error {
 	return write(ctx, acc.Out)
 }
 
+func myPrefix(name string) func(string) string {
+	if strings.HasPrefix(name, "MY_") {
+		return func(s string) string { return "MY_" + s }
+	}
+	return func(s string) string { return s }
+}
+
 func inferBand(r *adif.Record, name string) bool {
 	freqname := spec.FreqField.Name
 	if name == spec.BandRxField.Name {
@@ -200,10 +211,7 @@ func inferBand(r *adif.Record, name string) bool {
 }
 
 func inferCountry(r *adif.Record, name string) bool {
-	my := func(s string) string { return s }
-	if strings.HasPrefix(name, "MY_") {
-		my = func(s string) string { return "MY_" + s }
-	}
+	my := myPrefix(name)
 	code, ok := r.Get(my(spec.DxccField.Name))
 	if !ok || code.Value == "" || code.Value == "0" {
 		return false
@@ -219,11 +227,8 @@ func inferCountry(r *adif.Record, name string) bool {
 	return false
 }
 
-func inferDxcc(r *adif.Record, name string) bool {
-	my := func(s string) string { return s }
-	if strings.HasPrefix(name, "MY_") {
-		my = func(s string) string { return "MY_" + s }
-	}
+func inferDXCC(r *adif.Record, name string) bool {
+	my := myPrefix(name)
 	c, ok := r.Get(my(spec.CountryField.Name))
 	if !ok || c.Value == "" {
 		return false
@@ -253,10 +258,7 @@ func inferMode(r *adif.Record, name string) bool {
 }
 
 func inferSigInfo(r *adif.Record, name string) bool {
-	my := func(s string) string { return s }
-	if strings.HasPrefix(name, "MY_") {
-		my = func(s string) string { return "MY_" + s }
-	}
+	my := myPrefix(name)
 	islota, iotaok := r.Get(my(spec.IotaField.Name))
 	pota, potaok := r.Get(my(spec.PotaRefField.Name))
 	sota, sotaok := r.Get(my(spec.SotaRefField.Name))
@@ -316,10 +318,7 @@ func inferSigInfo(r *adif.Record, name string) bool {
 
 func inferProgramRef(wantSig string) inferrer {
 	return func(r *adif.Record, name string) bool {
-		my := func(s string) string { return s }
-		if strings.HasPrefix(name, "MY_") {
-			my = func(s string) string { return "MY_" + s }
-		}
+		my := myPrefix(name)
 		siginfo, ok := r.Get(my(spec.SigInfoField.Name))
 		if !ok || siginfo.Value == "" {
 			return false
@@ -368,10 +367,7 @@ func inferUSCounty(r *adif.Record, name string) bool {
 	if f, ok := r.Get(name); ok && f.Value != "" {
 		return false
 	}
-	my := func(s string) string { return s }
-	if strings.HasPrefix(name, "MY_") {
-		my = func(s string) string { return "MY_" + s }
-	}
+	my := myPrefix(name)
 	if dx, ok := r.Get(my(spec.DxccField.Name)); ok && dx.Value != "" {
 		if !spec.CountryCodeUSA.IncludesDXCC(dx.Value) {
 			return false // not a US contact
@@ -394,11 +390,51 @@ func inferUSCounty(r *adif.Record, name string) bool {
 	return true
 }
 
-func inferLatLon(r *adif.Record, name string) bool {
-	my := func(s string) string { return s }
-	if strings.HasPrefix(name, "MY_") {
-		my = func(s string) string { return "MY_" + s }
+func inferCQZone(r *adif.Record, name string) bool {
+	if f, ok := r.Get(name); ok && f.Value != "" {
+		return false
 	}
+	my := myPrefix(name)
+	var c, dxcc string
+	if dx, ok := r.Get(my(spec.DxccField.Name)); ok && dx.Value != "" {
+		c = dx.Value
+		dxcc = c
+	} else if cc, ok := r.Get(my(spec.CountryField.Name)); ok && cc.Value != "" {
+		c = cc.Value
+		d := spec.CountryEnumeration.Value(c)
+		if len(d) == 1 {
+			dxcc = d[0].(spec.CountryEnum).EntityCode
+		}
+	} else {
+		return false
+	}
+	zs := spec.CQZoneFor(c)
+	if len(zs) == 0 {
+		return false
+	}
+	if len(zs) == 1 {
+		r.Set(adif.Field{Name: name, Value: strconv.Itoa(zs[0])})
+		return true
+	}
+	// Multiple CQ zones for some countries, check zone of subdivision
+	if st, ok := r.Get(my(spec.StateField.Name)); ok && st.Value != "" {
+		vs := spec.PrimaryAdministrativeSubdivisionEnumeration.Value(st.Value)
+		for _, v := range vs {
+			a := v.(spec.PrimaryAdministrativeSubdivisionEnum)
+			if a.DxccEntityCode == dxcc && a.CqZone != "" {
+				// Some Canadian provinces/territories have comma-separated zones
+				if z, err := strconv.Atoi(a.CqZone); err == nil {
+					r.Set(adif.Field{Name: name, Value: strconv.Itoa(z)})
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+func inferLatLon(r *adif.Record, name string) bool {
+	my := myPrefix(name)
 	f, ok := r.Get(my(spec.GridsquareField.Name))
 	if !ok || f.Value == "" {
 		return false
@@ -431,10 +467,7 @@ func inferLatLon(r *adif.Record, name string) bool {
 }
 
 func inferGridsquare(r *adif.Record, name string) bool {
-	my := func(s string) string { return s }
-	if strings.HasPrefix(name, "MY_") {
-		my = func(s string) string { return "MY_" + s }
-	}
+	my := myPrefix(name)
 	var latf, lonf string
 	if f, ok := r.Get(my(spec.LatField.Name)); ok && f.Value != "" {
 		latf = f.Value

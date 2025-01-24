@@ -24,6 +24,7 @@ import (
 	"unicode/utf8"
 
 	"golang.org/x/exp/constraints"
+	"golang.org/x/exp/slices"
 )
 
 type Validity int
@@ -245,6 +246,23 @@ func ValidateNumber(val string, f Field, ctx ValidationContext) Validation {
 		if num > max {
 			return errorf("%s value %s above maximum %s", f.Name, val, maxstr)
 		}
+	}
+
+	if f.Name == CqzField.Name || f.Name == MyCqZoneField.Name {
+		var dxcc string
+		if f.Name == CqzField.Name {
+			dxcc = ctx.FieldValue(DxccField.Name)
+		} else if f.Name == MyCqZoneField.Name {
+			dxcc = ctx.FieldValue(MyDxccField.Name)
+		}
+		if dxcc != "" {
+			zs := CQZoneFor(dxcc)
+			if len(zs) > 0 && !slices.Contains(zs, int(num)) {
+				return errorf("%s value %s is not valid for DXCC %s, not in %v", f.Name, val, dxcc, zs)
+			}
+		}
+		// TODO if len(zs) > 1 check (My)StateField too, but ADIF CQ Zone data on
+		// PrimaryAdministrativeSubdivision is incomplete for China/Australia/Yemen
 	}
 	return valid()
 }

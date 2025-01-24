@@ -118,6 +118,38 @@ func TestInfer(t *testing.T) {
 		},
 
 		{
+			name:  "cqz India",
+			infer: FieldList{"CQZ"},
+			start: []adif.Field{{Name: "COUNTRY", Value: "India"}, {Name: "MY_COUNTRY", Value: "Armenia"}},
+			want:  []adif.Field{{Name: "COUNTRY", Value: "India"}, {Name: "MY_COUNTRY", Value: "Armenia"}, {Name: "CQZ", Value: "22"}},
+		},
+		{
+			name:  "my_cq_zone Mexico",
+			infer: FieldList{"MY_CQ_ZONE"},
+			start: []adif.Field{{Name: "MY_DXCC", Value: spec.CountryMexico.EntityCode}, {Name: "DXCC", Value: "108"}},
+			want:  []adif.Field{{Name: "MY_DXCC", Value: spec.CountryMexico.EntityCode}, {Name: "DXCC", Value: "108"}, {Name: "MY_CQ_ZONE", Value: "6"}},
+		},
+		{
+			name:  "cqz USA",
+			infer: FieldList{"CQZ"},
+			start: []adif.Field{{Name: "DXCC", Value: spec.CountryUnitedStatesOfAmerica.EntityCode}, {Name: "STATE", Value: "MT"}, {Name: "MY_DXCC", Value: "245"}, {Name: "MY_STATE", Value: "MO"}},
+			want:  []adif.Field{{Name: "DXCC", Value: spec.CountryUnitedStatesOfAmerica.EntityCode}, {Name: "STATE", Value: "MT"}, {Name: "MY_DXCC", Value: "245"}, {Name: "MY_STATE", Value: "MO"}, {Name: "CQZ", Value: "4"}},
+		},
+		{
+			name:  "my_cq_zone Russia",
+			infer: FieldList{"MY_CQ_ZONE"},
+			start: []adif.Field{{Name: "MY_COUNTRY", Value: spec.CountryAsiaticRussia.EntityName}, {Name: "MY_STATE", Value: "IR"}, {Name: "COUNTRY", Value: "ARGENTINA"}, {Name: "STATE", Value: "H"}},
+			want:  []adif.Field{{Name: "MY_COUNTRY", Value: spec.CountryAsiaticRussia.EntityName}, {Name: "MY_STATE", Value: "IR"}, {Name: "COUNTRY", Value: "ARGENTINA"}, {Name: "STATE", Value: "H"}, {Name: "MY_CQ_ZONE", Value: "18"}},
+		},
+		{
+			// Newfounland and Labrador span the CQ Zone 2 and 5 boundary
+			name:  "can't infer multi-zone states",
+			infer: FieldList{"CQZ"},
+			start: []adif.Field{{Name: "DXCC", Value: spec.CountryCanada.EntityCode}, {Name: "STATE", Value: "NL"}, {Name: "MY_DXCC", Value: "230"}, {Name: "STATE", Value: "BY"}},
+			want:  []adif.Field{{Name: "DXCC", Value: spec.CountryCanada.EntityCode}, {Name: "STATE", Value: "NL"}, {Name: "MY_DXCC", Value: "230"}, {Name: "STATE", Value: "BY"}},
+		},
+
+		{
 			name:  "mode MFSK",
 			infer: FieldList{"MODE"},
 			start: []adif.Field{{Name: "SUBMODE", Value: "JS8"}},
