@@ -143,6 +143,14 @@ func (e *enumSpec) TypeIdentifier() string {
 	return strcase.UpperCamelCase(e.Name) + "Enum"
 }
 
+var countryAbbrevs = map[string]string{
+	" IS.":     " ISLANDS",
+	" I.":      " ISLAND",
+	"PEOPLE'S": "PEOPLES",
+	// CountryNoneTheContactedStationIsKnownToNotBeWithinADxccEntity would be a silly identifier
+	" (the contacted station is known to not be within a DXCC entity)": "",
+}
+
 func (e *enumSpec) ValueIdentifier(r record) string {
 	// it seems the value used in data files is always the second field, first is the enum name, e.g.
 	// "Enumeration Name", "Mode", "Submodes", "Description", "Import-only", "Comments"
@@ -155,8 +163,7 @@ func (e *enumSpec) ValueIdentifier(r record) string {
 		// avoid "?" as abbreviation, use Meaning property insetad
 		name = strcase.UpperCamelCase(r.Value("Meaning"))
 	case "Country":
-		abbrevs := map[string]string{" IS.": " ISLANDS", " I.": " ISLAND", "PEOPLE'S": "PEOPLES"}
-		for k, v := range abbrevs {
+		for k, v := range countryAbbrevs {
 			name = strings.ReplaceAll(name, k, v)
 		}
 		name = fixIdentifierPat.ReplaceAllString(name, "_")

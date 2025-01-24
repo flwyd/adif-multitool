@@ -25445,7 +25445,7 @@ func (e CountryEnum) String() string {
 
 // CountryEnum values.
 var (
-	CountryNoneTheContactedStationIsKnownToNotBeWithinADxccEntity = CountryEnum{
+	CountryNone = CountryEnum{
 		EnumerationName: "Country",
 		EntityName:      "None (the contacted station is known to not be within a DXCC entity)",
 		EntityCode:      "0",
@@ -27874,7 +27874,7 @@ var CountryEnumeration = Enumeration{
 		"Deleted",
 	},
 	Values: []EnumValue{
-		CountryNoneTheContactedStationIsKnownToNotBeWithinADxccEntity,
+		CountryNone,
 		CountryCanada,
 		CountryAbuAilIslands_deleted,
 		CountryAfghanistan,
