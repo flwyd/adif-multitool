@@ -270,7 +270,7 @@ optional.
 ```json
 {
  "HEADER": {
-  "ADIF_VER": "3.1.4",
+  "ADIF_VER": "3.1.5",
   "more": "header fields"
  },
  "RECORDS": [
@@ -468,7 +468,7 @@ field (for stations which aren’t on an island).
 
 This four-part exchange is used in ARRL Sweepstakes contests.  Both precedence
 and check have ADIF fields, `MY_PRECEDENCE` and `MY_CHECK` are not part of the
-ADIF 3.1.4 specification.
+ADIF 3.1.5 specification.
 
 `--cabrillo-my-exchange 'nr:stx p:my_precedence ck:my_check sec:my_arrl_section'
 --cabrillo-their-exchange 'nr:srx p:precedence ck:check sec:arrl_section'`
@@ -505,7 +505,7 @@ For backwards-compatibility with ASCII-only software, the
 defines `Character` and `String` types as
 [ASCII](https://en.wikipedia.org/wiki/ASCII)-only, with `IntlCharacter` and
 `IntlString` as allowing any Unicode character (except line breaks unless in a
-`IntlMultilineString` field).  Additionally, as of ADIF version 3.1.4, ADI
+`IntlMultilineString` field).  Additionally, as of ADIF version 3.1.5, ADI
 files are supposed to be ASCII-only and may not have `Intl*` fields.  ADIF
 Multitool deviates from the spec by passing through Intl fields in ADI files
 and writing Unicode characters in UTF-8.  (This allows ADI to be the default
@@ -819,6 +819,9 @@ Inferable fields:
 * `MY_COUNTRY` from `MY_DXCC`
 * `DXCC` from `COUNTRY`
 * `MY_DXCC` from `MY_COUNTRY`
+* `CQZ` from `COUNTRY`/`DXCC`
+* `MY_CQ_ZONE` from `MY_COUNTRY`/`MY_DXCC`
+* `CONT` from `COUNTRY`/`DXCC`
 * `CNTY` from `USACA_COUNTIES` (unless multiple county-line counties)
 * `MY_CNTY` from `MY_USACA_COUNTIES` (unless multiple county-line counties)
 * `USACA_COUNTIES` from `CNTY` (if a USA DXCC entity)
