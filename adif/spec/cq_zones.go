@@ -272,7 +272,8 @@ func CQZoneFor(s string) []int {
 		CountryRomania.EntityName, CountryRomania.EntityCode,
 		CountryUkSovereignBaseAreasOnCyprus.EntityName, CountryUkSovereignBaseAreasOnCyprus.EntityCode,
 		CountryIsrael.EntityName, CountryIsrael.EntityCode,
-		CountryCyprus.EntityName, CountryCyprus.EntityCode:
+		CountryCyprus.EntityName, CountryCyprus.EntityCode,
+		CountryPalestine_deleted.EntityName, CountryPalestine_deleted.EntityCode:
 		return []int{20}
 
 	// Zone 21: Southwestern Asia (also Yemen)
@@ -546,6 +547,7 @@ func CQZoneFor(s string) []int {
 		CountryMadagascar.EntityName, CountryMadagascar.EntityCode,
 		CountryAldabra_deleted.EntityName, CountryAldabra_deleted.EntityCode,
 		CountryBlenheimReef_deleted.EntityName, CountryBlenheimReef_deleted.EntityCode,
+		CountryComoros_deleted.EntityName, CountryComoros_deleted.EntityCode,
 		CountryDesroches_deleted.EntityName, CountryDesroches_deleted.EntityCode,
 		CountryFarquhar_deleted.EntityName, CountryFarquhar_deleted.EntityCode,
 		CountryGeyserReef_deleted.EntityName, CountryGeyserReef_deleted.EntityCode:

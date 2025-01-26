@@ -42,7 +42,7 @@ func TestAllCountriesCQZone(t *testing.T) {
 				if len(CQZoneFor(c.EntityName)) == 0 {
 					t.Errorf("CQZoneFor(%q) is missing", c.EntityName)
 				}
-				if len(CQZoneFor(c.EntityName)) == 0 {
+				if len(CQZoneFor(c.EntityCode)) == 0 {
 					t.Errorf("CQZoneFor(%q) is missing", c.EntityCode)
 				}
 			}
