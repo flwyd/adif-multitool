@@ -46,6 +46,7 @@ var inferrers = map[string]inferrer{
 	spec.MyDxccField.Name:          inferDXCC,
 	spec.CqzField.Name:             inferCQZone,
 	spec.MyCqZoneField.Name:        inferCQZone,
+	spec.ContField.Name:            inferContinent,
 	spec.GridsquareField.Name:      inferGridsquare,
 	spec.GridsquareExtField.Name:   inferGridsquare,
 	spec.MyGridsquareField.Name:    inferGridsquare,
@@ -84,8 +85,12 @@ func helpInfer() string {
 	fmt.Fprintf(res, fromfmt, spec.MyCountryField.Name, spec.MyDxccField.Name)
 	fmt.Fprintf(res, fromfmt, spec.DxccField.Name, spec.CountryField.Name)
 	fmt.Fprintf(res, fromfmt, spec.MyDxccField.Name, spec.MyCountryField.Name)
+	fmt.Fprintf(res, fromfmt, spec.CqzField.Name, spec.CountryField.Name)
 	fmt.Fprintf(res, fromfmt, spec.CqzField.Name, spec.DxccField.Name)
+	fmt.Fprintf(res, fromfmt, spec.MyCqZoneField.Name, spec.MyCountryField.Name)
 	fmt.Fprintf(res, fromfmt, spec.MyCqZoneField.Name, spec.MyDxccField.Name)
+	fmt.Fprintf(res, fromfmt, spec.ContField.Name, spec.MyCountryField.Name)
+	fmt.Fprintf(res, fromfmt, spec.ContField.Name, spec.MyDxccField.Name)
 	fmt.Fprintf(res, fromfmt, spec.CntyField.Name, spec.UsacaCountiesField.Name)
 	fmt.Fprintf(res, fromfmt, spec.MyCntyField.Name, spec.MyUsacaCountiesField.Name)
 	fmt.Fprintf(res, fromfmt, spec.UsacaCountiesField.Name, spec.CntyField.Name)
@@ -430,6 +435,27 @@ func inferCQZone(r *adif.Record, name string) bool {
 			}
 		}
 	}
+	return false
+}
+
+func inferContinent(r *adif.Record, name string) bool {
+	if f, ok := r.Get(name); ok && f.Value != "" {
+		return false
+	}
+	my := myPrefix(name)
+	var c string
+	if dx, ok := r.Get(my(spec.DxccField.Name)); ok && dx.Value != "" {
+		c = dx.Value
+	} else if cc, ok := r.Get(my(spec.CountryField.Name)); ok && cc.Value != "" {
+		c = cc.Value
+	} else {
+		return false
+	}
+	cont := spec.ContinentFor(c)
+	if cont == (spec.ContinentEnum{}) {
+		return false
+	}
+	r.Set(adif.Field{Name: name, Value: cont.Abbreviation})
 	return false
 }
 

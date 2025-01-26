@@ -150,6 +150,37 @@ func TestInfer(t *testing.T) {
 		},
 
 		{
+			name:  "continent Panama",
+			infer: FieldList{"CONT"},
+			start: []adif.Field{{Name: "DXCC", Value: spec.CountryPanama.EntityCode}},
+			want:  []adif.Field{{Name: "DXCC", Value: spec.CountryPanama.EntityCode}, {Name: "CONT", Value: "NA"}},
+		},
+		{
+			name:  "continent South Sandwich",
+			infer: FieldList{"CONT"},
+			start: []adif.Field{{Name: "COUNTRY", Value: spec.CountrySouthSandwichIslands.EntityName}},
+			want:  []adif.Field{{Name: "COUNTRY", Value: spec.CountrySouthSandwichIslands.EntityName}, {Name: "CONT", Value: "AN"}},
+		},
+		{
+			name:  "continent Turkey",
+			infer: FieldList{"CONT"},
+			start: []adif.Field{{Name: "COUNTRY", Value: "Turkey"}},
+			want:  []adif.Field{{Name: "COUNTRY", Value: "Turkey"}, {Name: "CONT", Value: "AS"}},
+		},
+		{
+			name:  "continent unknown country",
+			infer: FieldList{"CONT"},
+			start: []adif.Field{{Name: "COUNTRY", Value: "Freedonia"}},
+			want:  []adif.Field{{Name: "COUNTRY", Value: "Freedonia"}},
+		},
+		{
+			name:  "continent unknown DXCC",
+			infer: FieldList{"CONT"},
+			start: []adif.Field{{Name: "DXCC", Value: "999"}},
+			want:  []adif.Field{{Name: "DXCC", Value: "999"}},
+		},
+
+		{
 			name:  "mode MFSK",
 			infer: FieldList{"MODE"},
 			start: []adif.Field{{Name: "SUBMODE", Value: "JS8"}},

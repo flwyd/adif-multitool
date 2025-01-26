@@ -903,3 +903,30 @@ func TestValidateCQZone(t *testing.T) {
 		testValidator(t, tc.validateTest, ctx, "TestValidateCQZone")
 	}
 }
+
+func TestValidateContinent(t *testing.T) {
+	tests := []struct {
+		validateTest
+		dxcc, country string
+	}{
+		{validateTest: validateTest{field: ContField, value: "SA", want: Valid}, dxcc: CountryTrinidadTobago.EntityCode, country: ""},
+		{validateTest: validateTest{field: ContField, value: "OC", want: Valid}, dxcc: "", country: CountryEastMalaysia.EntityName},
+		{validateTest: validateTest{field: ContField, value: "AS", want: Valid}, dxcc: "", country: CountryWestMalaysia.EntityName},
+		{validateTest: validateTest{field: ContField, value: "EU", want: InvalidWarning}, dxcc: CountryCanaryIslands.EntityCode, country: ""},
+		{validateTest: validateTest{field: ContField, value: "EU", want: Valid}, dxcc: "", country: "Iceland"},
+		{validateTest: validateTest{field: ContField, value: "AS", want: InvalidWarning}, dxcc: CountryBolivia.EntityCode, country: ""},
+	}
+	for _, tc := range tests {
+		ctx := ValidationContext{FieldValue: func(name string) string {
+			switch name {
+			case DxccField.Name:
+				return tc.dxcc
+			case CountryField.Name:
+				return tc.country
+			default:
+				return ""
+			}
+		}}
+		testValidator(t, tc.validateTest, ctx, "TestValidateCountry")
+	}
+}

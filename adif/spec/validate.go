@@ -374,6 +374,18 @@ func ValidateEnumeration(val string, f Field, ctx ValidationContext) Validation 
 		}
 		return fn("%s unknown value %q for enumeration %s", f.Name, val, e.Name)
 	}
+	if f.Name == ContField.Name {
+		if d := ctx.FieldValue(DxccField.Name); d != "" {
+			if c := ContinentFor(d); !strings.EqualFold(val, c.Abbreviation) {
+				return warningf("continent %s does not match DXCC %s continent %s", val, d, c.Abbreviation)
+			}
+		}
+		if d := ctx.FieldValue(CountryField.Name); d != "" {
+			if c := ContinentFor(d); !strings.EqualFold(val, c.Abbreviation) {
+				return warningf("continent %s does not match country %s continent %s", val, d, c.Abbreviation)
+			}
+		}
+	}
 	return valid()
 }
 
