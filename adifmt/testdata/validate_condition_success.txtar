@@ -1,0 +1,12 @@
+# tests that --required-fields isn't checked if condition doesn't match
+adifmt validate --required-fields submode --if mode=MFSK --or-if mode=SSB -output adi input.adi
+! stderr .
+cmp stdout input.adi
+
+-- input.adi --
+Generated with 4 records by https://github.com/flwyd/adif-multitool
+<ADIF_VER:5>3.1.5 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:6>adifmt <PROGRAMVERSION:7>(devel) <EOH>
+<CALL:3>K1A <BAND:3>30m <MODE:2>CW <EOR>
+<CALL:3>K1B <BAND:3>40m <MODE:3>SSB <SUBMODE:3>LSB <EOR>
+<CALL:3>K1C <BAND:3>10m <MODE:2>FM <EOR>
+<CALL:3>K1D <BAND:3>20m <MODE:4>MFSK <SUBMODE:3>JS8 <EOR>

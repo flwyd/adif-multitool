@@ -1,0 +1,18 @@
+# tests that condition match checks required-fields
+# and non-match doesn't prevent data-type validation checks
+! adifmt validate --required-fields submode --if mode=MFSK --or-if mode=SSB -output adi input.adi
+! stdout .
+cmp stderr golden.err
+
+-- input.adi --
+Generated with 4 records by https://github.com/flwyd/adif-multitool
+<ADIF_VER:5>3.1.5 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:6>adifmt <PROGRAMVERSION:7>(devel) <EOH>
+<QSO_DATE:10>2020-01-02 <CALL:3>K1A <BAND:3>30m <MODE:2>CW <EOR>
+<QSO_DATE:8>20210304 <CALL:3>K1B <BAND:3>40m <MODE:3>SSB <EOR>
+<QSO_DATE:8>20220506 <CALL:3>K1C <BAND:3>10m <MODE:2>FM <EOR>
+<QSO_DATE:8>20230708 <CALL:3>K1D <BAND:3>20m <MODE:4>MFSK <EOR>
+-- golden.err --
+ERROR on input.adi record 1: QSO_DATE invalid date "2020-01-02"
+ERROR on input.adi record 2: missing fields SUBMODE
+ERROR on input.adi record 4: missing fields SUBMODE
+Error running validate: validate got 3 errors and 0 warnings

@@ -114,6 +114,10 @@ var (
 	validateConf = cmdConfig{Command: cmd.Validate,
 		Configure: func(ctx *cmd.Context, fs *flag.FlagSet) {
 			cctx := cmd.ValidateContext{RequiredFields: make(cmd.FieldList, 0, 16)}
+			fs.Var(cctx.Cond.IfFlag(), "if", "Only check required-fields when `condition` is true (repeatable)")
+			fs.Var(cctx.Cond.IfNotFlag(), "if-not", "Only check required-fields when `condition` is false (repeatable)")
+			fs.Var(cctx.Cond.OrIfFlag(), "or-if", "Only check required-fields when `condition` is true or any previous --if group is true (repeatable)")
+			fs.Var(cctx.Cond.OrIfNotFlag(), "or-if-not", "Only check required-fields when `condition` is false or any previous --if group is true (repeatable)")
 			fs.Var(&cctx.RequiredFields, "required-fields", "Field `names` which must be present and non-empty in a valid record")
 			ctx.CommandCtx = &cctx
 		}}

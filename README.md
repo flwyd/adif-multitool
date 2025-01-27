@@ -930,10 +930,15 @@ block the logfile from being printed to standard output.  Dates and times in the
 future (based on the computer’s current wall clock) will print a warning; there
 is not currently a way to override the current time.
 
-The `--required-fields` option provides a list of fields which must be present in
-a valid record.  Multiple fields may be comma-separated or the option given
-several times.  For example, checking a contest log might use
-`adifmt validate --reqiured-fields qso_date,time_on,call,band,mode,srx_string`
+The `--required-fields` option provides a list of fields which must be present
+in a valid record.  Multiple fields may be comma-separated or the option given
+several times.  For example, checking a contest log might use `adifmt validate
+--reqiured-fields qso_date,time_on,call,band,mode,srx_string` The
+`--if --if-not --or-if --or-if-not` options will only check `--required-fields`
+on records where the condition matches.  For example, to ensure SUBMODE is set
+for MSFK and SSB contacts without worrying about CW, RTTY, or FM contacts:
+`adifmt --required-fields=submode --if mode=MFSK --or-if mode=SSB`.  Data type
+validity checks will occur even if the condition does not match.
 
 Some but not all validation errors can be corrected with [`adifmt fix`](#fix).
 

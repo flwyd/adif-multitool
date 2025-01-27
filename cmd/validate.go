@@ -29,6 +29,7 @@ var Validate = Command{Name: "validate", Run: runValidate, Help: helpValidate,
 
 type ValidateContext struct {
 	RequiredFields FieldList
+	Cond           ConditionValue
 }
 
 func helpValidate() string {
@@ -38,6 +39,7 @@ func helpValidate() string {
 func runValidate(ctx *Context, args []string) error {
 	cctx := ctx.CommandCtx.(*ValidateContext)
 	now := time.Now().UTC() // consistent for the whole log
+	cond := cctx.Cond.Get()
 	log := os.Stderr
 	var errors, warnings int
 	appFields := make(map[string]adif.DataType)
@@ -59,15 +61,17 @@ func runValidate(ctx *Context, args []string) error {
 					return f.Value
 				}}
 			var msgs []string
-			missing := make([]string, 0)
-			for _, x := range cctx.RequiredFields {
-				if f, ok := r.Get(x); !ok || f.Value == "" {
-					missing = append(missing, x)
+			if cond.Evaluate(recordEvalContext{record: r, lang: ctx.Locale}) {
+				missing := make([]string, 0)
+				for _, x := range cctx.RequiredFields {
+					if f, ok := r.Get(x); !ok || f.Value == "" {
+						missing = append(missing, x)
+					}
 				}
-			}
-			if len(missing) > 0 {
-				errors++
-				fmt.Fprintf(log, "ERROR on %s record %d: missing fields %s\n", l, i+1, strings.Join(missing, ", "))
+				if len(missing) > 0 {
+					errors++
+					fmt.Fprintf(log, "ERROR on %s record %d: missing fields %s\n", l, i+1, strings.Join(missing, ", "))
+				}
 			}
 			for _, f := range r.Fields() {
 				name := strings.ToUpper(f.Name)
