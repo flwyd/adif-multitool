@@ -30,6 +30,15 @@ type cmdConfig struct {
 var (
 	catConf = cmdConfig{Command: cmd.Cat}
 
+	countConf = cmdConfig{Command: cmd.Count,
+		Configure: func(ctx *cmd.Context, fs *flag.FlagSet) {
+			cctx := cmd.CountContext{}
+			fs.StringVar(&cctx.CountFieldName, "count-field", "APP_ADIFMT_COUNT", "Field `name` for record counts")
+			fs.Var(&cctx.Fields, "fields", "Comma-separated or multiple instance field `names` to group by")
+			ctx.CommandCtx = &cctx
+		},
+	}
+
 	editConf = cmdConfig{Command: cmd.Edit,
 		Configure: func(ctx *cmd.Context, fs *flag.FlagSet) {
 			cctx := cmd.EditContext{
@@ -134,6 +143,7 @@ var (
 
 	cmds = []cmdConfig{
 		catConf,
+		countConf,
 		editConf,
 		findConf,
 		fixConf,

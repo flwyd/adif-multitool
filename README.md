@@ -544,7 +544,6 @@ to use for string comparisons, using the
 [BCP-47 format](https://en.wikipedia.org/wiki/IETF_language_tag).  Available
 comparisons are
 
-
 * `field = value`: Case-insensitive equality, e.g. `contest_id=ARRL-field-day`
 * `field < value`: Less than, `freq<29.701`
 * `field <= value`: Less than or equal, `band<=10m`
@@ -616,6 +615,7 @@ or file names: `adifmt command --some-option --other=value file1.adi file2.csv`
 Name       | Description |
 ---------- | ----------- |
 `cat`      | Concatenate all input files to standard output |
+`count`    | Count records or unique field combinations |
 `edit`     | Add, change, remove, or adjust field values |
 `find`     | Include only records matching a condition |
 `fix`      | Correct field formats to match the ADIF specification |
@@ -646,6 +646,31 @@ combine them into a single file.  `cat` can also be used to convert from one
 format to another, e.g. `adifmt cat --output=csv mylog.adi` to convert from ADI
 format to CSV.  (If `--input` is not specified the file type is inferred from
 the file name; if `--output` is not specified ADI is used.)
+
+#### count
+
+`adifmt cat` groups equal field values and adds a field with the number of times
+the input had each group.  If no `--fields` are given, it outputs a single
+record with a single field with the number of records in the input, not
+including headers.  If one or more `--fields` are given, outputs one record for
+each unique combination of those fields, with a count of the occurrences.
+Fields which are unset in a record contribute an empty string to the
+combination; "all empty" is a valid group.
+
+The result of `count` is valid ADIF in the format specified by `--output`; using
+TSV or CSV may make the results easy to consume.  The name of the added field
+can be set like `--count-field=NUM`, it defaults to `APP_ADIFMT_COUNT`.  The
+output is sorted in the order given by `--fields` and in the natural order for
+each field (strings are case-insensitive, numeric fields sort by value; band
+sorts numerically, longitude and latitude sort in the same order as gridsquare.)
+
+This can be combined with `find` to discover duplicate QSOs with a given
+uniqueness criterion:
+
+```
+adifmt count --fields qso_date,call,band,mode --count-field num mylog.adi | \
+  adifmt find --if 'num>1'
+```
 
 #### edit
 
@@ -729,12 +754,7 @@ included unchanged in each record.  This can be useful when processing the
 output with tools which don’t expect a list of values in a field, e.g. counting
 the number of contacts you’ve made with each grid square while treating
 contacts on the border of a square as separate:
-
-```sh
-adifmt flatten --fields VUCC_GRIDS --output tsv \
-  | adifmt select --fields VUCC_GRIDS --output tsv --tsv-omit-header \
-  | sort | uniq -c
-```
+`adifmt flatten --fields VUCC_GRIDS | adifmt count --fields VUCC_GRIDS --output tsv`
 
 The `flatten` command will turn
 
@@ -759,10 +779,11 @@ AH1Z	FM08
 and the rest of the pipeline will produce grid counts like
 
 ```
-1 EM97
-1 EN98
-2 FM07
-2 FM08
+NUM VUCC_GRIDS
+1   EM97
+1   EN98
+2   FM07
+2   FM08
 ```
 
 If multiple fields are flattened and each has multiple instances, a Cartesian
@@ -881,7 +902,8 @@ adifmt select --fields call --fields qso_date --fields time_on,time_off mylog.ad
 `select` can be effectively combined with other standard Unix utilities.  To
 find duplicate QSOs by date, band, and mode, use
 [sort](https://man7.org/linux/man-pages/man1/sort.1.html) and
-[uniq](https://man7.org/linux/man-pages/man1/uniq.1.html):
+[uniq](https://man7.org/linux/man-pages/man1/uniq.1.html).
+(See [`count`](#count)` for another approach.)
 
 ```sh
 adifmt select --fields call,qso_date,band,mode --output tsv --tsv-omit-header mylog.adi \
@@ -961,24 +983,21 @@ simple tools that do one thing and can be easily composed together to build more
 powerful expressions.
 
 There are a lot of things that a ham radio log file program could do, and I
-would like `adifmt` to do many of them. The program is nearing feature maturity
-for an initial release.  If you've got a use case for working with ADIF files
+would like `adifmt` to do many of them. The program has most core features I've
+planned to add.  If you've got a use case for working with ADIF files
 that `adifmt` can’t do yet, please create a GitHub issue to discuss how it
 might work.
 
-Features I plan to add:
+Further features I plan to add:
 
 *   Validate more fields.
 *   Identify duplicate records using flexible criteria, e.g., two contacts with
     the same callsign on the same band with the same mode on the same Zulu day
-    and the same `MY_SIG_INFO` value.
+    and the same `MY_SIG_INFO` value.  (`count` plus `select` can do this, but
+    does not print the full records.)  I would also like a way to combine
+    duplicate records into one, e.g. reversing the `flatten` operation.
 *   Option for `save` to append records to an existing ADIF file.
 *   [FLE (fast log entry)](https://df3cb.com/fle/documentation/) format support.
-*   Count the total number of records or the number of distinct values of a
-    field.  (The total number of records can currently be counted with
-    `--output=tsv --tsv-omit-header` and piping the output to `wc -l`.)  This
-    could match the format of the “Report” comment in the test QSOs file
-    produced with the ADIF spec.
 *   Support for Cabrillo 2.0 format if needed.
 
 See the [issues page](https://github.com/flwyd/adif-multitool/issues) for more
@@ -989,7 +1008,8 @@ ideas or to suggest your own.
 I don't expect ADIF Multitool to support the following use cases. A different
 piece of software will be needed.
 
-*   Upload logs to any service like QRZ, eQSL, or LotW.
+*   Upload logs to any service like QRZ, eQSL, or LotW.  `adifmt` is a useful
+    tool in preparing logs for upload, though.
 *   Log-editing GUI. `adifmt` is a command-line tool; a GUI could be built which
     uses it to make edits, but that would be a separate program and project. I
     am open to the idea of an interactive console mode, though.
@@ -1044,7 +1064,7 @@ to ensure it’s present when adding files: `addlicense .`
 Apache header:
 
 ```
-Copyright 2024 Google LLC
+Copyright 2025 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
