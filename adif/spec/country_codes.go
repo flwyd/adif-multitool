@@ -23,18 +23,19 @@ import (
 // with DXCC entities.  Most country codes are associated with a single DXCC
 // entity via the Country array.  Some ISO 3166 countries are made up of
 // several smaller DXCC entities like the Russian Federation (European Russia
-// and Asiatic Russia plus Kaliningrad) and the United Kingdom (England, Wales,
-// Scotland, and Northern Ireland).  Some DXCC entities are primary subdivisions
-// within a country-level DXCC entity, such as Alaska and Hawaii with the
-// United States of America, Sardinia with Italy, or Andaman & Nicobar Islands
-// with India; in such cases the parent is the first entity in the DXCC array
-// and the others follow.  Some DXCC entities are not associated with an ISO
-// country code; these are mostly remote islands without permanent civilian
-// populations, along with special entities like ITU Headquarters.  Deleted DXCC
-// entities like Czechoslovakia are not associated with a country code.
-// Likewise, deleted ISO 3166-1 codes are not present.  Geopolitical events and
-// administrative updates by ISO or ARRL may lead to a change in this data;
-// such changes will not be considered a semantic versioning breaking change.
+// and Asiatic Russia plus Kaliningrad and Franz Josef Land) and the United
+// Kingdom (England, Wales, Scotland, and Northern Ireland).  Some DXCC
+// entities are primary subdivisions within a country-level DXCC entity, such
+// as Alaska and Hawaii with the United States of America, Sardinia with Italy,
+// or Andaman & Nicobar Islands with India; in such cases the parent is the
+// first entity in the DXCC array and the others follow.  Some DXCC entities
+// are not associated with an ISO country code; these are mostly remote islands
+// without permanent civilian populations, along with special entities like ITU
+// Headquarters.  Deleted DXCC entities like Czechoslovakia are not associated
+// with a country code.  Likewise, deleted ISO 3166-1 codes are not present.
+// Geopolitical events and administrative updates by ISO or ARRL may lead to a
+// change in this data; such changes will not be considered a semantic
+// versioning breaking change.
 type ISO3166CountryCode struct {
 	Alpha2       string                 // ISO 3166-1 alpha-2 code (two ASCII letters)
 	Alpha3       string                 // ISO 3166-1 alpha-3 code (three ASCII letters)
@@ -1626,7 +1627,7 @@ var (
 		Alpha3:      "RUS",
 		Numeric:     "643",
 		EnglishName: "Russian Federation (the)",
-		DXCC:        []CountryEnum{CountryEuropeanRussia, CountryAsiaticRussia, CountryKaliningrad},
+		DXCC:        []CountryEnum{CountryEuropeanRussia, CountryAsiaticRussia, CountryKaliningrad, CountryFranzJosefLand},
 		Subdivisions: map[string]CountryEnum{
 			// Asia side
 			"AL":  CountryAsiaticRussia, // Altay Republic (ISO), Altaysky Kraj (ADIF)
@@ -1689,7 +1690,7 @@ var (
 			// Europe side
 			"AD":  CountryEuropeanRussia, // Adygeya Republic (ISO, ADIF)
 			"AO":  CountryEuropeanRussia, // Astrakhanskaya Oblast (ADIF)
-			"AR":  CountryEuropeanRussia, // Arkhangelskaya Oblast (ADIF)
+			"AR":  CountryEuropeanRussia, // Arkhangelskaya Oblast (ADIF), also covers FranzJosefLand
 			"ARK": CountryEuropeanRussia, // Arkhangelskaya Oblast (ISO)
 			"AST": CountryEuropeanRussia, // Astrakhanskaya Oblast (ISO)
 			"BEL": CountryEuropeanRussia, // Belgorodskaya Oblast (ISO)
