@@ -27,3 +27,9 @@ checking stderr, in the [txtar](https://pkg.go.dev/golang.org/x/tools/txtar)
 files [in the `adifmt` package](./adifmt/testdata).  These command language for
 these tests is described in the
 [testscript package](https://pkg.go.dev/github.com/rogpeppe/go-internal@v1.12.0/testscript).
+
+## Update the changelog
+
+Add human-understandable notes for user-visible changes to the “Unreleased”
+section of [CHANGELOG.md](CHANGELOG.md), following the
+[keep a changelog](https://keepachangelog.com/en/1.1.0/) style.

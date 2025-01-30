@@ -37,8 +37,9 @@ multiple lines here for readability.
 ## Quick start
 
 Binaries for each ADIF Multitool version are available on the
-[releases page](https://github.com/flwyd/adif-multitool/releases).  You can also
-build it from source code with a [Go compiler](https://go.dev/dl/).  Run
+[releases page](https://github.com/flwyd/adif-multitool/releases).  See the
+[changelog](CHANGELOG.md) or release notes for new features.  You can also build
+the program from source code with a [Go compiler](https://go.dev/dl/).  Run
 `go install github.com/flwyd/adif-multitool/adifmt@latest` to make the `adifmt`
 command available.  (You may need to add the `$GOBIN` environment variable to
 your path.)  To see if it works, run `adifmt help`.  If the command is not
