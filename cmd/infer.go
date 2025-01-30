@@ -44,8 +44,10 @@ var inferrers = map[string]inferrer{
 	spec.MyCountryField.Name:       inferCountry,
 	spec.DxccField.Name:            inferDXCC,
 	spec.MyDxccField.Name:          inferDXCC,
-	spec.CqzField.Name:             inferCQZone,
-	spec.MyCqZoneField.Name:        inferCQZone,
+	spec.CqzField.Name:             inferZone,
+	spec.MyCqZoneField.Name:        inferZone,
+	spec.ItuzField.Name:            inferZone,
+	spec.MyItuZoneField.Name:       inferZone,
 	spec.ContField.Name:            inferContinent,
 	spec.GridsquareField.Name:      inferGridsquare,
 	spec.GridsquareExtField.Name:   inferGridsquare,
@@ -78,6 +80,7 @@ func helpInfer() string {
 	res := &strings.Builder{}
 	res.WriteString("Inferable fields:\n")
 	fromfmt := "  %s from %s\n"
+	pairfmt := "  %s from %s/%s\n"
 	fmt.Fprintf(res, fromfmt, spec.BandField.Name, spec.FreqField.Name)
 	fmt.Fprintf(res, fromfmt, spec.BandRxField.Name, spec.FreqRxField.Name)
 	fmt.Fprintf(res, fromfmt, spec.ModeField.Name, spec.SubmodeField.Name)
@@ -85,12 +88,11 @@ func helpInfer() string {
 	fmt.Fprintf(res, fromfmt, spec.MyCountryField.Name, spec.MyDxccField.Name)
 	fmt.Fprintf(res, fromfmt, spec.DxccField.Name, spec.CountryField.Name)
 	fmt.Fprintf(res, fromfmt, spec.MyDxccField.Name, spec.MyCountryField.Name)
-	fmt.Fprintf(res, fromfmt, spec.CqzField.Name, spec.CountryField.Name)
-	fmt.Fprintf(res, fromfmt, spec.CqzField.Name, spec.DxccField.Name)
-	fmt.Fprintf(res, fromfmt, spec.MyCqZoneField.Name, spec.MyCountryField.Name)
-	fmt.Fprintf(res, fromfmt, spec.MyCqZoneField.Name, spec.MyDxccField.Name)
-	fmt.Fprintf(res, fromfmt, spec.ContField.Name, spec.MyCountryField.Name)
-	fmt.Fprintf(res, fromfmt, spec.ContField.Name, spec.MyDxccField.Name)
+	fmt.Fprintf(res, pairfmt, spec.CqzField.Name, spec.DxccField.Name, spec.CountryField.Name)
+	fmt.Fprintf(res, pairfmt, spec.MyCqZoneField.Name, spec.DxccField.Name, spec.MyCountryField.Name)
+	fmt.Fprintf(res, pairfmt, spec.ItuzField.Name, spec.DxccField.Name, spec.CountryField.Name)
+	fmt.Fprintf(res, pairfmt, spec.MyItuZoneField.Name, spec.DxccField.Name, spec.MyCountryField.Name)
+	fmt.Fprintf(res, pairfmt, spec.ContField.Name, spec.DxccField.Name, spec.CountryField.Name)
 	fmt.Fprintf(res, fromfmt, spec.CntyField.Name, spec.UsacaCountiesField.Name)
 	fmt.Fprintf(res, fromfmt, spec.MyCntyField.Name, spec.MyUsacaCountiesField.Name)
 	fmt.Fprintf(res, fromfmt, spec.UsacaCountiesField.Name, spec.CntyField.Name)
@@ -395,7 +397,7 @@ func inferUSCounty(r *adif.Record, name string) bool {
 	return true
 }
 
-func inferCQZone(r *adif.Record, name string) bool {
+func inferZone(r *adif.Record, name string) bool {
 	if f, ok := r.Get(name); ok && f.Value != "" {
 		return false
 	}
@@ -413,7 +415,14 @@ func inferCQZone(r *adif.Record, name string) bool {
 	} else {
 		return false
 	}
-	zs := spec.CQZoneFor(c)
+	iscq := name == spec.CqzField.Name || name == spec.MyCqZoneField.Name
+	isitu := name == spec.ItuzField.Name || name == spec.MyItuZoneField.Name
+	var zs []int
+	if iscq {
+		zs = spec.CQZoneFor(c)
+	} else if isitu {
+		zs = spec.ITUZoneFor(c)
+	}
 	if len(zs) == 0 {
 		return false
 	}
@@ -421,14 +430,20 @@ func inferCQZone(r *adif.Record, name string) bool {
 		r.Set(adif.Field{Name: name, Value: strconv.Itoa(zs[0])})
 		return true
 	}
-	// Multiple CQ zones for some countries, check zone of subdivision
+	// Multiple zones for some countries, check zone of subdivision
 	if st, ok := r.Get(my(spec.StateField.Name)); ok && st.Value != "" {
 		vs := spec.PrimaryAdministrativeSubdivisionEnumeration.Value(st.Value)
 		for _, v := range vs {
 			a := v.(spec.PrimaryAdministrativeSubdivisionEnum)
-			if a.DxccEntityCode == dxcc && a.CqZone != "" {
+			var zone string
+			if iscq {
+				zone = a.CqZone
+			} else if isitu {
+				zone = a.ItuZone
+			}
+			if a.DxccEntityCode == dxcc && zone != "" {
 				// Some Canadian provinces/territories have comma-separated zones
-				if z, err := strconv.Atoi(a.CqZone); err == nil {
+				if z, err := strconv.Atoi(zone); err == nil {
 					r.Set(adif.Field{Name: name, Value: strconv.Itoa(z)})
 					return true
 				}

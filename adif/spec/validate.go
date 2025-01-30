@@ -248,21 +248,35 @@ func ValidateNumber(val string, f Field, ctx ValidationContext) Validation {
 		}
 	}
 
-	if f.Name == CqzField.Name || f.Name == MyCqZoneField.Name {
+	iscq := f.Name == CqzField.Name || f.Name == MyCqZoneField.Name
+	isitu := f.Name == ItuzField.Name || f.Name == MyItuZoneField.Name
+	if iscq || isitu {
 		var dxcc string
-		if f.Name == CqzField.Name {
+		if f.Name == CqzField.Name || f.Name == ItuzField.Name {
 			dxcc = ctx.FieldValue(DxccField.Name)
-		} else if f.Name == MyCqZoneField.Name {
+			if dxcc == "" {
+				dxcc = ctx.FieldValue(CountryField.Name)
+			}
+		} else if f.Name == MyCqZoneField.Name || f.Name == MyItuZoneField.Name {
 			dxcc = ctx.FieldValue(MyDxccField.Name)
+			if dxcc == "" {
+				dxcc = ctx.FieldValue(MyCountryField.Name)
+			}
 		}
 		if dxcc != "" {
-			zs := CQZoneFor(dxcc)
+			var zs []int
+			if iscq {
+				zs = CQZoneFor(dxcc)
+			} else if isitu {
+				zs = ITUZoneFor(dxcc)
+			}
 			if len(zs) > 0 && !slices.Contains(zs, int(num)) {
 				return errorf("%s value %s is not valid for DXCC %s, not in %v", f.Name, val, dxcc, zs)
 			}
 		}
 		// TODO if len(zs) > 1 check (My)StateField too, but ADIF CQ Zone data on
 		// PrimaryAdministrativeSubdivision is incomplete for China/Australia/Yemen
+		// and incomplete/inaccurate for several ITU zones
 	}
 	return valid()
 }

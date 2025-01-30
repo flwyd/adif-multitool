@@ -150,6 +150,32 @@ func TestInfer(t *testing.T) {
 		},
 
 		{
+			name:  "ituz + my_itu_zone India + Armenia",
+			infer: FieldList{"ITUZ", "MY_ITU_ZONE"},
+			start: []adif.Field{{Name: "COUNTRY", Value: "India"}, {Name: "MY_COUNTRY", Value: "Armenia"}},
+			want:  []adif.Field{{Name: "COUNTRY", Value: "India"}, {Name: "MY_COUNTRY", Value: "Armenia"}, {Name: "ITUZ", Value: "41"}, {Name: "MY_ITU_ZONE", Value: "29"}},
+		},
+		{
+			name:  "my_itu_zone Mexico + Madagascar DXCC",
+			infer: FieldList{"MY_ITU_ZONE", "ITUZ"},
+			start: []adif.Field{{Name: "MY_DXCC", Value: spec.CountryMexico.EntityCode}, {Name: "DXCC", Value: spec.CountryMadagascar.EntityCode}},
+			want:  []adif.Field{{Name: "MY_DXCC", Value: spec.CountryMexico.EntityCode}, {Name: "DXCC", Value: spec.CountryMadagascar.EntityCode}, {Name: "MY_ITU_ZONE", Value: "10"}, {Name: "ITUZ", Value: "53"}},
+		},
+		{
+			name:  "can't infer multi-zone states",
+			infer: FieldList{"ITUZ", "MY_ITU_ZONE"},
+			start: []adif.Field{{Name: "DXCC", Value: spec.CountryUnitedStatesOfAmerica.EntityCode}, {Name: "STATE", Value: "MT"}, {Name: "MY_DXCC", Value: spec.CountryCanada.EntityCode}, {Name: "MY_STATE", Value: "ON"}},
+			want:  []adif.Field{{Name: "DXCC", Value: spec.CountryUnitedStatesOfAmerica.EntityCode}, {Name: "STATE", Value: "MT"}, {Name: "MY_DXCC", Value: spec.CountryCanada.EntityCode}, {Name: "MY_STATE", Value: "ON"}},
+		},
+		{
+			// ADIF spec doesn't have multi-zone data for Russia, so check wholly-contained federal subjects
+			name:  "my_itu_zone Russia",
+			infer: FieldList{"MY_ITU_ZONE", "ITUZ"},
+			start: []adif.Field{{Name: "MY_COUNTRY", Value: spec.CountryAsiaticRussia.EntityName}, {Name: "MY_STATE", Value: "EA"}, {Name: "COUNTRY", Value: spec.CountryEuropeanRussia.EntityName}, {Name: "STATE", Value: "IN"}},
+			want:  []adif.Field{{Name: "MY_COUNTRY", Value: spec.CountryAsiaticRussia.EntityName}, {Name: "MY_STATE", Value: "EA"}, {Name: "COUNTRY", Value: spec.CountryEuropeanRussia.EntityName}, {Name: "STATE", Value: "IN"}, {Name: "MY_ITU_ZONE", Value: "33"}, {Name: "ITUZ", Value: "29"}},
+		},
+
+		{
 			name:  "continent Panama",
 			infer: FieldList{"CONT"},
 			start: []adif.Field{{Name: "DXCC", Value: spec.CountryPanama.EntityCode}},

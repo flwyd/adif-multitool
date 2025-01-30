@@ -842,6 +842,8 @@ Inferable fields:
 * `MY_DXCC` from `MY_COUNTRY`
 * `CQZ` from `COUNTRY`/`DXCC`
 * `MY_CQ_ZONE` from `MY_COUNTRY`/`MY_DXCC`
+* `ITUZ` from `COUNTRY`/`DXCC`
+* `MY_ITU_ZONE` from `MY_COUNTRY`/`MY_DXCC`
 * `CONT` from `COUNTRY`/`DXCC`
 * `CNTY` from `USACA_COUNTIES` (unless multiple county-line counties)
 * `MY_CNTY` from `MY_USACA_COUNTIES` (unless multiple county-line counties)

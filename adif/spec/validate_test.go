@@ -879,15 +879,20 @@ func TestValidateWWFFRef(t *testing.T) {
 func TestValidateCQZone(t *testing.T) {
 	tests := []struct {
 		validateTest
-		dxcc, mydxcc string
+		dxcc, mydxcc, country, mycountry string
 	}{
-		{validateTest: validateTest{field: CqzField, value: "9", want: Valid}, dxcc: CountryTrinidadTobago.EntityCode, mydxcc: ""},
-		{validateTest: validateTest{field: CqzField, value: "09", want: Valid}, dxcc: CountryTrinidadTobago.EntityCode, mydxcc: ""},
-		{validateTest: validateTest{field: CqzField, value: "29", want: InvalidError}, dxcc: CountryTrinidadTobago.EntityCode, mydxcc: ""},
-		{validateTest: validateTest{field: MyCqZoneField, value: "40", want: Valid}, dxcc: "", mydxcc: CountryIceland.EntityCode},
-		{validateTest: validateTest{field: MyCqZoneField, value: "14", want: InvalidError}, dxcc: "", mydxcc: CountryIceland.EntityCode},
-		{validateTest: validateTest{field: CqzField, value: "24", want: Valid}, dxcc: CountryChina.EntityCode, mydxcc: ""},
-		{validateTest: validateTest{field: CqzField, value: "19", want: InvalidError}, dxcc: CountryChina.EntityCode, mydxcc: ""},
+		{validateTest: validateTest{field: CqzField, value: "38", want: Valid}},
+		{validateTest: validateTest{field: CqzField, value: "9", want: Valid}, dxcc: CountryTrinidadTobago.EntityCode},
+		{validateTest: validateTest{field: CqzField, value: "09", want: Valid}, dxcc: CountryTrinidadTobago.EntityCode},
+		{validateTest: validateTest{field: CqzField, value: "29", want: InvalidError}, dxcc: CountryTrinidadTobago.EntityCode},
+		{validateTest: validateTest{field: MyCqZoneField, value: "40", want: Valid}, mydxcc: CountryIceland.EntityCode},
+		{validateTest: validateTest{field: MyCqZoneField, value: "14", want: InvalidError}, mydxcc: CountryIceland.EntityCode},
+		{validateTest: validateTest{field: CqzField, value: "24", want: Valid}, dxcc: CountryChina.EntityCode},
+		{validateTest: validateTest{field: CqzField, value: "19", want: InvalidError}, dxcc: CountryChina.EntityCode},
+		{validateTest: validateTest{field: CqzField, value: "37", want: Valid}, country: CountryYemen.EntityName},
+		{validateTest: validateTest{field: MyCqZoneField, value: "39", want: InvalidError}, mycountry: CountryYemen.EntityName},
+		{validateTest: validateTest{field: MyCqZoneField, value: "28", want: Valid}, mycountry: CountryAntarctica.EntityName},
+		{validateTest: validateTest{field: MyCqZoneField, value: "1", want: InvalidError}, mycountry: CountryAntarctica.EntityName},
 	}
 	for _, tc := range tests {
 		ctx := ValidationContext{FieldValue: func(name string) string {
@@ -896,6 +901,47 @@ func TestValidateCQZone(t *testing.T) {
 				return tc.dxcc
 			case MyDxccField.Name:
 				return tc.mydxcc
+			case CountryField.Name:
+				return tc.country
+			case MyCountryField.Name:
+				return tc.mycountry
+			default:
+				return ""
+			}
+		}}
+		testValidator(t, tc.validateTest, ctx, "TestValidateCQZone")
+	}
+}
+
+func TestValidateITUZone(t *testing.T) {
+	tests := []struct {
+		validateTest
+		dxcc, mydxcc, country, mycountry string
+	}{
+		{validateTest: validateTest{field: ItuzField, value: "90", want: Valid}},
+		{validateTest: validateTest{field: ItuzField, value: "1", want: Valid}, dxcc: CountryAlaska.EntityCode},
+		{validateTest: validateTest{field: ItuzField, value: "02", want: Valid}, dxcc: CountryAlaska.EntityCode},
+		{validateTest: validateTest{field: ItuzField, value: "12", want: InvalidError}, dxcc: CountryAlaska.EntityCode},
+		{validateTest: validateTest{field: MyItuZoneField, value: "45", want: Valid}, mydxcc: CountryJapan.EntityCode},
+		{validateTest: validateTest{field: MyItuZoneField, value: "25", want: InvalidError}, mydxcc: CountryJapan.EntityCode},
+		{validateTest: validateTest{field: ItuzField, value: "33", want: Valid}, dxcc: CountryAsiaticRussia.EntityCode},
+		{validateTest: validateTest{field: ItuzField, value: "42", want: InvalidError}, dxcc: CountryAsiaticRussia.EntityCode},
+		{validateTest: validateTest{field: ItuzField, value: "36", want: Valid}, country: CountryCanaryIslands.EntityName},
+		{validateTest: validateTest{field: MyItuZoneField, value: "37", want: InvalidError}, mycountry: CountryCanaryIslands.EntityName},
+		{validateTest: validateTest{field: MyItuZoneField, value: "69", want: Valid}, mycountry: CountryAntarctica.EntityName},
+		{validateTest: validateTest{field: MyItuZoneField, value: "75", want: InvalidError}, mycountry: CountryAntarctica.EntityName},
+	}
+	for _, tc := range tests {
+		ctx := ValidationContext{FieldValue: func(name string) string {
+			switch name {
+			case DxccField.Name:
+				return tc.dxcc
+			case MyDxccField.Name:
+				return tc.mydxcc
+			case CountryField.Name:
+				return tc.country
+			case MyCountryField.Name:
+				return tc.mycountry
 			default:
 				return ""
 			}
