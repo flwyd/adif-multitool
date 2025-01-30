@@ -19,11 +19,11 @@ containing only SSB voice contacts, a pipeline might look like
 
 ```sh
 adifmt infer --fields band my_original_log.adi \
-  | adifmt edit --add my_gridsquare=FN31pr \
-  | adifmt fix \
-  | adifmt validate \
-  | adifmt find --if mode=SSB \
-  | adifmt save my_ssb_log.adx
+| adifmt edit --add my_gridsquare=FN31pr \
+| adifmt fix \
+| adifmt validate \
+| adifmt find --if mode=SSB \
+| adifmt save my_ssb_log.adx
 ```
 
 On Windows, PowerShell uses the backtick character (`` ` ``) and Command Prompt
@@ -98,7 +98,7 @@ adifmt cat log1.adi log2.adx log3.csv log4.json log5.tsv log6.cbr > combined.adi
 
 If no file names are given, input is read from standard input:
 
-```
+```sh
 gunzip --stdout mylog.csv.gz | adifmt cat --output=adx | gzip > mylog.adx.gz
 ```
 
@@ -111,8 +111,8 @@ the input data to a file.  These can be combined:
 
 ```sh
 adifmt fix log1.adi \
-  | adifmt select --fields qso_date,time_on,call \
-  | adifmt save minimal.csv
+| adifmt select --fields qso_date,time_on,call \
+| adifmt save minimal.csv
 ```
 
 creates a file named `minimal.csv` with just the date, time, and callsign from
@@ -562,8 +562,8 @@ Conditions can match multiple values separated by `|` characters:
   or in New York
 
 Conditions match fields with a list type if any value in the list matches.
-If the `POTA_REF` field has value `K-0034,K-4556` then the record will match the
-condition `--if pota_ref=K-4556` even though it doesn’t specify all the parks.
+If the `POTA_REF` field has value `US-0034,US-4556` then the record will match the
+condition `--if pota_ref=US-4556` even though it doesn’t specify all the parks.
 
 Empty or absent fields can be matched by omitting value:
 
@@ -667,9 +667,9 @@ sorts numerically, longitude and latitude sort in the same order as gridsquare.)
 This can be combined with `find` to discover duplicate QSOs with a given
 uniqueness criterion:
 
-```
-adifmt count --fields qso_date,call,band,mode --count-field num mylog.adi | \
-  adifmt find --if 'num>1'
+```sh
+adifmt count --fields qso_date,call,band,mode --count-field num mylog.adi \
+| adifmt find --if 'num>1'
 ```
 
 #### edit
@@ -703,9 +703,10 @@ and a change:
 
 ```sh
 adifmt cat mylog.adi \
-  | adifmt edit --if 'mode=SSB' --if 'band>=20m' --or-if 'band=60m' --add 'submode=USB' \
-  | adifmt edit --if 'mode=SSB' --if 'band=40m|80m|160m' --add 'submode=LSB' \
-  | adifmt save fixed_sideband.adi
+| adifmt edit --if 'mode=SSB' --if 'band>=20m' --or-if 'band=60m' \
+    --add 'submode=USB' \
+| adifmt edit --if 'mode=SSB' --if 'band=40m|80m|160m' --add 'submode=LSB' \
+| adifmt save fixed_sideband.adi
 ```
 
 #### find
@@ -794,8 +795,8 @@ multi-instance `POTA_REF` fields, so
 
 ```sh
 adifmt flatten --fields POTA_REF,MY_POTA_REF \
-  | adifmt infer --fields SIG_INFO,MY_SIG_INFO \
-  | adifmt save '{station_callsign}@{my_sig_info}-{qso_date}.adi'
+| adifmt infer --fields SIG_INFO,MY_SIG_INFO \
+| adifmt save '{station_callsign}@{my_sig_info}-{qso_date}.adi'
 ```
 
 is needed to get full credit for park-to-park 2-fers.
@@ -806,7 +807,7 @@ the delimiter for a field with the `--delimiter field=delim` flag, make sure to
 quote any special shell characters, e.g.
 `adifmt flatten --fields STX_STRING --delimiter 'STX_STRING=;'`  Escape
 sequences can be surrounded with single or double quotes, e.g.
-`adifmt flatten --fields COMMENT --delimiter 'COMMENT="\r\n"' (the `'`s are
+`adifmt flatten --fields COMMENT --delimiter 'COMMENT="\r\n"'` (the `'`s are
 seen by the shell so the `"`s are passed to the program) or
 `--delimiter "COMMENT='\u3000'" (the `"`s are seen by the shell, the `'`s by
 adifmt, and can only contain a single character).  Double-quoted delimiters are
@@ -888,7 +889,7 @@ values will be converted to upper case and special file system characters are
 replaced by `-` (so `{CALL}.csv` with `w1aw/2` becomes `W1AW-2.csv`).  Fields
 without a value are replaced with `FIELD_NAME-EMPTY`.  Special characters in the
 template itself are not replaced, and can be used to split a log into separate
-directories: `adifmt save --create-dirs '{operator}/{band}.adx`.
+directories: `adifmt save --create-dirs '{operator}/{band}.adx’`.
 
 #### select
 
@@ -908,8 +909,9 @@ find duplicate QSOs by date, band, and mode, use
 (See [`count`](#count)` for another approach.)
 
 ```sh
-adifmt select --fields call,qso_date,band,mode --output tsv --tsv-omit-header mylog.adi \
-  | sort | uniq -d
+adifmt select --fields call,qso_date,band,mode \
+  --output tsv --tsv-omit-header mylog.adi \
+| sort | uniq -d
 ```
 
 This is similar to a SQL `SELECT` clause, except it cannot (yet?) transform the
@@ -1045,7 +1047,7 @@ or public Go APIs will need to wait for v2.  ADIF spec updates and new features
 will lead to a new minor version and bug fixes will increment the patch number.
 If you find this useful as a library, please let me know.
 
-I have not yet tested this on Windows; please
+I don’t have the ability to test on Windows.  Please
 [report issues](https://github.com/flwyd/adif-multitool/issues) if anything does
 not work, or is particularly awkward.
 
@@ -1055,12 +1057,12 @@ ADIF Multitool is open source, using the Apache 2.0 license.  It is written in
 the [Go programming language](https://go.dev/).  Bug fixes, new features, and
 other contributions are welcome; please read the [contributing](CONTRIBUTING.md)
 and [code of conduct](CODE_OF_CONDUCT.md) pages.  The primary author is Trevor
-Stone, WT0RJ, @flwyd.
+Stone, [WT0RJ](https://qrz.com/db/WT0RJ), [@flwyd](https://github.com/flwyd).
 
 ### Source Code Headers
 
 Every file containing source code must include copyright and license
-information.  Use the [`addlicense` tool](https://github.com/google/addlicense)
+information.  Use the [addlicense tool](https://github.com/google/addlicense)
 to ensure it’s present when adding files: `addlicense .`
 
 Apache header:
