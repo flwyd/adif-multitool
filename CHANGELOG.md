@@ -50,6 +50,22 @@ input.
 * `MY_CQ_ZONE` and `MY_ITU_ZONE` work as well.
 * CQ and ITU Zones also work for DXCC entities which have been removed from the
   active list, e.g. Zanzibar.
+* Some multi-zone countries are missing zone data in the primary administrative
+  subdivision enumeration.
+  [An ADIF proposal](https://groups.io/g/adifdev/topic/cq_zone_in_subdivision_and/110819473)
+  to expand and correct this data has been proposed, but it may be some time
+  before the next ADIF version.  ADIF Multitool may add its own subdivision
+  associations before then.
+* There is some variance between amateur radio organizations on exactly where
+  ITU boundaries lie.  This program uses the
+  [CQWW WAZ list](https://cqww.com/cq_waz_list.htm) for CQ Zone to entity
+  associations, the
+  [AARL DXCC list](https://www.arrl.org/files/file/DXCC/2022_Current_Deleted.txt)
+  for ITU to entity associations, amd [zone-check.eu](https://zone-check.eu/) to
+  determine which ITU Zones a subdivision crosses.  See also the mapability
+  links above for some explanation of data challenges.  Maritime boundaries
+  between zones are not well defined and this program does not attempt to
+  map geographic points to zones (or to geopolitical entities).
 
 ### Changed
 
@@ -235,7 +251,7 @@ groups of AND conditions.  Conditions support string and numeric equality, and
 less-than, greater-than, and less-equal/greater-equal comparisons.  Equality can
 check several values at once like `--if 'band=40m|20m'`.  “Not equals” is
 expressed as `--if-not mode=CW`.  Fields can be compared with other fields using
-braces, e.g. `--if 'TIME_ON<={TIME_OFF}'.
+braces, e.g. `--if 'TIME_ON<={TIME_OFF}'`.
 
 
 ## [v0.1.6] - 2023-04-10
