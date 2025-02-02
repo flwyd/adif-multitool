@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -46,9 +45,6 @@ If fields are specified:
 
 func runCount(ctx *Context, args []string) error {
 	cctx := ctx.CommandCtx.(*CountContext)
-	if len(cctx.Fields) > 128 {
-		return fmt.Errorf("field list length %d is greater than maximum 128", len(cctx.Fields))
-	}
 	countName := cctx.CountFieldName
 	if countName == "" {
 		countName = "COUNT"
