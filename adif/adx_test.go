@@ -117,7 +117,7 @@ Inverted L antenna, 70' above ground
 	wantComments := []string{
 		"",
 		"Field comment #1\nField comment #2",
-		" This is a random comment ",
+		"This is a random comment",
 	}
 	wantUserdef := []UserdefField{
 		{Name: "MY FIELD", Type: TypeString},

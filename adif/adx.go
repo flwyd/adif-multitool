@@ -131,16 +131,16 @@ type adxRecord struct {
 func (r adxRecord) Record(header bool) *Record {
 	res := NewRecord()
 	fcs := make([]string, 0, len(r.Fields))
-	if r.Comment != "" {
-		fcs = append(fcs, r.Comment)
+	if c := strings.TrimSpace(r.Comment); c != "" {
+		fcs = append(fcs, c)
 	}
 	for _, f := range r.Fields {
 		if header && f.IsUserdef() {
 			continue
 		}
 		res.Set(f.Field())
-		if f.Comment != "" {
-			fcs = append(fcs, f.Comment)
+		if c := strings.TrimSpace(f.Comment); c != "" {
+			fcs = append(fcs, c)
 		}
 	}
 	res.SetComment(strings.Join(fcs, "\n"))
@@ -172,8 +172,8 @@ func newAdxRecord(r *Record, l *Logfile) adxRecord {
 		}
 		res.Fields = append(res.Fields, x)
 	}
-	if c := r.GetComment(); c != "" {
-		res.Comment = r.GetComment()
+	if c := strings.TrimSpace(r.GetComment()); c != "" {
+		res.Comment = c
 	}
 	return res
 }
@@ -206,7 +206,7 @@ func (o *ADXIO) Read(in io.Reader) (*Logfile, error) {
 	if err := d.Decode(&f); err != nil {
 		return nil, fmt.Errorf("could not decode ADX file: %w", err)
 	}
-	l.Comment = f.Comment
+	l.Comment = strings.TrimSpace(f.Comment)
 	l.Header = f.Header.Record(true)
 	us, err := f.Header.UserdefFields()
 	if err != nil {
@@ -233,8 +233,8 @@ func (o *ADXIO) Write(l *Logfile, out io.Writer) error {
 	for _, r := range l.Records {
 		f.Records = append(f.Records, newAdxRecord(r, l))
 	}
-	if l.Comment != "" {
-		f.Comment = l.Comment
+	if c := strings.TrimSpace(l.Comment); c != "" {
+		f.Comment = c
 	}
 	if n, err := out.Write([]byte(xml.Header)); err != nil {
 		return fmt.Errorf("could not write XML header to %s: %w", out, err)

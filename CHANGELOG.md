@@ -58,10 +58,10 @@ input.
   associations before then.
 * There is some variance between amateur radio organizations on exactly where
   ITU boundaries lie.  This program uses the
-  [CQWW WAZ list](https://cqww.com/cq_waz_list.htm) for CQ Zone to entity
+  [CQWW WAZ list](https://cqww.com/cq_waz_list.htm) for CQ-zone-to-entity
   associations, the
   [AARL DXCC list](https://www.arrl.org/files/file/DXCC/2022_Current_Deleted.txt)
-  for ITU to entity associations, amd [zone-check.eu](https://zone-check.eu/) to
+  for ITU-to-entity associations, and [zone-check.eu](https://zone-check.eu/) to
   determine which ITU Zones a subdivision crosses.  See also the mapability
   links above for some explanation of data challenges.  Maritime boundaries
   between zones are not well defined and this program does not attempt to
@@ -74,7 +74,14 @@ a release.
 
 ### Fixed
 
-Franz Josef Land DXCC entity is part of Russia, Arkhangelsk Oblast.
+* Consistently trim leading and trailing space from ADI and ADX comments.  If a
+  comment is nothing but space, don’t preserve it in the output.
+  **Note:** record comments and file comments are preserved from input through
+  output, but header comments, such as the text at the top of an ADI file, are
+  ignored.  This could change in the future, but I don’t want to preserve all
+  the “Generated” lines created as part of a pipeline.
+  [See discussion](https://github.com/flwyd/adif-multitool/discussions/13).
+* Franz Josef Land DXCC entity is part of Russia, Arkhangelsk Oblast.
 
 ### Removed
 

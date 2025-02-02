@@ -21,7 +21,6 @@ import (
 	"io"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 type ADIIO struct {
@@ -143,7 +142,7 @@ func (o *ADIIO) Read(in io.Reader) (*Logfile, error) {
 		}
 		// arbitrary text between one field or record and the next
 		c, err := r.ReadString('<')
-		c = strings.TrimFunc(strings.TrimSuffix(c, "<"), unicode.IsSpace)
+		c = strings.TrimSpace(strings.TrimSuffix(c, "<"))
 		if c != "" {
 			comments = append(comments, c)
 		}

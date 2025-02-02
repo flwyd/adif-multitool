@@ -1,0 +1,56 @@
+# Tests that comments in ADIF files are preserved in output.
+
+exec adifmt cat log1.adi log2.adx --output adi
+cmp stdout combined.adi
+! stderr .
+
+-- log1.adi --
+Some comments in an ADI file.
+Another line in an ADI file.
+<ADIF_VER:5>3.1.5 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:6>adifmt <PROGRAMVERSION:7>(devel) <EOH>
+Just a comment about K1A!
+<CALL:3>K1A   Inline comment #1   <MODE:2>CW <EOR>
+Comment about the N2B record.
+<CALL:3>N2B <MODE:3>SSBComment at the end of record<EOR>
+This is an ADI comment at the end of the file.
+-- log2.adx --
+<?xml version="1.0" encoding="UTF-8"?>
+<ADX>
+ <!-- This comment is in the ADX tag.
+      It has two lines@ -->
+ <HEADER>
+  <!-- A header comment in an ADX file. -->
+  <ADIF_VER>3.1.5</ADIF_VER>
+  <CREATED_TIMESTAMP>23450607 080910</CREATED_TIMESTAMP>
+  <PROGRAMID>adifmt</PROGRAMID>
+  <PROGRAMVERSION>(devel)</PROGRAMVERSION>
+ </HEADER>
+ <RECORDS>
+  <RECORD>
+   <CALL>K3C</CALL>
+   <!-- ADX comment about K3C. -->
+   <MODE>FM</MODE>
+  </RECORD>
+  <RECORD>
+   <!-- ADX comment regarding W4D! -->
+   <CALL>W4D</CALL>
+   <MODE>RTTY</MODE>
+  </RECORD>
+ </RECORDS>
+<!-- This comment is at the end of the ADX tag :-) -->
+</ADX>
+-- combined.adi --
+Generated with 4 records by https://github.com/flwyd/adif-multitool
+<ADIF_VER:5>3.1.5 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:6>adifmt <PROGRAMVERSION:7>(devel) <EOH>
+Just a comment about K1A!
+Inline comment #1 <CALL:3>K1A <MODE:2>CW <EOR>
+Comment about the N2B record.
+Comment at the end of record <CALL:3>N2B <MODE:3>SSB <EOR>
+ADX comment about K3C. <CALL:3>K3C <MODE:2>FM <EOR>
+ADX comment regarding W4D! <CALL:3>W4D <MODE:4>RTTY <EOR>
+adif-multitool: original comment (log1.adi)
+This is an ADI comment at the end of the file.
+
+adif-multitool: original comment (log2.adx)
+This comment is in the ADX tag.
+      It has two lines@  This comment is at the end of the ADX tag :-)

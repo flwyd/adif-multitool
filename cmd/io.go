@@ -175,7 +175,7 @@ func (a *accumulator) read(filename string) (*adif.Logfile, error) {
 			}
 		}
 	}
-	if c := l.Comment; c != "" {
+	if c := strings.TrimSpace(l.Comment); c != "" {
 		prefix := "adif-multitool: original comment"
 		if !strings.HasPrefix(c, prefix) {
 			if filename != "" && filename != "-" && filename != os.Stdin.Name() {
