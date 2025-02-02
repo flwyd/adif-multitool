@@ -358,6 +358,20 @@ func ValidateLocation(val string, f Field, ctx ValidationContext) Validation {
 	} else if !between(min, 0.0, 60.0) {
 		return errorf("%s minutes out of range in %q", f.Name, val)
 	}
+	var other string
+	switch f.Name {
+	case LatField.Name:
+		other = LonField.Name
+	case LonField.Name:
+		other = LatField.Name
+	case MyLatField.Name:
+		other = MyLonField.Name
+	case MyLonField.Name:
+		other = MyLatField.Name
+	}
+	if other != "" && ctx.FieldValue(other) == "" {
+		return warningf("%s is set but %s is not set; latitude and longitude usually come together", f.Name, other)
+	}
 	return valid()
 }
 

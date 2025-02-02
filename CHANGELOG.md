@@ -28,6 +28,10 @@ input.
 * `validate --required-fields` supports conditionals (`--if`, `--if-not`,
   `--or-if`, `--or-if-not`) to determine which records must have certain fields
   set.  All records are checked for data type validity, e.g. number formatting.
+* `validate` will warn if `LAT` or `LON` is set but the other one isn’t;
+  likewise for `MY_LAT`/`MY_LON`.  It’s possible to know latitude without also
+  knowing longitude, but modern technology usually gives both together, so you
+  probably had a copy-paste error.
 
 [CQ Zones](https://mapability.com/ei8ic/maps/cqzone.php) and
 [ITU Zones](https://mapability.com/ei8ic/maps/ituzone.php):

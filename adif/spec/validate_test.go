@@ -15,17 +15,30 @@
 package spec
 
 import (
+	"strings"
 	"testing"
 	"time"
 )
 
 type validateTest struct {
-	field Field
-	value string
-	want  Validity
+	field  Field
+	value  string
+	want   Validity
+	others []validateTest
 }
 
 var emptyCtx = ValidationContext{FieldValue: func(name string) string { return "" }}
+
+func validateTestCtx(v validateTest) ValidationContext {
+	return ValidationContext{FieldValue: func(name string) string {
+		for _, o := range v.others {
+			if strings.EqualFold(name, o.field.Name) {
+				return o.value
+			}
+		}
+		return ""
+	}}
+}
 
 func testValidator(t *testing.T, tc validateTest, ctx ValidationContext, funcname string) {
 	t.Helper()
@@ -721,18 +734,18 @@ func TestValidateLocation(t *testing.T) {
 	tests := []validateTest{
 		{field: LatField, value: "", want: Valid},
 		{field: LonField, value: "", want: Valid},
-		{field: LatField, value: "N000 00.000", want: Valid},
-		{field: LatField, value: "S000 00.000", want: Valid},
-		{field: LonField, value: "E000 00.000", want: Valid},
-		{field: LonField, value: "W000 00.000", want: Valid},
-		{field: MyLatField, value: "N001 00.000", want: Valid},
-		{field: MyLatField, value: "S090 00.000", want: Valid},
-		{field: MyLonField, value: "E009 00.000", want: Valid},
-		{field: MyLonField, value: "W180 00.000", want: Valid},
-		{field: LatField, value: "N012 34.567", want: Valid},
-		{field: LatField, value: "S023 59.999", want: Valid},
-		{field: LonField, value: "E000 00.001", want: Valid},
-		{field: LonField, value: "W120 30.050", want: Valid},
+		{field: LatField, value: "N000 00.000", want: Valid, others: []validateTest{{field: LonField, value: "E000 00.000"}}},
+		{field: LatField, value: "S000 00.000", want: Valid, others: []validateTest{{field: LonField, value: "W000 00.000"}}},
+		{field: LonField, value: "E000 00.000", want: Valid, others: []validateTest{{field: LatField, value: "N000 00.000"}}},
+		{field: LonField, value: "W000 00.000", want: Valid, others: []validateTest{{field: LatField, value: "S000 00.000"}}},
+		{field: MyLatField, value: "N001 00.000", want: Valid, others: []validateTest{{field: MyLonField, value: "W123 45.678"}}},
+		{field: MyLatField, value: "S090 00.000", want: Valid, others: []validateTest{{field: MyLonField, value: "E123 45.678"}}},
+		{field: MyLonField, value: "E009 00.000", want: Valid, others: []validateTest{{field: MyLatField, value: "S012 34.567"}}},
+		{field: MyLonField, value: "W180 00.000", want: Valid, others: []validateTest{{field: MyLatField, value: "S012 34.567"}}},
+		{field: LatField, value: "N012 34.567", want: Valid, others: []validateTest{{field: LonField, value: "E000 00.000"}}},
+		{field: LatField, value: "S023 59.999", want: Valid, others: []validateTest{{field: LonField, value: "W000 00.000"}}},
+		{field: LonField, value: "E000 00.001", want: Valid, others: []validateTest{{field: LatField, value: "S000 00.000"}}},
+		{field: LonField, value: "W120 30.050", want: Valid, others: []validateTest{{field: LatField, value: "N000 00.000"}}},
 		{field: LatField, value: "Equator", want: InvalidError},
 		{field: LonField, value: "Greenwich", want: InvalidError},
 		{field: LatField, value: "X012 34.567", want: InvalidError},
@@ -749,9 +762,14 @@ func TestValidateLocation(t *testing.T) {
 		{field: MyLonField, value: "123 45.678E", want: InvalidError},
 		{field: MyLonField, value: `123 45' 54.321"`, want: InvalidError},
 		{field: MyLonField, value: `-123° 45' 54.321"`, want: InvalidError},
+		// Warning if one coordinate field is set but not the other
+		{field: LatField, value: "N012 34.567", want: InvalidWarning},
+		{field: LonField, value: "E012 34.567", want: InvalidWarning},
+		{field: MyLatField, value: "N012 34.567", want: InvalidWarning},
+		{field: MyLonField, value: "E012 34.567", want: InvalidWarning},
 	}
 	for _, tc := range tests {
-		testValidator(t, tc, emptyCtx, "ValidateLocation")
+		testValidator(t, tc, validateTestCtx(tc), "ValidateLocation")
 	}
 }
 
