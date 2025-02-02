@@ -348,26 +348,41 @@ func ValidateLocation(val string, f Field, ctx ValidationContext) Validation {
 	if g == nil {
 		return errorf("%s invalid location format, make sure to zero-pad %q", f.Name, val)
 	}
-	if deg, err := strconv.ParseInt(g[2], 10, 64); err != nil {
-		return errorf("%s non-numeric degrees in %q", f.Name, val)
-	} else if !between(deg, 0, 180) {
-		return errorf("%s degrees out of range in %q", f.Name, val)
-	}
-	if min, err := strconv.ParseFloat(g[3], 10); err != nil {
-		return errorf("%s non-numeric degrees in %q", f.Name, val)
-	} else if !between(min, 0.0, 60.0) {
-		return errorf("%s minutes out of range in %q", f.Name, val)
-	}
+	var lat, lon bool
 	var other string
 	switch f.Name {
 	case LatField.Name:
+		lat = true
 		other = LonField.Name
 	case LonField.Name:
+		lon = true
 		other = LatField.Name
 	case MyLatField.Name:
+		lat = true
 		other = MyLonField.Name
 	case MyLonField.Name:
+		lon = true
 		other = MyLatField.Name
+	}
+	var deg int64
+	var err error
+	if deg, err = strconv.ParseInt(g[2], 10, 64); err != nil {
+		return errorf("%s non-numeric degrees in %q", f.Name, val)
+	} else if !between(deg, 0, 180) || lat && !between(deg, 0, 90) {
+		return errorf("%s degrees out of range in %q", f.Name, val)
+	}
+	if min, err := strconv.ParseFloat(g[3], 10); err != nil {
+		return errorf("%s non-numeric minutes in %q", f.Name, val)
+	} else if !between(min, 0.0, 60.0) {
+		return errorf("%s minutes out of range in %q", f.Name, val)
+	} else if min > 0.0 && (deg == 180 && lon || deg == 90 && lat) {
+		return errorf("%s minutes out of range in %q", f.Name, val)
+	}
+	if lat && !strings.ContainsAny(g[1], "NSns") {
+		return errorf("%s should be north or south, not %q", f.Name, val)
+	}
+	if lon && !strings.ContainsAny(g[1], "EWew") {
+		return errorf("%s should be east or west, not %q", f.Name, val)
 	}
 	if other != "" && ctx.FieldValue(other) == "" {
 		return warningf("%s is set but %s is not set; latitude and longitude usually come together", f.Name, other)

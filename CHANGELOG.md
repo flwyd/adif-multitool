@@ -28,6 +28,9 @@ input.
 * `validate --required-fields` supports conditionals (`--if`, `--if-not`,
   `--or-if`, `--or-if-not`) to determine which records must have certain fields
   set.  All records are checked for data type validity, e.g. number formatting.
+* `validate` will produce an error if latitude is given as east/west or if
+  longitude is given as north/south.  It is also an error for latitude to be
+  greater than 90°, not just greater than 180°.
 * `validate` will warn if `LAT` or `LON` is set but the other one isn’t;
   likewise for `MY_LAT`/`MY_LON`.  It’s possible to know latitude without also
   knowing longitude, but modern technology usually gives both together, so you

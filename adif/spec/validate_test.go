@@ -730,7 +730,6 @@ func TestGridsquareList(t *testing.T) {
 }
 
 func TestValidateLocation(t *testing.T) {
-	// TODO add a field validator that ensures latitude is only north/south and <= 90 and longitude is only east/west
 	tests := []validateTest{
 		{field: LatField, value: "", want: Valid},
 		{field: LonField, value: "", want: Valid},
@@ -742,10 +741,16 @@ func TestValidateLocation(t *testing.T) {
 		{field: MyLatField, value: "S090 00.000", want: Valid, others: []validateTest{{field: MyLonField, value: "E123 45.678"}}},
 		{field: MyLonField, value: "E009 00.000", want: Valid, others: []validateTest{{field: MyLatField, value: "S012 34.567"}}},
 		{field: MyLonField, value: "W180 00.000", want: Valid, others: []validateTest{{field: MyLatField, value: "S012 34.567"}}},
-		{field: LatField, value: "N012 34.567", want: Valid, others: []validateTest{{field: LonField, value: "E000 00.000"}}},
-		{field: LatField, value: "S023 59.999", want: Valid, others: []validateTest{{field: LonField, value: "W000 00.000"}}},
-		{field: LonField, value: "E000 00.001", want: Valid, others: []validateTest{{field: LatField, value: "S000 00.000"}}},
-		{field: LonField, value: "W120 30.050", want: Valid, others: []validateTest{{field: LatField, value: "N000 00.000"}}},
+		{field: LatField, value: "n012 34.567", want: Valid, others: []validateTest{{field: LonField, value: "E000 00.000"}}},
+		{field: LatField, value: "s023 59.999", want: Valid, others: []validateTest{{field: LonField, value: "W000 00.000"}}},
+		{field: LonField, value: "e000 00.001", want: Valid, others: []validateTest{{field: LatField, value: "S000 00.000"}}},
+		{field: LonField, value: "w120 30.050", want: Valid, others: []validateTest{{field: LatField, value: "N000 00.000"}}},
+		{field: MyLatField, value: "W012 34.567", want: InvalidError, others: []validateTest{{field: MyLonField, value: "E000 00.000"}}},
+		{field: MyLonField, value: "S012 34.567", want: InvalidError, others: []validateTest{{field: MyLatField, value: "N000 00.000"}}},
+		{field: LatField, value: "N091 00.000", want: InvalidError, others: []validateTest{{field: LonField, value: "E000 00.000"}}},
+		{field: LonField, value: "W181 00.000", want: InvalidError, others: []validateTest{{field: LatField, value: "N000 00.000"}}},
+		{field: MyLatField, value: "N090 00.001", want: InvalidError, others: []validateTest{{field: MyLonField, value: "E000 00.000"}}},
+		{field: MyLonField, value: "W180 00.001", want: InvalidError, others: []validateTest{{field: MyLatField, value: "N000 00.000"}}},
 		{field: LatField, value: "Equator", want: InvalidError},
 		{field: LonField, value: "Greenwich", want: InvalidError},
 		{field: LatField, value: "X012 34.567", want: InvalidError},
