@@ -377,6 +377,9 @@ func TestValidateEnumeration(t *testing.T) {
 		{field: DxccField, value: "US", want: InvalidError},
 		{field: QsoCompleteField, value: "!", want: InvalidError},
 		{field: ContField, value: "Europe", want: InvalidError},
+		{field: CntyAltField, value: "NZ_Regions:Hawkes Bay/Wairoa", want: Valid},
+		{field: MyCntyAltField, value: "NZ_Regions:Wanganui-Manawatu/Palmerston North;NZ_Regions:Hawkes Bay/Wairoa", want: Valid},
+		{field: CntyAltField, value: "Roman_Empire:Thracia/Byzantium", want: InvalidError}, // unknown enum value
 	}
 	for _, tc := range tests {
 		testValidator(t, tc, emptyCtx, "ValidateEnumeration")

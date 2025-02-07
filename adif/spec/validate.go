@@ -86,33 +86,34 @@ type ValidationContext struct {
 type FieldValidator func(value string, f Field, ctx ValidationContext) Validation
 
 var TypeValidators = map[string]FieldValidator{
-	"Boolean":                  ValidateBoolean,
-	"Character":                ValidateCharacter,
-	"Enumeration":              ValidateEnumeration,
-	"IntlCharacter":            ValidateIntlCharacter,
-	"Date":                     ValidateDate,
-	"Digit":                    ValidateDigit,
-	"GridSquare":               gridsquareValidator(8),
-	"GridSquareExt":            gridsquareValidator(4),
-	"GridSquareList":           listValidator(gridsquareValidator(8)),
-	"Integer":                  ValidateNumber,
-	"IntlString":               ValidateIntlString,
-	"IntlMultilineString":      ValidateIntlString,
-	"IOTARefNo":                formatValidator("IOTA reference", iotaPat),
-	"Location":                 ValidateLocation,
-	"MultilineString":          ValidateString,
-	"Number":                   ValidateNumber,
-	"POTARef":                  formatValidator("POTA reference", potaPat),
-	"POTARefList":              listValidator(formatValidator("POTA reference", potaPat)),
-	"PositiveInteger":          ValidateNumber,
-	"SOTARef":                  formatValidator("SOTA reference", sotaPat),
-	"String":                   ValidateString,
-	"Time":                     ValidateTime,
-	"WWFFRef":                  formatValidator("WWFF reference", wwffPat),
-	"AwardList":                ValidateNoop, // TODO
-	"CreditList":               ValidateNoop, // TODO
-	"SecondarySubdivisionList": ValidateNoop, // TODO
-	"SponsoredAwardList":       ValidateNoop, // TODO
+	BooleanDataType.Name:                                   ValidateBoolean,
+	CharacterDataType.Name:                                 ValidateCharacter,
+	EnumerationDataType.Name:                               ValidateEnumeration,
+	IntlCharacterDataType.Name:                             ValidateIntlCharacter,
+	DateDataType.Name:                                      ValidateDate,
+	DigitDataType.Name:                                     ValidateDigit,
+	GridSquareDataType.Name:                                gridsquareValidator(8),
+	GridSquareExtDataType.Name:                             gridsquareValidator(4),
+	GridSquareListDataType.Name:                            listValidator(gridsquareValidator(8), ","),
+	IntegerDataType.Name:                                   ValidateNumber,
+	IntlStringDataType.Name:                                ValidateIntlString,
+	IntlMultilineStringDataType.Name:                       ValidateIntlString,
+	IOTARefNoDataType.Name:                                 formatValidator("IOTA reference", iotaPat),
+	LocationDataType.Name:                                  ValidateLocation,
+	MultilineStringDataType.Name:                           ValidateString,
+	NumberDataType.Name:                                    ValidateNumber,
+	POTARefDataType.Name:                                   formatValidator("POTA reference", potaPat),
+	POTARefListDataType.Name:                               listValidator(formatValidator("POTA reference", potaPat), ","),
+	PositiveIntegerDataType.Name:                           ValidateNumber,
+	SecondaryAdministrativeSubdivisionListAltDataType.Name: listValidator(enumValidator(SecondaryAdministrativeSubdivisionAltEnumeration), ";"),
+	SOTARefDataType.Name:                                   formatValidator("SOTA reference", sotaPat),
+	StringDataType.Name:                                    ValidateString,
+	TimeDataType.Name:                                      ValidateTime,
+	WWFFRefDataType.Name:                                   formatValidator("WWFF reference", wwffPat),
+	AwardListDataType.Name:                                 ValidateNoop, // TODO
+	CreditListDataType.Name:                                ValidateNoop, // TODO
+	SecondarySubdivisionListDataType.Name:                  ValidateNoop, // TODO
+	SponsoredAwardListDataType.Name:                        ValidateNoop, // TODO
 }
 
 func ValidateNoop(value string, f Field, ctx ValidationContext) Validation { return valid() }
@@ -409,27 +410,33 @@ func ValidateEnumeration(val string, f Field, ctx ValidationContext) Validation 
 	if f.EnumScope != "" {
 		return ValidateEnumScope(val, f, ctx)
 	}
-	vals := e.Value(val)
-	if len(vals) == 0 {
-		fn := errorf
-		if ctx.UnknownEnumValueWarning {
-			fn = warningf
+	return enumValidator(e)(val, f, ctx)
+}
+
+func enumValidator(e Enumeration) FieldValidator {
+	return func(val string, f Field, ctx ValidationContext) Validation {
+		vals := e.Value(val)
+		if len(vals) == 0 {
+			fn := errorf
+			if ctx.UnknownEnumValueWarning {
+				fn = warningf
+			}
+			return fn("%s unknown value %q for enumeration %s", f.Name, val, e.Name)
 		}
-		return fn("%s unknown value %q for enumeration %s", f.Name, val, e.Name)
-	}
-	if f.Name == ContField.Name {
-		if d := ctx.FieldValue(DxccField.Name); d != "" {
-			if c := ContinentFor(d); !strings.EqualFold(val, c.Abbreviation) {
-				return warningf("continent %s does not match DXCC %s continent %s", val, d, c.Abbreviation)
+		if f.Name == ContField.Name {
+			if d := ctx.FieldValue(DxccField.Name); d != "" {
+				if c := ContinentFor(d); !strings.EqualFold(val, c.Abbreviation) {
+					return warningf("continent %s does not match DXCC %s continent %s", val, d, c.Abbreviation)
+				}
+			}
+			if d := ctx.FieldValue(CountryField.Name); d != "" {
+				if c := ContinentFor(d); !strings.EqualFold(val, c.Abbreviation) {
+					return warningf("continent %s does not match country %s continent %s", val, d, c.Abbreviation)
+				}
 			}
 		}
-		if d := ctx.FieldValue(CountryField.Name); d != "" {
-			if c := ContinentFor(d); !strings.EqualFold(val, c.Abbreviation) {
-				return warningf("continent %s does not match country %s continent %s", val, d, c.Abbreviation)
-			}
-		}
+		return valid()
 	}
-	return valid()
 }
 
 func ValidateEnumScope(val string, f Field, ctx ValidationContext) Validation {
@@ -515,12 +522,12 @@ func gridsquareValidator(maxLen int) FieldValidator {
 	}
 }
 
-func listValidator(fv FieldValidator) FieldValidator {
+func listValidator(fv FieldValidator, delim string) FieldValidator {
 	return func(val string, f Field, ctx ValidationContext) Validation {
 		if val == "" {
 			return valid()
 		}
-		for _, v := range strings.Split(val, ",") {
+		for _, v := range strings.Split(val, delim) {
 			if res := fv(v, f, ctx); res.Validity != Valid {
 				return res
 			}

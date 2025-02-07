@@ -35,6 +35,9 @@ input.
   likewise for `MY_LAT`/`MY_LON`.  It’s possible to know latitude without also
   knowing longitude, but modern technology usually gives both together, so you
   probably had a copy-paste error.
+* `validate` handles the `CNTY_ALT`/`MY_CNTY_ALT` field, currently only used for
+  New Zealand regions.  Currently doesn’t require that each enumeration name
+  only appears once.
 
 [CQ Zones](https://mapability.com/ei8ic/maps/cqzone.php) and
 [ITU Zones](https://mapability.com/ei8ic/maps/ituzone.php):
