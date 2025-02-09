@@ -79,8 +79,9 @@ input.
 
 ### Changed
 
-Started a [changelog](CHANGELOG.md) file so it’s easier to learn what’s new in
-a release.
+* `fix` now trims leading and spaces (and other whitespace) from fields.
+* Started a [changelog](CHANGELOG.md) file so it’s easier to learn what’s new in
+  a release.
 
 ### Fixed
 

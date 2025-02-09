@@ -80,6 +80,7 @@ func fixRecord(r *adif.Record, l *adif.Logfile) *adif.Record {
 }
 
 func fixField(f adif.Field, r *adif.Record, l *adif.Logfile) adif.Field {
+	f.Value = strings.TrimSpace(f.Value)
 	t := fieldType(f, l)
 	if t == spec.DateDataType {
 		f.Value = fixDate(f.Value)

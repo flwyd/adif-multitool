@@ -51,6 +51,37 @@ func TestFixEmpty(t *testing.T) {
 	}
 }
 
+func TestFixTrimSpace(t *testing.T) {
+	adi := adif.NewADIIO()
+	csv := adif.NewCSVIO()
+	out := &bytes.Buffer{}
+	file1 := "QSO_DATE,TIME_ON,TIME_OFF,CALL,MODE,BAND\n20220304 ,\" 050607 \", ,W1AW / P,CW\t, 15m\n"
+	ctx := &Context{
+		OutputFormat: adif.FormatADI,
+		Readers:      readers(adi, csv),
+		Writers:      writers(adi, csv),
+		Out:          out,
+		Prepare:      testPrepare("My Comment", "3.1.5", "fix test", "1.2.3"),
+		fs:           fakeFilesystem{map[string]string{"foo.csv": file1}},
+		CommandCtx: &EditContext{
+			Add:    FieldAssignments{values: []adif.Field{{Name: "BAZ", Value: "Baz value"}}, validate: ValidateAlphanumName},
+			Set:    FieldAssignments{values: []adif.Field{{Name: "FOO", Value: "Foo value"}}, validate: ValidateAlphanumName},
+			Remove: []string{"BAR"},
+		}}
+	if err := Fix.Run(ctx, []string{"foo.csv"}); err != nil {
+		t.Errorf("Fix.Run(ctx, foo.csv) got error %v", err)
+	} else {
+		got := out.String()
+		want := `My Comment
+<ADIF_VER:5>3.1.5 <PROGRAMID:8>fix test <PROGRAMVERSION:5>1.2.3 <EOH>
+<QSO_DATE:8>20220304 <TIME_ON:6>050607 <TIME_OFF:0> <CALL:8>W1AW / P <MODE:2>CW <BAND:3>15m <EOR>
+`
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("Fix.Run(ctx, foo.csv) unexpected output, diff:\n%s", diff)
+		}
+	}
+}
+
 func TestFixDate(t *testing.T) {
 	adi := adif.NewADIIO()
 	csv := adif.NewCSVIO()
