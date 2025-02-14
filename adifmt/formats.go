@@ -56,6 +56,8 @@ func (c adiConfig) Format() adif.Format { return adif.FormatADI }
 func (c adiConfig) IO() adif.ReadWriter { return c.io }
 
 func (c adiConfig) AddFlags(fs *flag.FlagSet) {
+	fs.BoolVar(&c.io.AllowUnknownTag, "adi-allow-unknown-tags", false,
+		"ADI files: convert <tag> to [tag] in comments instead of error")
 	fs.BoolVar(&c.io.ASCIIOnly, "adi-ascii-only", false,
 		"ADI files: error on any non-ASCII characters, instead of writing UTF-8")
 	fs.BoolVar(&c.io.LowerCase, "adi-lower-case", false,

@@ -15,6 +15,7 @@
 package adif
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -211,5 +212,54 @@ func TestADIASCIIOnly(t *testing.T) {
 		} else if out.String() != "" {
 			t.Errorf("adi.Write with non-ASCII character in header wrote partial output %q", out)
 		}
+	}
+}
+
+func TestADIUnknownTag(t *testing.T) {
+	// See https://groups.io/g/adifdev/topic/angle_brackets_outside_of/111067202 for context
+	input := `Header comment with <a tag> inside
+<ADIF_VER:5>3.1.5 <CREATED_TIMESTAMP:15>20220102 153456 <PROGRAMID:8>adi_test <EOH>
+Record comment <QSO_DATE:8>19901031 <TIME_ON:4>1234 Field <tag> comment <BAND:3>40M <CALLSIGN:4>W1AW <EOR>
+<unknown_tag_1> <QSO_DATE:8>20210203 <TIME_ON:4>0405 <BAND:2>2m <CALLSIGN:3>N0X End record comment<EOR>
+
+<APP_LoTW_EOF>
+`
+
+	for _, b := range []bool{false, true} {
+		t.Run(fmt.Sprintf("allow_%t", b), func(t *testing.T) {
+			adi := NewADIIO()
+			adi.AllowUnknownTag = b
+			parsed, err := adi.Read(strings.NewReader(input))
+			if b {
+				if err != nil {
+					t.Errorf("Read(%q) with AllowUnknownTag got error %v", input, err)
+				} else {
+					if want := "[APP_LoTW_EOF]"; parsed.Comment != want {
+						t.Errorf("tag not handled, want %q got %q", want, parsed.Comment)
+					}
+					if want := "Header comment with\n[a tag]\ninside"; parsed.Header.GetComment() != want {
+						t.Errorf("tag not handled, want %q got %q", want, parsed.Header.GetComment())
+					}
+					if want := "Record comment\nField\n[tag]\ncomment"; parsed.Records[0].GetComment() != want {
+						t.Errorf("tag not handled, want %q got %q", want, parsed.Records[0].GetComment())
+					}
+					if want := "[unknown_tag_1]\nEnd record comment"; parsed.Records[1].GetComment() != want {
+						t.Errorf("tag not handled, want %q got %q", want, parsed.Records[1].GetComment())
+					}
+					r := NewRecord(Field{Name: "QSO_DATE", Value: "19901031"}, Field{Name: "TIME_ON", Value: "1234"}, Field{Name: "BAND", Value: "40M"}, Field{Name: "CALLSIGN", Value: "W1AW"})
+					if !r.Equal(parsed.Records[0]) {
+						t.Errorf("wrong record 0 parse, want %v got %v", r, parsed.Records[0])
+					}
+					r = NewRecord(Field{Name: "QSO_DATE", Value: "20210203"}, Field{Name: "TIME_ON", Value: "0405"}, Field{Name: "BAND", Value: "2m"}, Field{Name: "CALLSIGN", Value: "N0X"})
+					if !r.Equal(parsed.Records[1]) {
+						t.Errorf("wrong record 1 parse, want %v got %v", r, parsed.Records[1])
+					}
+				}
+			} else {
+				if err == nil {
+					t.Errorf("Read(%q) with AllowUnknownTag=false did not get error:\n%v", input, parsed)
+				}
+			}
+		})
 	}
 }

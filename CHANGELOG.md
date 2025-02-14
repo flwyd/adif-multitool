@@ -38,6 +38,11 @@ input.
 * `validate` handles the `CNTY_ALT`/`MY_CNTY_ALT` field, currently only used for
   New Zealand regions.  Currently doesn’t require that each enumeration name
   only appears once.
+* `--adi-allow-unknown-tags` allows angle brackets in comments `<Like-This>`
+  if they don’t look like valid ADI tags or QSO data specifiers like `<EOR>` or
+  `<NAME:42>`.  This is not intended to be valid in the ADIF specification but
+  [Logbook of The World includes a `<APP_LoTW_EOF>` field](https://groups.io/g/adifdev/topic/angle_brackets_outside_of/111067202)
+  which this option will turn into a file comment like `[APP_LoTW_EOF]`.
 
 [CQ Zones](https://mapability.com/ei8ic/maps/cqzone.php) and
 [ITU Zones](https://mapability.com/ei8ic/maps/ituzone.php):
@@ -79,7 +84,8 @@ input.
 
 ### Changed
 
-* `fix` now trims leading and spaces (and other whitespace) from fields.
+* `fix` now trims leading and trailing spaces (and other whitespace) from
+  fields.
 * Started a [changelog](CHANGELOG.md) file so it’s easier to learn what’s new in
   a release.
 

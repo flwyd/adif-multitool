@@ -24,9 +24,9 @@ import (
 )
 
 type ADIIO struct {
-	LowerCase           bool // TODO consider a case enum: keep, upper, lower, or just get rid of this option
-	ASCIIOnly           bool
-	FieldSep, RecordSep Separator
+	LowerCase                  bool // TODO consider a case enum: keep, upper, lower, or just get rid of this option
+	ASCIIOnly, AllowUnknownTag bool
+	FieldSep, RecordSep        Separator
 }
 
 func NewADIIO() *ADIIO {
@@ -50,7 +50,7 @@ func (o *ADIIO) Read(in io.Reader) (*Logfile, error) {
 		return nil, fmt.Errorf("error reading to first tag: %w", err)
 	}
 	// final byte is '<'
-	comments = append(comments, s[0:len(s)-1])
+	comments = append(comments, strings.TrimSpace(s[0:len(s)-1]))
 	// ADIF specification seems to imply that without a comment at the start
 	// of a file, and thus the first character is '<', then there is no header
 	// and the < starts the first record.  This invariant may not hold for all
@@ -91,7 +91,11 @@ func (o *ADIIO) Read(in io.Reader) (*Logfile, error) {
 				cur = NewRecord()
 				comments = nil
 			default:
-				return nil, fmt.Errorf("invalid ADI field without length <%s", s)
+				if o.AllowUnknownTag {
+					comments = append(comments, fmt.Sprintf("[%s]", tag[0]))
+				} else {
+					return nil, fmt.Errorf("invalid ADI field without length <%s, see adi-allow-unknown-tags option", s)
+				}
 			}
 		case 2, 3:
 			length, err := strconv.Atoi(tag[1])
