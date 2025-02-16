@@ -14,6 +14,11 @@ input.
 
 ## [Unreleased]
 
+Nothing yet
+
+
+## v0.1.19-rc0 - 2025-02-15
+
 ### Added
 
 * `count` command prints the number of records of each combination of a set of
@@ -108,7 +113,7 @@ error rather than a specific error: `--cabrillo-my-exchange-field`,
 `--cabrillo-their-exchange-field`, and `--cabrillo-their-exchange-field-alt`.
 
 
-## [v0.1.18] - 2024-09-26
+## [v0.1.18] - 2025-01-03
 
 ### Added
 
