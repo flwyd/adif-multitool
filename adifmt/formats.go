@@ -15,7 +15,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"strings"
@@ -138,16 +137,6 @@ func (c cabrilloConfig) AddFlags(fs *flag.FlagSet) {
 		"Field `configuration` ("+adif.CabrilloFieldExample+") of\ncontacted station's exchange (repeatable)")
 	fs.Var(&c.io.ExtraFields, "cabrillo-extra-field",
 		"Name of `field` added at the end of QSO lines (repeatable)\ne.g. APP_CABRILLO_TRANSMITTER_ID")
-	// TODO delete deprecated flags
-	fs.Func("cabrillo-my-exchange-field", "Deprecated", func(_ string) error {
-		return errors.New("--cabrillo-my-exchange-field has been replaced with --cabrillo-my-exchange")
-	})
-	fs.Func("cabrillo-their-exchange-field", "Deprecated", func(_ string) error {
-		return errors.New("--cabrillo-their-exchange-field has been replaced with --cabrillo-their-exchange")
-	})
-	fs.Func("cabrillo-their-exchange-field-alt", "Deprecated", func(_ string) error {
-		return errors.New("--cabrillo-their-exchange-field-alt has been replaced with --cabrillo-their-exchange")
-	})
 	for v, a := range adif.CabrilloCategoryValues {
 		fs.Var(&mapValue{c.io.Categories, v, a},
 			"cabrillo-category-"+strings.ToLower(v),

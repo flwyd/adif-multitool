@@ -103,7 +103,9 @@ input.
 
 ### Removed
 
-Nothing yet
+Deprecated flags have been removed and will now show a generic option parsing
+error rather than a specific error: `--cabrillo-my-exchange-field`,
+`--cabrillo-their-exchange-field`, and `--cabrillo-their-exchange-field-alt`.
 
 
 ## [v0.1.18] - 2024-09-26
