@@ -17,7 +17,7 @@ input.
 Nothing yet
 
 
-## [v0.1.19-rc3] - 2025-02-15
+## [0.1.19-rc4] - 2025-02-15
 
 ### Added
 
@@ -113,7 +113,7 @@ error rather than a specific error: `--cabrillo-my-exchange-field`,
 `--cabrillo-their-exchange-field`, and `--cabrillo-their-exchange-field-alt`.
 
 
-## [v0.1.18] - 2025-01-03
+## [0.1.18] - 2025-01-03
 
 ### Added
 
@@ -124,7 +124,7 @@ Upgrade data specification to [ADIF 3.1.5](https://adif.org/adif).
 Upgrade golang.org/x/crypto package.
 
 
-## [v0.1.17] - 2024-09-26
+## [0.1.17] - 2024-09-26
 
 ### Added
 
@@ -133,7 +133,7 @@ not in the list will still be included in the output.
 
 Add some practical command examples to the README.
 
-## [v0.1.16] - 2024-09-18
+## [0.1.16] - 2024-09-18
 
 ### Added
 
@@ -161,7 +161,7 @@ Add some practical command examples to the README.
 * ADX: output a newline at the end of the file.
 * Fix user-defined field format in `help` output.
 
-## [v0.1.15] - 2024-08-18
+## [0.1.15] - 2024-08-18
 
 ### Added
 
@@ -177,7 +177,7 @@ also be quoted, e.g. `--delimiter 'foo="\t"'`.
 Internal improvements to make command-line options easier to test.
 
 
-## [v0.1.14] - 2024-08-12
+## [0.1.14] - 2024-08-12
 
 ### Added
 
@@ -186,7 +186,7 @@ Internal improvements to make command-line options easier to test.
 list.
 
 
-## [v0.1.13] - 2024-07-05
+## [0.1.13] - 2024-07-05
 
 ### Added
 
@@ -223,14 +223,14 @@ list.
 Upgrade golang.org/x/crypto package.
 
 
-## [v0.1.12-rc1] - 2024-02-03
+## [0.1.12-rc1] - 2024-02-03
 
 ### Changed
 
 Release process improvements.  `adifmt version` shows git revision.
 
 
-## [v0.1.11] - 2024-01-30
+## [0.1.11] - 2024-01-30
 
 ### Added
 
@@ -241,14 +241,14 @@ Release process improvements.  `adifmt version` shows git revision.
   `--rename name=my_name --rename my_name=name` are supported.
 
 
-## [v0.1.10] - 2024-01-28
+## [0.1.10] - 2024-01-28
 
 ### Fixed
 
 Fix build error on Go 1.18.
 
 
-## [v0.1.9] - 2024-01-27
+## [0.1.9] - 2024-01-27
 
 ### Added
 
@@ -262,14 +262,14 @@ inferred if all QSOs are equal or fit a category.  Make sure to check the values
 in a text editor before submitting your log, though.
 
 
-## [v0.1.8] - 2023-05-15
+## [0.1.8] - 2023-05-15
 
 ### Fixed
 
 Fix build error on Go versions before 1.20.
 
 
-## [v0.1.7] - 2023-05-15
+## [0.1.7] - 2023-05-15
 
 ### Added
 
@@ -286,7 +286,7 @@ expressed as `--if-not mode=CW`.  Fields can be compared with other fields using
 braces, e.g. `--if 'TIME_ON<={TIME_OFF}'`.
 
 
-## [v0.1.6] - 2023-04-10
+## [0.1.6] - 2023-04-10
 
 ### Added
 
@@ -300,7 +300,7 @@ braces, e.g. `--if 'TIME_ON<={TIME_OFF}'`.
 Use 1-based record indexing in error and warning messages.
 
 
-## [v0.1.5] - 2023-03-12
+## [0.1.5] - 2023-03-12
 
 ### Added
 
@@ -311,14 +311,14 @@ Allow “ragged” CSV files with different field counts in each line.
 Improved error handling.
 
 
-## [v0.1.4] - 2023-03-12
+## [0.1.4] - 2023-03-12
 
 ### Fixed
 
 Ignore case in scoped enum validation.
 
 
-## [v0.1.3] - 2023-03-11
+## [0.1.3] - 2023-03-11
 
 ### Fixed
 
@@ -327,7 +327,7 @@ administrative subdivision of the `COUNTRY` in the record, not just a valid
 abbreviation in _any_ country.
 
 
-## [v0.1.2] - 2023-03-07
+## [0.1.2] - 2023-03-07
 
 ### Added
 
@@ -337,14 +337,14 @@ entity names in `adifmt fix`.  This allows you to write `USA` and `ZA` in the
 OF SOUTH AFRICA` which `adifmt infer` can use for the DXCC number.
 
 
-## [v0.1.1] - 2023-03-04
+## [0.1.1] - 2023-03-04
 
 ### Fixed
 
 Adhere to ADIF spec with CRLF line breaks and limit to ASCII if `--adi-ascii-only` option is set.  (Default behavior allows UTF-8 data.)
 
 
-## [v0.1.0] - 2023-02-27
+## [0.1.0] - 2023-02-27
 
 First numbered version.  Supports `cat`, `edit`, `fix`, `infer`, `select`,
 `save`, `help`, and `version` commands.  Supports `ADI`, `ADX`, `CSV`, `TSV`,
@@ -352,23 +352,23 @@ and `JSON` formats.
 
 
 [Unreleased]: https://github.com/flwyd/adif-multitool/commits/main/
-[v0.1.19-rc3]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.19-rc3
-[v0.1.18]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.18
-[v0.1.17]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.17
-[v0.1.16]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.16
-[v0.1.15]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.15
-[v0.1.14]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.14
-[v0.1.13]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.13
-[v0.1.12-rc1]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.12-rc1
-[v0.1.11]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.11
-[v0.1.10]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.10
-[v0.1.9]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.9
-[v0.1.8]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.8
-[v0.1.7]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.7
-[v0.1.6]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.6
-[v0.1.5]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.5
-[v0.1.4]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.4
-[v0.1.3]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.3
-[v0.1.2]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.2
-[v0.1.1]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.1
-[v0.1.0]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.0
+[0.1.19-rc4]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.19-rc4
+[0.1.18]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.18
+[0.1.17]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.17
+[0.1.16]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.16
+[0.1.15]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.15
+[0.1.14]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.14
+[0.1.13]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.13
+[0.1.12-rc1]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.12-rc1
+[0.1.11]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.11
+[0.1.10]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.10
+[0.1.9]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.9
+[0.1.8]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.8
+[0.1.7]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.7
+[0.1.6]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.6
+[0.1.5]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.5
+[0.1.4]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.4
+[0.1.3]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.3
+[0.1.2]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.2
+[0.1.1]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.1
+[0.1.0]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.0

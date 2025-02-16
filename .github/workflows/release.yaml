@@ -100,7 +100,7 @@ jobs:
           echo "RELEASE:"
           cat RELEASE.md
           echo "sed output:"
-          sed -e '/^## \[0.1.19-rc3\]/,/^## / ! d' CHANGELOG.md
+          sed -e '/^## \[0.1.19-rc4\]/,/^## / ! d' CHANGELOG.md
       - name: Rename artifacts
         run: |
           cd artifacts
