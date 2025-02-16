@@ -95,12 +95,6 @@ jobs:
         with:
           path: artifacts
       - uses: CSchoel/release-notes-from-changelog@v1
-      - name: Print release notes
-        run: |
-          echo "RELEASE:"
-          cat RELEASE.md
-          echo "sed output:"
-          sed -e '/^## \[0.1.19-rc4\]/,/^## / ! d' CHANGELOG.md
       - name: Rename artifacts
         run: |
           cd artifacts

@@ -17,7 +17,7 @@ input.
 Nothing yet
 
 
-## [0.1.19-rc4] - 2025-02-15
+## [0.1.19] - 2025-02-15
 
 ### Added
 
@@ -352,7 +352,7 @@ and `JSON` formats.
 
 
 [Unreleased]: https://github.com/flwyd/adif-multitool/commits/main/
-[0.1.19-rc4]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.19-rc4
+[0.1.19]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.19
 [0.1.18]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.18
 [0.1.17]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.17
 [0.1.16]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.16
