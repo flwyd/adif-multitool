@@ -17,7 +17,7 @@ input.
 Nothing yet
 
 
-## [0.1.19] - 2025-02-15
+## [0.1.20] - 2025-02-15
 
 ### Added
 
@@ -111,6 +111,11 @@ Nothing yet
 Deprecated flags have been removed and will now show a generic option parsing
 error rather than a specific error: `--cabrillo-my-exchange-field`,
 `--cabrillo-their-exchange-field`, and `--cabrillo-their-exchange-field-alt`.
+
+
+## [0.1.19] - 2025-02-15
+
+No release with this number is available due to a GitHub workflow error.
 
 
 ## [0.1.18] - 2025-01-03
@@ -352,7 +357,8 @@ and `JSON` formats.
 
 
 [Unreleased]: https://github.com/flwyd/adif-multitool/commits/main/
-[0.1.19]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.19
+[0.1.20]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.20
+[0.1.19]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.19-rc4
 [0.1.18]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.18
 [0.1.17]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.17
 [0.1.16]: https://github.com/flwyd/adif-multitool/releases/tag/v0.1.16
