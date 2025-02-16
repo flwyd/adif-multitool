@@ -88,6 +88,7 @@ input.
   fields.
 * Started a [changelog](CHANGELOG.md) file so it’s easier to learn what’s new in
   a release.
+* `help` documentation tweaks for clarity and consistency.
 
 ### Fixed
 

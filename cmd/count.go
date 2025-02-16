@@ -35,10 +35,10 @@ type CountContext struct {
 
 func helpCount() string {
 	return `If no fields are specified:
-  Outputs a single record with a single number field with the number of records in
-  all input files.
+  Outputs a single record with a single field with the number of records in all
+  input files.
 If fields are specified:
-  Outputs each unique combination of those fields with the number of times that
+  Outputs each unique combination of those fields with the number of times the
   combination occurs in the input records.  Record order is unspecified.
 `
 }

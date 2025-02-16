@@ -57,16 +57,16 @@ func (c adiConfig) IO() adif.ReadWriter { return c.io }
 
 func (c adiConfig) AddFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&c.io.AllowUnknownTag, "adi-allow-unknown-tags", false,
-		"ADI files: convert <tag> to [tag] in comments instead of error")
+		"Convert <tag> to [tag] in comments instead of error")
 	fs.BoolVar(&c.io.ASCIIOnly, "adi-ascii-only", false,
-		"ADI files: error on any non-ASCII characters, instead of writing UTF-8")
+		"Error on any non-ASCII characters, instead of writing UTF-8")
 	fs.BoolVar(&c.io.LowerCase, "adi-lower-case", false,
-		"ADI files: print tags in lower case instead of upper case")
-	sepHelp := "options: " + strings.Join(adif.SeparatorNames(), ", ")
+		"Print tags in lower case instead of upper case")
+	sepHelp := fmt.Sprintf("(%s)", strings.Join(adif.SeparatorNames(), ", "))
 	fs.Var(&c.io.FieldSep, "adi-field-separator",
-		"ADI files: field `separator`\n"+sepHelp)
+		"Field `separator` after values\n"+sepHelp)
 	fs.Var(&c.io.RecordSep, "adi-record-separator",
-		"ADI files: record `separator`\n"+sepHelp)
+		"Record `separator` after <EOR>\n"+sepHelp)
 }
 
 func (c adiConfig) Help() string {
@@ -85,7 +85,8 @@ func (c adxConfig) Format() adif.Format { return adif.FormatADX }
 func (c adxConfig) IO() adif.ReadWriter { return c.io }
 
 func (c adxConfig) AddFlags(fs *flag.FlagSet) {
-	fs.IntVar(&c.io.Indent, "adx-indent", 1, "ADX files: indent nested XML structures `n` spaces, 0 for no whitespace")
+	fs.IntVar(&c.io.Indent, "adx-indent", 1,
+		"Indent nested XML structures `n` spaces, 0 for no whitespace")
 }
 
 func (c adxConfig) Help() string {
@@ -103,24 +104,40 @@ func (c cabrilloConfig) IO() adif.ReadWriter { return c.io }
 
 func (c cabrilloConfig) AddFlags(fs *flag.FlagSet) {
 	c.io.CreatedBy = "ADIF Multitool " + version
-	fs.BoolVar(&c.io.TabDelimiter, "cabrillo-delimiter-tab", false, "Cabrillo files: use tabs rather than space-aligned columns")
-	fs.IntVar(&c.io.LowPowerMax, "cabrillo-max-power-low", c.io.LowPowerMax, "Higest allowed power in `watts` considered LOW power by the contest")
-	fs.IntVar(&c.io.QRPPowerMax, "cabrillo-max-power-qrp", c.io.QRPPowerMax, "Higest alqrped power in `watts` considered QRP power by the contest")
-	fs.StringVar(&c.io.Callsign, "cabrillo-callsign", "", "Cabrillo files: CALLSIGN header `value`")
-	fs.IntVar(&c.io.ClaimedScore, "cabrillo-claimed-score", 0, "Cabrillo files: CLAIMED-SCORE header `value`")
-	fs.StringVar(&c.io.Club, "cabrillo-club", "", "Cabrillo files: CLUB header `value`")
+	fs.BoolVar(&c.io.TabDelimiter, "cabrillo-delimiter-tab", false,
+		"Use tabs rather than space-aligned columns")
+	fs.IntVar(&c.io.LowPowerMax, "cabrillo-max-power-low", c.io.LowPowerMax,
+		"Highest allowed power in `watts` considered LOW power by the contest")
+	fs.IntVar(&c.io.QRPPowerMax, "cabrillo-max-power-qrp", c.io.QRPPowerMax,
+		"Highest allowed power in `watts` considered QRP power by the contest")
+	fs.StringVar(&c.io.Callsign, "cabrillo-callsign", "",
+		"CALLSIGN Cabrillo header `value`")
+	fs.IntVar(&c.io.ClaimedScore, "cabrillo-claimed-score", 0,
+		"CLAIMED-SCORE Cabrillo header `value`")
+	fs.StringVar(&c.io.Club, "cabrillo-club", "",
+		"CLUB Cabrillo header `value`")
 	// TODO Operators (string slice)
-	fs.StringVar(&c.io.Contest, "cabrillo-contest", "", "Cabrillo files: CONTEST header `value`")
-	fs.StringVar(&c.io.Email, "cabrillo-email", "", "Cabrillo files: EMAIL address header `value`")
-	fs.StringVar(&c.io.GridLocator, "cabrillo-grid-locator", "", "Cabrillo files: GRID-LOCATOR header `value`")
-	fs.StringVar(&c.io.Location, "cabrillo-location", "", "Cabrillo files: LOCATION header `value` (e.g. ARRL section)")
-	fs.StringVar(&c.io.Name, "cabrillo-name", "", "Cabrillo files: NAME header `value` (your name or club name)")
-	fs.StringVar(&c.io.Address, "cabrillo-address", "", "Cabrillo files: ADDRESS header `value` (include newlines)")
-	fs.StringVar(&c.io.Soapbox, "cabrillo-soapbox", "", "Cabrillo files: SOAPBOX header `value` (free-form comment)")
+	fs.StringVar(&c.io.Contest, "cabrillo-contest", "",
+		"CONTEST Cabrillo header `value`")
+	fs.StringVar(&c.io.Email, "cabrillo-email", "",
+		"EMAIL address Cabrillo header `value`")
+	fs.StringVar(&c.io.GridLocator, "cabrillo-grid-locator", "",
+		"GRID-LOCATOR Cabrillo header `value`")
+	fs.StringVar(&c.io.Location, "cabrillo-location", "",
+		"LOCATION Cabrillo header `value`, e.g. ARRL section")
+	fs.StringVar(&c.io.Name, "cabrillo-name", "",
+		"NAME Cabrillo header `value` (your name or club name)")
+	fs.StringVar(&c.io.Address, "cabrillo-address", "",
+		"ADDRESS Cabrillo header `value` (include newlines)")
+	fs.StringVar(&c.io.Soapbox, "cabrillo-soapbox", "",
+		"SOAPBOX Cabrillo header `value` (free-form comment)")
 	// TODO MinReportedOfftime (duration)
-	fs.Var(&c.io.MyExchange, "cabrillo-my-exchange", "Cabrillo files: `field` ("+adif.CabrilloFieldExample+") configuration of my exchange, repeatable")
-	fs.Var(&c.io.TheirExchange, "cabrillo-their-exchange", "Cabrillo files: `field` ("+adif.CabrilloFieldExample+") configuration of their exchange, repeatable")
-	fs.Var(&c.io.ExtraFields, "cabrillo-extra-field", "Cabrillo files: `field` added at the end of QSO lines, repeatable, e.g. APP_CABRILLO_TRANSMITTER_ID")
+	fs.Var(&c.io.MyExchange, "cabrillo-my-exchange",
+		"Field `configuration` ("+adif.CabrilloFieldExample+") of\nlogging station's exchange (repeatable)")
+	fs.Var(&c.io.TheirExchange, "cabrillo-their-exchange",
+		"Field `configuration` ("+adif.CabrilloFieldExample+") of\ncontacted station's exchange (repeatable)")
+	fs.Var(&c.io.ExtraFields, "cabrillo-extra-field",
+		"Name of `field` added at the end of QSO lines (repeatable)\ne.g. APP_CABRILLO_TRANSMITTER_ID")
 	// TODO delete deprecated flags
 	fs.Func("cabrillo-my-exchange-field", "Deprecated", func(_ string) error {
 		return errors.New("--cabrillo-my-exchange-field has been replaced with --cabrillo-my-exchange")
@@ -134,7 +151,7 @@ func (c cabrilloConfig) AddFlags(fs *flag.FlagSet) {
 	for v, a := range adif.CabrilloCategoryValues {
 		fs.Var(&mapValue{c.io.Categories, v, a},
 			"cabrillo-category-"+strings.ToLower(v),
-			fmt.Sprintf("Cabrillo files: CATEGORY-%s header `value` (%s)", v, strings.Join(a, ", ")))
+			fmt.Sprintf("CATEGORY-%s Cabrillo header `value`\n(%s)", v, strings.Join(a, ", ")))
 	}
 }
 
@@ -163,13 +180,20 @@ func (c csvConfig) IO() adif.ReadWriter { return c.io }
 func (c csvConfig) AddFlags(fs *flag.FlagSet) {
 	// TODO csv-lower-case
 	// TODO separate comma values for input and output?
-	fs.Var(&runeValue{&c.io.Comma}, "csv-field-separator", "CSV files: field separator `character` if not comma")
-	fs.Var(&runeValue{&c.io.Comment}, "csv-comment", "CSV files: ignore lines beginning with `character`")
-	fs.BoolVar(&c.io.LazyQuotes, "csv-lazy-quotes", false, "CSV files: be relaxed about quoting rules")
-	fs.BoolVar(&c.io.RequireFullRecord, "csv-require-all-fields", false, "CSV files: error if fewer fields in a record than in header")
-	fs.BoolVar(&c.io.TrimLeadingSpace, "csv-trim-space", false, "CSV files: ignore leading space in fields")
-	fs.BoolVar(&c.io.CRLF, "csv-crlf", false, "CSV files: output MS Windows line endings")
-	fs.BoolVar(&c.io.OmitHeader, "csv-omit-header", false, "CSV files: don't output the header line")
+	fs.Var(&runeValue{&c.io.Comma}, "csv-field-separator",
+		"Field separator `character` if not comma")
+	fs.Var(&runeValue{&c.io.Comment}, "csv-comment",
+		"Ignore lines beginning with `character`")
+	fs.BoolVar(&c.io.LazyQuotes, "csv-lazy-quotes", false,
+		"Be relaxed about quoting rules")
+	fs.BoolVar(&c.io.RequireFullRecord, "csv-require-all-fields", false,
+		"Error if fewer fields in a record than in header")
+	fs.BoolVar(&c.io.TrimLeadingSpace, "csv-trim-space", false,
+		"Ignore leading space in fields")
+	fs.BoolVar(&c.io.CRLF, "csv-crlf", false,
+		"Output MS Windows line endings")
+	fs.BoolVar(&c.io.OmitHeader, "csv-omit-header", false,
+		"Don't output the header line")
 }
 
 func (c csvConfig) Help() string {
@@ -193,9 +217,12 @@ func (c jsonConfig) IO() adif.ReadWriter { return c.io }
 
 func (c jsonConfig) AddFlags(fs *flag.FlagSet) {
 	// TODO json-lower-case
-	fs.BoolVar(&c.io.HTMLSafe, "json-html-safe", false, "JSON files: escape characters including < > & for use in HTML")
-	fs.IntVar(&c.io.Indent, "json-indent", 1, "JSON files: indent nested JSON structures `n` spaces, 0 for no whitespace")
-	fs.BoolVar(&c.io.TypedOutput, "json-typed-output", false, "JSON files: output numbers and booleans instead of strings")
+	fs.BoolVar(&c.io.HTMLSafe, "json-html-safe", false,
+		"Escape characters including < > & for use in HTML")
+	fs.IntVar(&c.io.Indent, "json-indent", 1,
+		"Indent nested JSON structures `n` spaces, 0 for no whitespace")
+	fs.BoolVar(&c.io.TypedOutput, "json-typed-output", false,
+		"Output numbers and booleans instead of strings")
 }
 
 func (c jsonConfig) Help() string {
@@ -215,10 +242,14 @@ func (c tsvConfig) Format() adif.Format { return adif.FormatTSV }
 func (c tsvConfig) IO() adif.ReadWriter { return c.io }
 
 func (c tsvConfig) AddFlags(fs *flag.FlagSet) {
-	fs.BoolVar(&c.io.CRLF, "tsv-crlf", false, "TSV files: output MS Windows line endings")
-	fs.BoolVar(&c.io.EscapeSpecial, "tsv-escape-special", false, "TSV files: accept and produce \\t \\r \\n and \\\\ escapes in fields")
-	fs.BoolVar(&c.io.IgnoreEmptyHeaders, "tsv-ignore-empty-headers", false, "TSV files: don't return error if a TSV file has an empty header field")
-	fs.BoolVar(&c.io.OmitHeader, "tsv-omit-header", false, "TSV files: don't output the header line")
+	fs.BoolVar(&c.io.CRLF, "tsv-crlf", false,
+		"Output MS Windows line endings")
+	fs.BoolVar(&c.io.EscapeSpecial, "tsv-escape-special", false,
+		`Accept and produce \t \r \n and \\ escapes in fields`)
+	fs.BoolVar(&c.io.IgnoreEmptyHeaders, "tsv-ignore-empty-headers", false,
+		"Don't return error if a TSV file has an empty header field")
+	fs.BoolVar(&c.io.OmitHeader, "tsv-omit-header", false,
+		"Don't output the header line")
 }
 
 func (c tsvConfig) Help() string {

@@ -145,18 +145,19 @@ func buildContext(fs *flag.FlagSet, prepare func(l *adif.Logfile)) *cmd.Context 
 	}
 
 	// General flags
-	fmtopts := "options: " + strings.Join(adif.FormatNames(), ", ")
-	fs.Var(&ctx.FieldOrder, "field-order", "Comma-separated `field` order for output (repeatable)")
+	fmtopts := fmt.Sprintf("(%s)", strings.Join(adif.FormatNames(), ", "))
+	fs.Var(&ctx.FieldOrder, "field-order",
+		"Comma-separated `field` order for output (repeatable)")
 	fs.Var(&ctx.InputFormat, "input",
-		"input `format` when it cannot be inferred from file extension\n"+fmtopts)
+		"Input `format` when it cannot be inferred from file extension\n"+fmtopts)
 	fs.Var(&ctx.OutputFormat, "output",
-		"output `format` written to stdout\n"+fmtopts)
+		"Output `format` written to stdout\n"+fmtopts)
 	fs.Var(&languageValue{Tag: &ctx.Locale}, "locale",
 		"BCP-47 `language` code for IntlString comparisons e.g. da, pt-BR, zh-Hant")
 	fs.BoolVar(&ctx.SuppressAppHeaders, "suppress-app-headers", false,
-		"Don't output app-defined headers, to comply with ADIF 3.1.4 spec")
+		"Don't output app-defined headers, to comply with ADIF "+spec.ADIFVersion+" spec")
 	fs.Var(&ctx.UserdefFields, "userdef",
-		fmt.Sprintf("define a USERDEF `field` name and optional type, range, or enum (multi)\nfield formats: STRING_F:S NUMBER_F,{0:360} ENUM_F,{A,B,C}\ntype indicators: %s#Data_Types", spec.ADIFSpecURL))
+		fmt.Sprintf("Define a USERDEF `field` name & optional type, range, or enum (repeatable)\nField formats: DATE_F:D NUMBER_F,{0:360} ENUM_F,{A,B,C}\nType indicators: %s#Data_Types", spec.ADIFSpecURL))
 	return ctx
 }
 
@@ -181,7 +182,12 @@ func usage(fs *flag.FlagSet, term string) func() {
 			cfs.SetOutput(out)
 			cfs.PrintDefaults()
 			if c.Help != nil {
-				fmt.Fprint(out, c.Help())
+				fmt.Fprintln(out)
+				h := c.Help()
+				fmt.Fprint(out, h)
+				if !strings.HasSuffix(h, "\n") {
+					fmt.Fprintln(out)
+				}
 			}
 		} else if c := formatNamed(term); c != nil {
 			fmt.Fprintf(out, "%s format:\n", c.Format())
@@ -189,6 +195,7 @@ func usage(fs *flag.FlagSet, term string) func() {
 			c.AddFlags(cfs)
 			cfs.SetOutput(out)
 			cfs.PrintDefaults()
+			fmt.Fprintln(out)
 			fmt.Fprint(out, c.Help())
 		} else {
 			fmt.Fprintln(out, "Formats:", strings.Join(adif.FormatNames(), ", "))

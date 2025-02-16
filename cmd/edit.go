@@ -38,13 +38,11 @@ type EditContext struct {
 }
 
 func helpEdit() string {
-	return fmt.Sprintf(
-		"Time zone adjustments affect %s, %s, %s, and %s.\n",
-		spec.TimeOnField.Name,
-		spec.TimeOffField.Name,
-		spec.QsoDateField.Name,
-		spec.QsoDateOffField.Name,
-	)
+	return fmt.Sprintf("Time zone adjustments affect %s, %s, %s, and %s.\n",
+		spec.TimeOnField.Name, spec.TimeOffField.Name,
+		spec.QsoDateField.Name, spec.QsoDateOffField.Name) +
+		"Renames can be circular, e.g. --rename my_lat=my_lon --rename my_lon=my_lat\n\n" +
+		helpCondition("edit")
 }
 
 func runEdit(ctx *Context, args []string) error {

@@ -109,7 +109,7 @@ func helpInfer() string {
 	fmt.Fprintf(res, "  %s from %s or %s\n", spec.StationCallsignField.Name, spec.OperatorField.Name, spec.GuestOpField.Name)
 	fmt.Fprintf(res, "  %s from %s, %s, or %s\n", spec.OwnerCallsignField.Name, spec.StationCallsignField.Name, spec.OperatorField.Name, spec.GuestOpField.Name)
 
-	sifmt := "  %s from one of %s, %s, %s, %s based on %s\n"
+	sifmt := "  %s from one of %s, %s, %s, or %s based on %s\n"
 	sigfmt := "    (sets %s if unset and only one of the others is set)\n"
 	fmt.Fprintf(res, sifmt, spec.SigInfoField.Name, spec.IotaField.Name, spec.PotaRefField.Name, spec.SotaRefField.Name, spec.WwffRefField.Name, spec.SigField.Name)
 	fmt.Fprintf(res, sigfmt, spec.SigField.Name)

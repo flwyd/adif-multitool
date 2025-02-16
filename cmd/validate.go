@@ -33,7 +33,7 @@ type ValidateContext struct {
 }
 
 func helpValidate() string {
-	return "Non-failure warnings are added as comments in ADI and ADX output.\n"
+	return "Non-failure warnings are added as comments in ADI and ADX output.\n\n" + helpCondition("validate --required-fields=AGE")
 }
 
 func runValidate(ctx *Context, args []string) error {
