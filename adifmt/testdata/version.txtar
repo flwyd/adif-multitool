@@ -7,5 +7,5 @@ cmp stdout expected.txt
 -- expected.txt --
 adifmt version (devel)
 Built from git revision (unknown)
-ADIF version 3.1.5 from https://adif.org.uk/315/ADIF_315.htm
+ADIF version 3.1.6 from https://adif.org.uk/316/ADIF_316.htm
 See https://github.com/flwyd/adif-multitool for details

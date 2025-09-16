@@ -40,7 +40,9 @@ func TestEnumerationValues(t *testing.T) {
 			}
 			// Primary_Administrative_Subdivision has lots of duplicate abbreviations
 			// Country has a couple entities that were deleted and re-added
-			if seen[v.String()] && (e.Name != "Country" && e.Name != "Primary_Administrative_Subdivision") {
+			// Region has three KO Kosovo entries for different time ranges
+			dupsok := map[string]bool{"Country": true, "Region": true, "Primary_Administrative_Subdivision": true}
+			if seen[v.String()] && !dupsok[e.Name] {
 				t.Errorf("%s has multiple enum values named %q", e, v)
 			}
 			seen[v.String()] = true

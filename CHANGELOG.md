@@ -17,6 +17,15 @@ input.
 Nothing yet
 
 
+## [0.1.21] - 2025-09-17
+
+Updated to [ADIF 3.1.6 specification](https://adif.org.uk/316/ADIF_316_Resources.htm).
+
+Any code depending on `spec.Region*` constants will need to append DXCC entity
+codes since there are three `KO Kosovo` regions with different DXCC entities
+and date ranges.
+
+
 ## [0.1.20] - 2025-02-15
 
 ### Added

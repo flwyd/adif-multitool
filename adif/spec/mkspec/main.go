@@ -29,7 +29,6 @@ import (
 	"go/format"
 	"io"
 	"log"
-	"net/http"
 	"os"
 	"path"
 	"regexp"
@@ -118,7 +117,7 @@ func (f field) EnumScope() string {
 
 func (f field) FieldName() string    { return f.Value("Field Name") }
 func (f field) DataType() string     { return f.Value("Data Type") }
-func (f field) Description() string  { return f.Value("Description") }
+func (f field) Description() string  { return strings.TrimSuffix(f.Value("Description"), ".") }
 func (f field) Comments() string     { return f.Value("Comments") }
 func (f field) MinimumValue() string { return f.Value("Minimum Value") }
 func (f field) MaximumValue() string { return f.Value("Maximum Value") }
@@ -172,6 +171,12 @@ func (e *enumSpec) ValueIdentifier(r record) string {
 		if r.Value("Deleted") == "true" {
 			name += "_deleted"
 		}
+	case "Region":
+		// KO Kosovo has three Region enum values with different StartDate/EndDate.
+		// Each has a different DXCC code (296 Serbia, 0 None, 522 Republic of Kosovo)
+		if r.Value("DXCC Entity Code") != "" {
+			name = fmt.Sprintf("%s_%s", name, r.Value("DXCC Entity Code"))
+		}
 	case "Primary_Administrative_Subdivision":
 		// Many countries use the same short abbreviations for states/regions,
 		// so disambiguate with the DXCC code
@@ -215,7 +220,7 @@ func main() {
 	} else {
 		u := "https://adif.org.uk/adiflatestrelease.txt"
 		log.Printf("Checking latest ADIF version at %s", u)
-		res, err := http.Get(u)
+		res, err := httpGet(u)
 		if err != nil || res.StatusCode != 200 {
 			log.Fatalf("Error fetching latest version from %s: %v", u, err)
 		}

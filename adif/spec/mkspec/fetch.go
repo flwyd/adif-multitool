@@ -28,6 +28,17 @@ import (
 	"path"
 )
 
+func httpGet(uri string) (*http.Response, error) {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", uri, nil)
+	if err != nil {
+		return nil, err
+	}
+	// As of 2025-09-16, adif.org.uk rejects connections from certain user agents
+	req.Header.Set("User-Agent", "ADIF Multitool mkspec")
+	return client.Do(req)
+}
+
 func fetch(uri string) (filename string, err error) {
 	u, err := url.Parse(uri)
 	if err != nil {
@@ -37,7 +48,7 @@ func fetch(uri string) (filename string, err error) {
 	if path.IsAbs(filename) {
 		return "", fmt.Errorf("missing hostname from %q to %q", uri, filename)
 	}
-	if _, e := os.Stat(filename); e == nil || !errors.Is(e, fs.ErrNotExist) {
+	if s, e := os.Stat(filename); (e == nil && s.Size() > 0) || !errors.Is(e, fs.ErrNotExist) {
 		log.Printf("Using cached %s", filename)
 		return
 	}
@@ -50,7 +61,11 @@ func fetch(uri string) (filename string, err error) {
 		return
 	}
 	log.Printf("Downloading %s to %s", uri, filename)
-	res, err := http.Get(uri)
+	res, err := httpGet(uri)
+	if err != nil {
+		return
+	}
+	defer res.Body.Close()
 	err = res.Write(f)
 	return
 }

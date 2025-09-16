@@ -11,7 +11,7 @@ K2B,Venus	Earth,FM,yellow(⌁)green(⌁)blue
 K3C,Mars	Jupiter	Saturn,SSB,purple
 -- golden.adi --
 Generated with 11 records by https://github.com/flwyd/adif-multitool
-<ADIF_VER:5>3.1.5 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:6>adifmt <PROGRAMVERSION:7>(devel) <EOH>
+<ADIF_VER:5>3.1.6 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:6>adifmt <PROGRAMVERSION:7>(devel) <EOH>
 <CALL:3>K1A <PLANET:7>Mercury <MODE:2>CW <COLORS:3>red <EOR>
 <CALL:3>K1A <PLANET:7>Mercury <MODE:2>CW <COLORS:6>orange <EOR>
 <CALL:3>K2B <PLANET:5>Venus <MODE:2>FM <COLORS:6>yellow <EOR>
