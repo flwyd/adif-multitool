@@ -14,7 +14,15 @@ input.
 
 ## [Unreleased]
 
-Nothing yet
+### Added
+
+* `--cabrillo-round-freq` flag rounds HF frequency down to a whole kilohertz
+  value.  The ncjweb.com Cabrillo parser does not accept fractional kHz values
+  like `14012.34`.
+
+### Fixed
+
+* Cabrillo: Include the field name when an expected field has an error.
 
 
 ## [0.1.21] - 2025-09-17

@@ -105,6 +105,8 @@ func (c cabrilloConfig) AddFlags(fs *flag.FlagSet) {
 	c.io.CreatedBy = "ADIF Multitool " + version
 	fs.BoolVar(&c.io.TabDelimiter, "cabrillo-delimiter-tab", false,
 		"Use tabs rather than space-aligned columns")
+	fs.BoolVar(&c.io.RoundKHz, "cabrillo-round-freq", false,
+		"Round frequency down to whole kHz")
 	fs.IntVar(&c.io.LowPowerMax, "cabrillo-max-power-low", c.io.LowPowerMax,
 		"Highest allowed power in `watts` considered LOW power by the contest")
 	fs.IntVar(&c.io.QRPPowerMax, "cabrillo-max-power-qrp", c.io.QRPPowerMax,

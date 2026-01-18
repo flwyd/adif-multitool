@@ -42,7 +42,7 @@ type CabrilloIO struct {
 	MinReportedOfftime                     time.Duration
 	Categories                             map[string]string
 	MyExchange, TheirExchange, ExtraFields CabrilloFieldList
-	TabDelimiter                           bool
+	TabDelimiter, RoundKHz                 bool
 }
 
 func NewCabrilloIO() *CabrilloIO {
@@ -380,6 +380,7 @@ func (o *CabrilloIO) toConfig() cabrilloConfig {
 	}
 	c := cabrilloConfig{
 		useTabs:  o.TabDelimiter,
+		roundKHz: o.RoundKHz,
 		coreLen:  len(cabCoreFields),
 		myLen:    len(o.MyExchange) + 1,
 		theirLen: len(o.TheirExchange) + 1,
@@ -394,7 +395,7 @@ func (o *CabrilloIO) toConfig() cabrilloConfig {
 	return c
 }
 
-func mhzToKhz(mhz string) string {
+func mhzToKhz(mhz string, round bool) string {
 	pieces := strings.Split(mhz, ".")
 	if len(pieces) == 1 {
 		return mhz + "000" // 14 MHz -> 14000 kHz
@@ -409,7 +410,11 @@ func mhzToKhz(mhz string) string {
 	case 3:
 		return pieces[0] + pieces[1]
 	default:
-		return pieces[0] + pieces[1][0:3] + "." + pieces[1][3:]
+		khz := pieces[0] + pieces[1][0:3]
+		if round {
+			return khz
+		}
+		return khz + "." + pieces[1][3:]
 	}
 }
 
@@ -615,7 +620,7 @@ func parseCabrilloField(v string) (CabrilloField, error) {
 	return CabrilloField{Header: strings.TrimSuffix(g[1], ":"), TryFields: try, AllowEmpty: g[3] == "?", Default: def}, nil
 }
 
-func (c *CabrilloField) fromADIF(r *Record) (string, error) {
+func (c *CabrilloField) fromADIF(r *Record, conf cabrilloConfig) (string, error) {
 	var v string
 	for _, t := range c.TryFields {
 		if v != "" {
@@ -630,13 +635,13 @@ func (c *CabrilloField) fromADIF(r *Record) (string, error) {
 		case "QSO_DATE", "QSO_DATE_OFF":
 			d, err := r.ParseDate(t)
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("%s: %w", t, err)
 			}
 			v = d.Format("2006-01-02")
 		case "TIME_ON", "TIME_OFF":
 			d, err := r.ParseTime(t)
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("%s: %w", t, err)
 			}
 			v = d.Format("1504")
 		case "FREQ":
@@ -651,7 +656,7 @@ func (c *CabrilloField) fromADIF(r *Record) (string, error) {
 			} else {
 				f, _ := r.Get(t) // ParseFloat already determined it's set
 				// string-to-string to avoid floating point precision issues
-				v = mhzToKhz(f.Value)
+				v = mhzToKhz(f.Value, conf.roundKHz)
 			}
 		case "BAND":
 			if f, ok := r.Get(t); ok && f.Value != "" {
@@ -799,7 +804,7 @@ type cabrilloConfig struct {
 	// core, my, their, extra
 	fields                             CabrilloFieldList
 	coreLen, myLen, theirLen, extraLen int
-	useTabs                            bool
+	useTabs, roundKHz                  bool
 }
 
 func (c cabrilloConfig) toADIF(qso string) (*Record, error) {
@@ -828,7 +833,7 @@ func (c cabrilloConfig) toADIF(qso string) (*Record, error) {
 func (c cabrilloConfig) toCabrillo(r *Record) (cabrilloRecord, error) {
 	cr := cabrilloRecord{fields: make([]string, len(c.fields))}
 	for i, f := range c.fields {
-		v, err := f.fromADIF(r)
+		v, err := f.fromADIF(r, c)
 		if err != nil {
 			return cabrilloRecord{}, err
 		}
