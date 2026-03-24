@@ -14,6 +14,13 @@ input.
 
 ## [Unreleased]
 
+Nothing yet.
+
+
+## [0.1.22] - 2026-03-24
+
+Updated to [ADIF 3.1.7 specification](https://adif.org.uk/317/ADIF_317_Resources.htm).
+
 ### Added
 
 * `--cabrillo-round-freq` flag rounds HF frequency down to a whole kilohertz
