@@ -796,7 +796,7 @@ multi-instance `POTA_REF` fields, so
 
 ```sh
 adifmt flatten --fields POTA_REF,MY_POTA_REF \
-| adifmt infer --fields SIG_INFO,MY_SIG_INFO \
+| adifmt infer --fields SIG_INFO,MY_SIG_INFO --sig-only POTA \
 | adifmt save '{station_callsign}@{my_sig_info}-{qso_date}.adi'
 ```
 
@@ -829,9 +829,11 @@ For example, if `SIG` is `SOTA`, `SIG_INFO` will be set to the value of
 all special activity fields (IOTA, POTA, SOTA, WWFF) will be checked.  If
 exactly one of them is present, that value will be used for
 `SIG_INFO`/`MY_SIG_INFO` and `SIG`/`MY_SIG` will be set to the activity name.
-If (`MY_`)`SIG` is set to a special interest activity or event that does not
-have a dedicated ADIF field (e.g. 13 Colonies, Volunteers on the Air),
-(`MY_`)`SIG_INFO` will not be inferred.
+The `--sig-only` option will only infer (`MY_`)`SIG`/`SIG_INFO` for a specific
+program (IOTA, POTA, SOTA, WWFF), and will do so even if multiple program `_REF`
+fields are set.  If (`MY_`)`SIG` is set to a special interest activity or event
+that does not have a dedicated ADIF field (e.g. 13 Colonies, Volunteers on the
+Air), (`MY_`)`SIG_INFO` will not be inferred.
 
 Inferable fields:
 
@@ -857,10 +859,10 @@ Inferable fields:
 * `STATION_CALLSIGN` from `OPERATOR` or `GUEST_OP`
 * `OWNER_CALLSIGN` from `STATION_CALLSIGN`, `OPERATOR`, or `GUEST_OP`
 * `SIG_INFO` from one of `IOTA`, `POTA_REF`, `SOTA_REF`, or `WWFF_REF` based on
-  `SIG` (sets `SIG` if unset and only one of the others is set)
+  `SIG` (sets `SIG` if unset and only one of the others is set, or `--sig-only`)
 * `MY_SIG_INFO` from one of `MY_IOTA`, `MY_POTA_REF`, `MY_SOTA_REF`, or
   `MY_WWFF_REF` based on `MY_SIG` (sets `MY_SIG` if unset and only one of the
-  others is set)
+  others is set, or `--sig-only`)
 * `IOTA`, `POTA_REF`, `SOTA_REF`, and `WWFF_REF` from `SIG_INFO` if `SIG` is
   set to the appropriate program.
 * `MY_IOTA`, `MY_POTA_REF`, `MY_SOTA_REF`, and `MY_WWFF_REF` from `MY_SIG_INFO`

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:generate go run github.com/abice/go-enum -f=$GOFILE --nocase --flag --names
 package cmd
 
 import (
@@ -29,12 +30,17 @@ import (
 var Infer = Command{Name: "infer", Run: runInfer, Help: helpInfer,
 	Description: "Add missing fields based on present fields"}
 
+// SigType is an enumeration of inferrable values for (MY_) SIG and SIG_INFO fields.
+// ENUM(None, IOTA, POTA, SOTA, WWFF)
+type SigType int
+
 type InferContext struct {
 	Fields     FieldList
 	CommentLog bool
+	SigOnly    SigType
 }
 
-type inferrer func(*adif.Record, string) bool
+type inferrer func(*InferContext, *adif.Record, string) bool
 
 var inferrers = map[string]inferrer{
 	spec.BandField.Name:            inferBand,
@@ -156,7 +162,7 @@ func runInfer(ctx *Context, args []string) error {
 			for _, t := range todo {
 				if inferrers[t] != nil {
 					if f, ok := r.Get(t); !ok || f.Value == "" {
-						if inferrers[t](r, t) {
+						if inferrers[t](cctx, r, t) {
 							did = append(did, t)
 						}
 					}
@@ -186,7 +192,7 @@ func myPrefix(name string) func(string) string {
 	return func(s string) string { return s }
 }
 
-func inferBand(r *adif.Record, name string) bool {
+func inferBand(cctx *InferContext, r *adif.Record, name string) bool {
 	freqname := spec.FreqField.Name
 	if name == spec.BandRxField.Name {
 		freqname = spec.FreqRxField.Name
@@ -217,7 +223,7 @@ func inferBand(r *adif.Record, name string) bool {
 	return false
 }
 
-func inferCountry(r *adif.Record, name string) bool {
+func inferCountry(cctx *InferContext, r *adif.Record, name string) bool {
 	my := myPrefix(name)
 	code, ok := r.Get(my(spec.DxccField.Name))
 	if !ok || code.Value == "" || code.Value == "0" {
@@ -234,7 +240,7 @@ func inferCountry(r *adif.Record, name string) bool {
 	return false
 }
 
-func inferDXCC(r *adif.Record, name string) bool {
+func inferDXCC(cctx *InferContext, r *adif.Record, name string) bool {
 	my := myPrefix(name)
 	c, ok := r.Get(my(spec.CountryField.Name))
 	if !ok || c.Value == "" {
@@ -251,7 +257,7 @@ func inferDXCC(r *adif.Record, name string) bool {
 	return false
 }
 
-func inferMode(r *adif.Record, name string) bool {
+func inferMode(cctx *InferContext, r *adif.Record, name string) bool {
 	s, ok := r.Get(spec.SubmodeField.Name)
 	if !ok || s.Value == "" {
 		return false
@@ -264,7 +270,7 @@ func inferMode(r *adif.Record, name string) bool {
 	return false
 }
 
-func inferSigInfo(r *adif.Record, name string) bool {
+func inferSigInfo(cctx *InferContext, r *adif.Record, name string) bool {
 	my := myPrefix(name)
 	islota, iotaok := r.Get(my(spec.IotaField.Name))
 	pota, potaok := r.Get(my(spec.PotaRefField.Name))
@@ -289,30 +295,60 @@ func inferSigInfo(r *adif.Record, name string) bool {
 			r.Set(adif.Field{Name: my(spec.SigInfoField.Name), Value: v.Value})
 			return true
 		}
-	} else if !unknownSig {
+	}
+	if !unknownSig {
 		// SIG/MY_SIG not set, guess which program was active
 		var v adif.Field
 		var sig string
 		var got int
-		if iotaok && islota.Value != "" {
-			v = islota
-			sig = "IOTA"
-			got++
-		}
-		if potaok && pota.Value != "" {
-			v = pota
-			sig = "POTA"
-			got++
-		}
-		if sotaok && sota.Value != "" {
-			v = sota
-			sig = "SOTA"
-			got++
-		}
-		if wwffok && wwff.Value != "" {
-			v = wwff
-			sig = "WWFF"
-			got++
+		if cctx.SigOnly != SigTypeNone {
+			switch cctx.SigOnly {
+			case SigTypeIOTA:
+				if islota.Value != "" {
+					sig = "IOTA"
+					v = islota
+					got = 1
+				}
+			case SigTypePOTA:
+				if pota.Value != "" {
+					sig = "POTA"
+					v = pota
+					got = 1
+				}
+			case SigTypeSOTA:
+				if sota.Value != "" {
+					sig = "SOTA"
+					v = sota
+					got = 1
+				}
+			case SigTypeWWFF:
+				if wwff.Value != "" {
+					sig = "WWFF"
+					v = wwff
+					got = 1
+				}
+			}
+		} else {
+			if iotaok && islota.Value != "" {
+				v = islota
+				sig = "IOTA"
+				got++
+			}
+			if potaok && pota.Value != "" {
+				v = pota
+				sig = "POTA"
+				got++
+			}
+			if sotaok && sota.Value != "" {
+				v = sota
+				sig = "SOTA"
+				got++
+			}
+			if wwffok && wwff.Value != "" {
+				v = wwff
+				sig = "WWFF"
+				got++
+			}
 		}
 		if got == 1 {
 			r.Set(adif.Field{Name: my(spec.SigField.Name), Value: sig})
@@ -324,7 +360,7 @@ func inferSigInfo(r *adif.Record, name string) bool {
 }
 
 func inferProgramRef(wantSig string) inferrer {
-	return func(r *adif.Record, name string) bool {
+	return func(cctx *InferContext, r *adif.Record, name string) bool {
 		my := myPrefix(name)
 		siginfo, ok := r.Get(my(spec.SigInfoField.Name))
 		if !ok || siginfo.Value == "" {
@@ -350,7 +386,7 @@ func inferProgramRef(wantSig string) inferrer {
 	}
 }
 
-func inferStation(r *adif.Record, name string) bool {
+func inferStation(cctx *InferContext, r *adif.Record, name string) bool {
 	var order []spec.Field
 	if name == spec.OperatorField.Name {
 		order = []spec.Field{spec.GuestOpField}
@@ -370,7 +406,7 @@ func inferStation(r *adif.Record, name string) bool {
 
 var usCountyPattern = regexp.MustCompile(`^[A-Z]{2},[A-Za-z '.-]+$`) // doesn't match county-line lists
 
-func inferUSCounty(r *adif.Record, name string) bool {
+func inferUSCounty(cctx *InferContext, r *adif.Record, name string) bool {
 	if f, ok := r.Get(name); ok && f.Value != "" {
 		return false
 	}
@@ -397,7 +433,7 @@ func inferUSCounty(r *adif.Record, name string) bool {
 	return true
 }
 
-func inferZone(r *adif.Record, name string) bool {
+func inferZone(cctx *InferContext, r *adif.Record, name string) bool {
 	if f, ok := r.Get(name); ok && f.Value != "" {
 		return false
 	}
@@ -453,7 +489,7 @@ func inferZone(r *adif.Record, name string) bool {
 	return false
 }
 
-func inferContinent(r *adif.Record, name string) bool {
+func inferContinent(cctx *InferContext, r *adif.Record, name string) bool {
 	if f, ok := r.Get(name); ok && f.Value != "" {
 		return false
 	}
@@ -474,7 +510,7 @@ func inferContinent(r *adif.Record, name string) bool {
 	return false
 }
 
-func inferLatLon(r *adif.Record, name string) bool {
+func inferLatLon(cctx *InferContext, r *adif.Record, name string) bool {
 	my := myPrefix(name)
 	f, ok := r.Get(my(spec.GridsquareField.Name))
 	if !ok || f.Value == "" {
@@ -507,7 +543,7 @@ func inferLatLon(r *adif.Record, name string) bool {
 	return false
 }
 
-func inferGridsquare(r *adif.Record, name string) bool {
+func inferGridsquare(cctx *InferContext, r *adif.Record, name string) bool {
 	my := myPrefix(name)
 	var latf, lonf string
 	if f, ok := r.Get(my(spec.LatField.Name)); ok && f.Value != "" {

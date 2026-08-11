@@ -113,6 +113,8 @@ var (
 				"Comma-separated or multiple instance field `names` to infer if absent")
 			fs.BoolVar(&cctx.CommentLog, "comment-log", false,
 				"Add record comments with a list of successfully inferred fields")
+			fs.Var(&cctx.SigOnly, "sig-only",
+				"Only set SIG/MY_SIG to `program` (IOTA/POTA/SOTA/WWFF) and only infer SIG_INFO/MY_SIG_INFO if the corresponding program's REF field is set")
 			ctx.CommandCtx = &cctx
 		}}
 

@@ -14,7 +14,13 @@ input.
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+* `infer` accepts a `--sig-only` option which will only infer a specific program
+  (IOTA, POTA, SOTA, WWFF) for `SIG`/`MY_SIG` and `SIG_INFO`/`MY_SIG_INFO`.
+  This option also ensures those fields get inferred even if there are multiple
+  program references in a record, e.g. a contact on the summit in a park on an
+  island that is also a WWFF natural area.
 
 
 ## [0.1.22] - 2026-03-24
