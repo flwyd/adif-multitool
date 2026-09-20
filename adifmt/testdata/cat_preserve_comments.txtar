@@ -7,7 +7,7 @@ cmp stdout combined.adi
 -- log1.adi --
 Some comments in an ADI file.
 Another line in an ADI file.
-<ADIF_VER:5>3.1.7 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:6>adifmt <PROGRAMVERSION:7>(devel) <EOH>
+<ADIF_VER:5>3.1.7 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:15>adifmt-cli-test <PROGRAMVERSION:9>8.67.5309 <EOH>
 Just a comment about K1A!
 <CALL:3>K1A   Inline comment #1   <MODE:2>CW <EOR>
 Comment about the N2B record.
@@ -41,7 +41,7 @@ This is an ADI comment at the end of the file.
 </ADX>
 -- combined.adi --
 Generated with 4 records by https://github.com/flwyd/adif-multitool
-<ADIF_VER:5>3.1.7 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:6>adifmt <PROGRAMVERSION:7>(devel) <EOH>
+<ADIF_VER:5>3.1.7 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:15>adifmt-cli-test <PROGRAMVERSION:9>8.67.5309 <EOH>
 Just a comment about K1A!
 Inline comment #1 <CALL:3>K1A <MODE:2>CW <EOR>
 Comment about the N2B record.

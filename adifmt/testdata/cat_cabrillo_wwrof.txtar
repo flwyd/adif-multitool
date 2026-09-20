@@ -32,7 +32,7 @@ X-INSTRUCTIONS: Fill out headers following contest instructions
 X-INSTRUCTIONS: Delete any unnecessary headers
 X-INSTRUCTIONS: Double-check QSO lines, keeping columns in order
 X-INSTRUCTIONS: Report bugs at https://github.com/flwyd/adif-multitool
-CREATED-BY: ADIF Multitool (devel)
+CREATED-BY: ADIF Multitool 8.67.5309
 SOAPBOX: Please pass the soap.
 SOAPBOX: Not soap, radio.
 CONTEST: TEST-CONTEST
@@ -73,7 +73,7 @@ X-INSTRUCTIONS: Fill out headers following contest instructions
 X-INSTRUCTIONS: Delete any unnecessary headers
 X-INSTRUCTIONS: Double-check QSO lines, keeping columns in order
 X-INSTRUCTIONS: Report bugs at https://github.com/flwyd/adif-multitool
-CREATED-BY: ADIF Multitool (devel)
+CREATED-BY: ADIF Multitool 8.67.5309
 SOAPBOX: Please pass the soap.
 SOAPBOX: Not soap, radio.
 CONTEST: TEST-CONTEST
@@ -129,7 +129,7 @@ Newington, CT 06111
 <APP_CABRILLO_CLAIMED_SCORE:3:S>123
 <APP_CABRILLO_CLUB:23:S>The Cabrillo Radio Club
 <APP_CABRILLO_CONTEST:12:S>TEST-CONTEST
-<APP_CABRILLO_CREATED_BY:22:S>ADIF Multitool (devel)
+<APP_CABRILLO_CREATED_BY:24:S>ADIF Multitool 8.67.5309
 <APP_CABRILLO_EMAIL:15:S>ham@example.com
 <APP_CABRILLO_GRID_LOCATOR:6:S>FN31pr
 <APP_CABRILLO_LOCATION:16:S>Your mom's house
@@ -140,8 +140,8 @@ Not soap, radio.
 <APP_CABRILLO_X_MAX_POWER:3:S>100
 <ADIF_VER:5>3.1.7
 <CREATED_TIMESTAMP:15>23450607 080910
-<PROGRAMID:6>adifmt
-<PROGRAMVERSION:7>(devel)
+<PROGRAMID:15>adifmt-cli-test
+<PROGRAMVERSION:9>8.67.5309
 <EOH>
 
 <FREQ:5:N>3.799

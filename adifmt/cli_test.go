@@ -25,6 +25,8 @@ import (
 )
 
 func TestMain(m *testing.M) {
+	programName = "adifmt-cli-test"
+	version = "8.67.5309"
 	os.Exit(testscript.RunMain(m, map[string]func() int{
 		"adifmt": func() int { return runMain(testPrepare) },
 	}))
