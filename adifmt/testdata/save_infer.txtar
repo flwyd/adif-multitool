@@ -1,0 +1,130 @@
+# Test that save infers the file type from the extension.
+
+# ADI
+stdin input.adi
+exec adifmt save foo.adi
+cmp foo.adi expected.adi
+stderr 'Wrote 4 records to foo.adi'
+
+# ADX
+stdin input.adi
+exec adifmt save foo.adx
+cmp foo.adx expected.adx
+stderr 'Wrote 4 records to foo.adx'
+
+# CSV
+stdin input.adi
+exec adifmt save foo.csv
+cmp foo.csv expected.csv
+stderr 'Wrote 4 records to foo.csv'
+
+# JSON
+stdin input.adi
+exec adifmt save foo.json
+cmp foo.json expected.json
+stderr 'Wrote 4 records to foo.json'
+
+# TSV
+stdin input.adi
+exec adifmt save foo.tsv --tsv-escape-special
+cmp foo.tsv expected.tsv
+stderr 'Wrote 4 records to foo.tsv'
+
+-- input.adi --
+Input file
+<ADIF_VER:5>3.1.2 <CREATED_TIMESTAMP:15>20120304 050607 <PROGRAMID:9>My Logger <EOH>
+<CALL:3>K1A<MODE:2>CW<NAME:12>A Radio Club <EOR>
+<CALL:3>W2B
+<NAME:11>Bond, James
+<MODE:3>SSB
+<EOR>
+<CALL:3>K3C <MODE:2>FM <address:38>847 Orleans Rd
+North Chatham, MA 02650 <EOR>
+<address:15>123 O'Brien Ln.  <CALL:3>W4D <name:7>UNKNOWN <MODE:4>RTTY <EOR>
+-- expected.adi --
+Generated with 4 records by https://github.com/flwyd/adif-multitool
+<ADIF_VER:5>3.1.7 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:15>adifmt-cli-test <PROGRAMVERSION:9>8.67.5309 <EOH>
+<CALL:3>K1A <MODE:2>CW <NAME:12>A Radio Club <EOR>
+<CALL:3>W2B <NAME:11>Bond, James <MODE:3>SSB <EOR>
+<CALL:3>K3C <MODE:2>FM <ADDRESS:39>847 Orleans Rd
+North Chatham, MA 02650 <EOR>
+<ADDRESS:15>123 O'Brien Ln. <CALL:3>W4D <NAME:7>UNKNOWN <MODE:4>RTTY <EOR>
+-- expected.adx --
+<?xml version="1.0" encoding="UTF-8"?>
+<ADX>
+ <HEADER>
+  <!--Generated with 4 records by https://github.com/flwyd/adif-multitool-->
+  <ADIF_VER>3.1.7</ADIF_VER>
+  <CREATED_TIMESTAMP>23450607 080910</CREATED_TIMESTAMP>
+  <PROGRAMID>adifmt-cli-test</PROGRAMID>
+  <PROGRAMVERSION>8.67.5309</PROGRAMVERSION>
+ </HEADER>
+ <RECORDS>
+  <RECORD>
+   <CALL>K1A</CALL>
+   <MODE>CW</MODE>
+   <NAME>A Radio Club</NAME>
+  </RECORD>
+  <RECORD>
+   <CALL>W2B</CALL>
+   <NAME>Bond, James</NAME>
+   <MODE>SSB</MODE>
+  </RECORD>
+  <RECORD>
+   <CALL>K3C</CALL>
+   <MODE>FM</MODE>
+   <ADDRESS>847 Orleans Rd&#xD;&#xA;North Chatham, MA 02650</ADDRESS>
+  </RECORD>
+  <RECORD>
+   <ADDRESS>123 O&#39;Brien Ln.</ADDRESS>
+   <CALL>W4D</CALL>
+   <NAME>UNKNOWN</NAME>
+   <MODE>RTTY</MODE>
+  </RECORD>
+ </RECORDS>
+</ADX>
+-- expected.csv --
+CALL,MODE,NAME,ADDRESS
+K1A,CW,A Radio Club,
+W2B,SSB,"Bond, James",
+K3C,FM,,"847 Orleans Rd
+North Chatham, MA 02650"
+W4D,RTTY,UNKNOWN,123 O'Brien Ln.
+-- expected.json --
+{
+ "HEADER": {
+  "ADIF_VER": "3.1.7",
+  "CREATED_TIMESTAMP": "23450607 080910",
+  "PROGRAMID": "adifmt-cli-test",
+  "PROGRAMVERSION": "8.67.5309"
+ },
+ "RECORDS": [
+  {
+   "CALL": "K1A",
+   "MODE": "CW",
+   "NAME": "A Radio Club"
+  },
+  {
+   "CALL": "W2B",
+   "MODE": "SSB",
+   "NAME": "Bond, James"
+  },
+  {
+   "ADDRESS": "847 Orleans Rd\nNorth Chatham, MA 02650",
+   "CALL": "K3C",
+   "MODE": "FM"
+  },
+  {
+   "ADDRESS": "123 O'Brien Ln.",
+   "CALL": "W4D",
+   "MODE": "RTTY",
+   "NAME": "UNKNOWN"
+  }
+ ]
+}
+-- expected.tsv --
+CALL	MODE	NAME	ADDRESS
+K1A	CW	A Radio Club	
+W2B	SSB	Bond, James	
+K3C	FM		847 Orleans Rd\nNorth Chatham, MA 02650
+W4D	RTTY	UNKNOWN	123 O'Brien Ln.
