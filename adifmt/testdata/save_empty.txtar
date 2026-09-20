@@ -1,0 +1,23 @@
+# To avoid misleadingly saving a file with no records after an error earlier in
+# a shell pipeline, save won't write an empty file without an explicit flag.
+
+# By default, don't save an empty file
+! exec adifmt save --input adi notempty.adi
+stderr 'no records in input, not saving to notempty.adi'
+! stderr 'Wrote.*records'
+
+# Save an empty file if instructed
+exec adifmt save --input adi --write-if-empty actuallyempty.adi
+cmp actuallyempty.adi expectedempty.adi
+stderr 'Warning: saving actuallyempty.adi with no records'
+stderr 'Wrote 0 records to actuallyempty.adi'
+
+# Save an empty templated file
+exec adifmt save --input adi --write-if-empty empty_{band}_{mode}.adi
+cmp empty_BAND-EMPTY_MODE-EMPTY.adi expectedempty.adi
+stderr 'Warning: saving empty_{band}_{mode}.adi with no records'
+stderr 'Wrote 0 records to empty_BAND-EMPTY_MODE-EMPTY.adi'
+
+-- expectedempty.adi --
+Generated with 0 records by https://github.com/flwyd/adif-multitool
+<ADIF_VER:5>3.1.7 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:15>adifmt-cli-test <PROGRAMVERSION:9>8.67.5309 <EOH>
