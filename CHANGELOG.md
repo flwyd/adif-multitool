@@ -22,6 +22,18 @@ input.
   program references in a record, e.g. a contact on the summit in a park on an
   island that is also a WWFF natural area.
 
+### Changed
+
+* `save` with a template filename will replace spaces and unprintable characters
+  in a field with `_` and all other non-letters, non-digits with `-` rather than
+  just disallowing certain punctuation.  Special characters in the filename
+  template (i.e. not from a field) are still allowed, e.g.
+  `adifmt save {call}@{freq}:in {country}.adi` may create
+  `W1AW-KP4@14-321:in PUERTO_RICO.adi` but won’t create
+  `W1AW/KP4@14.321:in PUERTO RICO.adi`.  This makes filenames safer with
+  untrusted logfile input, though it still allows Unicode characters if present
+  in the input, which may cause an error on some file systems.
+
 
 ## [0.1.22] - 2026-03-24
 

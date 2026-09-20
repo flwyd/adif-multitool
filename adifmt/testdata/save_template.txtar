@@ -1,0 +1,170 @@
+# Test filename based on record values.
+
+# Single template value
+stdin input.csv
+exec adifmt save using_{mode}.csv
+cmp stderr expectedstderrmode
+cmp using_CW.csv expectedCW.csv
+cmp using_FM.csv expectedFM.csv
+cmp using_FT8.csv expectedFT8.csv
+cmp using_MODE-EMPTY.csv expectedMODE-EMPTY.csv
+cmp using_SSB.csv expectedSSB.csv
+
+# Multiple template values
+stdin input.csv
+exec adifmt save on_{band}_using_{mode}.csv
+cmp stderr expectedstderrbandmode
+cmp on_80M_using_CW.csv expected80CW.csv
+cmp on_30M_using_CW.csv expected30CW.csv
+cmp on_17M_using_CW.csv expected17CW.csv
+cmp on_10M_using_CW.csv expected10CW.csv
+cmp on_2M_using_CW.csv expected2CW.csv
+cmp on_2M_using_FM.csv expectedFM.csv
+cmp on_20M_using_FT8.csv expectedFT8.csv
+cmp on_12M_using_MODE-EMPTY.csv expectedMODE-EMPTY.csv
+cmp on_40M_using_SSB.csv expected40SSB.csv
+cmp on_20M_using_SSB.csv expected20SSB.csv
+cmp on_15M_using_SSB.csv expected15SSB.csv
+cmp on_10M_using_SSB.csv expected10SSB.csv
+
+# Create directories based on templates
+stdin input.csv
+exec adifmt save --create-dirs {mode}/{band}.csv
+cmp stderr expectedstderrmodebanddir
+cmp CW/10M.csv expected10CW.csv
+cmp CW/17M.csv expected17CW.csv
+cmp CW/2M.csv expected2CW.csv
+cmp CW/30M.csv expected30CW.csv
+cmp CW/80M.csv expected80CW.csv
+cmp FM/2M.csv expectedFM.csv
+cmp FT8/20M.csv expectedFT8.csv
+cmp MODE-EMPTY/12M.csv expectedMODE-EMPTY.csv
+cmp SSB/10M.csv expected10SSB.csv
+cmp SSB/15M.csv expected15SSB.csv
+cmp SSB/20M.csv expected20SSB.csv
+cmp SSB/40M.csv expected40SSB.csv
+
+# Filenames should be ASCII letters, numbers, underscores, dashes
+stdin input.csv
+exec adifmt save --create-dirs {call}{freq}.csv
+cmp stderr expectedstderrcallfreq
+
+-- input.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+K1A,20010101,CW,3.501,80m
+N2B,20020202,SSB,7.200,40m
+W3C,20030303,FM,146.520,2m
+K4D,20040404,CW,10.114,30m
+N5E,20050505,SSB,14.250,20m
+W6F,20060606,FT8,14.074,20m
+K7G,20070707,CW,18.070,17m
+N8H,20080808,SSB,21.380,15m
+W9I,20090909,,24.987,12m
+K0J,20101010,CW,28.010,10m
+N1K,20111111,SSB,28.311,10m
+W2L,20121212,FM,146.580,2m
+K3M,20130101,CW,144.013,2m
+W1AW/0,20140202,SSB,14.300,20m
+ON/PA1M/P,20150303,CW,28.015,10m
+-- expectedstderrmode --
+Wrote 6 records to using_CW.csv
+Wrote 2 records to using_FM.csv
+Wrote 1 records to using_FT8.csv
+Wrote 1 records to using_MODE-EMPTY.csv
+Wrote 5 records to using_SSB.csv
+-- expectedstderrbandmode --
+Wrote 2 records to on_10M_using_CW.csv
+Wrote 1 records to on_10M_using_SSB.csv
+Wrote 1 records to on_12M_using_MODE-EMPTY.csv
+Wrote 1 records to on_15M_using_SSB.csv
+Wrote 1 records to on_17M_using_CW.csv
+Wrote 1 records to on_20M_using_FT8.csv
+Wrote 2 records to on_20M_using_SSB.csv
+Wrote 1 records to on_2M_using_CW.csv
+Wrote 2 records to on_2M_using_FM.csv
+Wrote 1 records to on_30M_using_CW.csv
+Wrote 1 records to on_40M_using_SSB.csv
+Wrote 1 records to on_80M_using_CW.csv
+-- expectedstderrmodebanddir --
+Wrote 2 records to CW/10M.csv
+Wrote 1 records to CW/17M.csv
+Wrote 1 records to CW/2M.csv
+Wrote 1 records to CW/30M.csv
+Wrote 1 records to CW/80M.csv
+Wrote 2 records to FM/2M.csv
+Wrote 1 records to FT8/20M.csv
+Wrote 1 records to MODE-EMPTY/12M.csv
+Wrote 1 records to SSB/10M.csv
+Wrote 1 records to SSB/15M.csv
+Wrote 2 records to SSB/20M.csv
+Wrote 1 records to SSB/40M.csv
+-- expectedstderrcallfreq --
+Wrote 1 records to K0J28-010.csv
+Wrote 1 records to K1A3-501.csv
+Wrote 1 records to K3M144-013.csv
+Wrote 1 records to K4D10-114.csv
+Wrote 1 records to K7G18-070.csv
+Wrote 1 records to N1K28-311.csv
+Wrote 1 records to N2B7-200.csv
+Wrote 1 records to N5E14-250.csv
+Wrote 1 records to N8H21-380.csv
+Wrote 1 records to ON-PA1M-P28-015.csv
+Wrote 1 records to W1AW-014-300.csv
+Wrote 1 records to W2L146-580.csv
+Wrote 1 records to W3C146-520.csv
+Wrote 1 records to W6F14-074.csv
+Wrote 1 records to W9I24-987.csv
+-- expectedCW.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+K1A,20010101,CW,3.501,80m
+K4D,20040404,CW,10.114,30m
+K7G,20070707,CW,18.070,17m
+K0J,20101010,CW,28.010,10m
+K3M,20130101,CW,144.013,2m
+ON/PA1M/P,20150303,CW,28.015,10m
+-- expectedFM.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+W3C,20030303,FM,146.520,2m
+W2L,20121212,FM,146.580,2m
+-- expectedFT8.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+W6F,20060606,FT8,14.074,20m
+-- expectedMODE-EMPTY.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+W9I,20090909,,24.987,12m
+-- expectedSSB.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+N2B,20020202,SSB,7.200,40m
+N5E,20050505,SSB,14.250,20m
+N8H,20080808,SSB,21.380,15m
+N1K,20111111,SSB,28.311,10m
+W1AW/0,20140202,SSB,14.300,20m
+-- expected80CW.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+K1A,20010101,CW,3.501,80m
+-- expected30CW.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+K4D,20040404,CW,10.114,30m
+-- expected17CW.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+K7G,20070707,CW,18.070,17m
+-- expected10CW.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+K0J,20101010,CW,28.010,10m
+ON/PA1M/P,20150303,CW,28.015,10m
+-- expected2CW.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+K3M,20130101,CW,144.013,2m
+-- expected40SSB.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+N2B,20020202,SSB,7.200,40m
+-- expected20SSB.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+N5E,20050505,SSB,14.250,20m
+W1AW/0,20140202,SSB,14.300,20m
+-- expected15SSB.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+N8H,20080808,SSB,21.380,15m
+-- expected10SSB.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+N1K,20111111,SSB,28.311,10m

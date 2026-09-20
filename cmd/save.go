@@ -94,7 +94,7 @@ func runSave(ctx *Context, args []string) error {
 				return fmt.Errorf("no records in input, not saving to %s", file)
 			}
 			if !cctx.Quiet {
-				fmt.Fprintf(os.Stderr, "Warning: saving %s with no records", file)
+				fmt.Fprintf(os.Stderr, "Warning: saving %s with no records\n", file)
 			}
 		}
 		if cctx.CreateDirectory {
@@ -118,8 +118,8 @@ func runSave(ctx *Context, args []string) error {
 	}
 
 	if len(l.Records) == 0 {
-		if st.static && cctx.WriteIfEmpty {
-			return saveLog(l, fname)
+		if cctx.WriteIfEmpty {
+			return saveLog(l, st.format(adif.NewRecord()))
 		}
 		return fmt.Errorf("no records in input, not saving to %s", fname)
 	}
@@ -194,19 +194,16 @@ func newSaveTemplate(s string) saveTemplate {
 		t.pieces[i*2+1] = func(r *adif.Record) string {
 			ff, _ := r.Get(f)
 			v := strings.Map(func(c rune) rune {
-				if !unicode.IsPrint(c) {
+				if c == ' ' || !unicode.IsPrint(c) {
 					return '_'
+				}
+				if c == '-' || c == '_' || unicode.IsDigit(c) {
+					return c
 				}
 				if unicode.IsLetter(c) {
 					return unicode.ToUpper(c)
 				}
-				// replace marks that are awkward in filenames
-				switch c {
-				case '/', '\\', ':', ';', '*', '?', '"', '\'', '`',
-					'<', '>', '[', ']', '{', '}', '(', ')':
-					return '-'
-				}
-				return c
+				return '-' // replace marks that are awkward in filenames
 			}, ff.Value)
 			if v == "" {
 				return strings.ToUpper(f) + "-EMPTY"

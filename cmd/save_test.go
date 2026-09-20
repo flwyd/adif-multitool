@@ -133,13 +133,13 @@ func TestSaveFileTemplate(t *testing.T) {
 			files: map[string]string{
 				"FMon2M.csv":    header + rs0iss + n0p,
 				"CWon40M.csv":   header + w1aw,
-				"CWon1.25M.csv": header + ve0b,
+				"CWon1-25M.csv": header + ve0b,
 			},
 		},
 		{template: "{operator}:{country}.csv",
 			files: map[string]string{
-				"1AY:UNITED STATES OF AMERICA.csv":      header + w1aw,
-				"KH9ELF-P:UNITED STATES OF AMERICA.csv": header + n0p,
+				"1AY:UNITED_STATES_OF_AMERICA.csv":      header + w1aw,
+				"KH9ELF-P:UNITED_STATES_OF_AMERICA.csv": header + n0p,
 				"KH9ELF:COUNTRY-EMPTY.csv":              header + rs0iss,
 				"1AY:CANADA.csv":                        header + ve0b,
 			},
@@ -148,8 +148,8 @@ func TestSaveFileTemplate(t *testing.T) {
 			files: map[string]string{
 				"dir/NOTES-EMPTY.csv":         header + w1aw,
 				"dir/HAMS-IN-SPACE-.csv":      header + rs0iss,
-				"dir/ASKED FOR PRESENTS!.csv": header + n0p,
-				"dir/TAB_NEWLINE_SLASH-SYMBOL‽GREEK-ΓΡΆΜΜΑ-EMOJI📻GE-EZ-ደብዳቤ-.csv": header + ve0b,
+				"dir/ASKED_FOR_PRESENTS-.csv": header + n0p,
+				"dir/TAB_NEWLINE_SLASH-SYMBOL-GREEK-ΓΡΆΜΜΑ-EMOJI-GE-EZ-ደብዳቤ-.csv": header + ve0b,
 			},
 		},
 	}

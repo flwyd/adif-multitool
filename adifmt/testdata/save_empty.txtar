@@ -15,7 +15,7 @@ stderr 'Wrote 0 records to actuallyempty.adi'
 # Save an empty templated file
 exec adifmt save --input adi --write-if-empty empty_{band}_{mode}.adi
 cmp empty_BAND-EMPTY_MODE-EMPTY.adi expectedempty.adi
-stderr 'Warning: saving empty_{band}_{mode}.adi with no records'
+stderr 'Warning: saving empty_BAND-EMPTY_MODE-EMPTY.adi with no records'
 stderr 'Wrote 0 records to empty_BAND-EMPTY_MODE-EMPTY.adi'
 
 -- expectedempty.adi --
