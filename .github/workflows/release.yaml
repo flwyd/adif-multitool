@@ -38,10 +38,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: '>=1.18'
           cache: true
@@ -63,10 +63,10 @@ jobs:
             goos: linux
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: '>=1.18'
           cache: true
@@ -78,7 +78,7 @@ jobs:
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.goos }}-${{ matrix.goarch }}
           path: build/*
@@ -90,8 +90,8 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v7
         with:
           path: artifacts
       - uses: CSchoel/release-notes-from-changelog@v1
@@ -106,9 +106,10 @@ jobs:
             mv "$f" "files/$(basename -s .exe $f)-$(dirname $f}).exe"
           done
       - name: Create release ${{ github.ref_name }}
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: artifacts/files/*
           prerelease: ${{ contains(github.ref_name, '-') }}
           fail_on_unmatched_files: true
           body_path: RELEASE.md
+          draft: true
