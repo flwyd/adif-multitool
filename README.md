@@ -40,7 +40,11 @@ Binaries for each ADIF Multitool version are available on the
 [releases page](https://github.com/flwyd/adif-multitool/releases).  See the
 [changelog](CHANGELOG.md) or release notes for new features.  You can also build
 the program from source code with a [Go compiler](https://go.dev/dl/).  Run
-`go install github.com/flwyd/adif-multitool/adifmt@latest` to make the `adifmt`
+
+```sh
+go install github.com/flwyd/adif-multitool/adifmt@latest
+```
+to make the `adifmt`
 command available.  (You may need to add the `$GOBIN` environment variable to
 your path.)  To see if it works, run `adifmt help`.  If the command is not
 found, try `go run github.com/flwyd/adif-multitool/adifmt help`
@@ -146,7 +150,7 @@ TIME_ON,FREQ,MODE,CALL,STATE,COUNTRY
 ```
 
 ```sh
-adiifmt edit mylog.csv \
+adifmt edit mylog.csv \
   --add qso_date=20240704 \
   --add operator=WT0RJ \
   --add my_pota_ref=US-0791,US-4567 \
@@ -822,7 +826,7 @@ Field names to infer are given by the `--fields` option, which can be repeated
 multiple times and/or comma-separated.  Fields in the list will not be changed
 if they are present in a record with a non-empty value.
 
-`SIG_INFO` and `MY_SIG_INFO` are handled specially.  If `SIG`/`MY_SIG` is is
+`SIG_INFO` and `MY_SIG_INFO` are handled specially.  If `SIG`/`MY_SIG` is
 present, that value determines which field to use for `SIG_INFO`/`MY_SIG_INFO`.
 For example, if `SIG` is `SOTA`, `SIG_INFO` will be set to the value of
 `SOTA_REF` even if `POTA_REF` is also present.  If `SIG`/`MY_SIG` is absent,
