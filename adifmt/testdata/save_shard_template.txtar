@@ -1,0 +1,145 @@
+# Test that sharding a templated save file distributes records appropriately
+
+stdin input.csv
+exec adifmt save --shard-max-records 2 {mode}.csv
+cmp stderr expectedstderrmax
+cmp CW+1-of-3.csv expectedCW1.csv
+cmp CW+2-of-3.csv expectedCW2.csv
+cmp CW+3-of-3.csv expectedCW3.csv
+cmp FM+1-of-1.csv expectedFM1.csv
+cmp FT8+1-of-1.csv expectedFT81.csv
+cmp MODE-EMPTY+1-of-1.csv expectedMODE-EMPTY1.csv
+cmp SSB+1-of-2.csv expectedSSB1.csv
+cmp SSB+2-of-2.csv expectedSSB2.csv
+
+stdin input.csv
+exec adifmt save --shard-file-count 2 {band}.csv
+cmp stderr expectedstderrcount
+cmp 80M+1-of-2.csv expected80m.csv
+cmp 80M+2-of-2.csv expectedempty.csv
+cmp 40M+1-of-2.csv expected40m.csv
+cmp 40M+2-of-2.csv expectedempty.csv
+cmp 30M+1-of-2.csv expected30m.csv
+cmp 30M+2-of-2.csv expectedempty.csv
+cmp 20M+1-of-2.csv expected20m1.csv
+cmp 20M+2-of-2.csv expected20m2.csv
+cmp 15M+1-of-2.csv expected15m.csv
+cmp 15M+2-of-2.csv expectedempty.csv
+cmp 12M+1-of-2.csv expected12m.csv
+cmp 12M+2-of-2.csv expectedempty.csv
+cmp 10M+1-of-2.csv expected10m1.csv
+cmp 10M+2-of-2.csv expected10m2.csv
+cmp 2M+1-of-2.csv expected2m1.csv
+cmp 2M+2-of-2.csv expected2m2.csv
+
+-- input.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+K1A,20010101,CW,3.501,80m
+N2B,20020202,SSB,7.200,40m
+W3C,20030303,FM,146.520,2m
+K4D,20040404,CW,10.114,30m
+N5E,20050505,SSB,14.250,20m
+W6F,20060606,FT8,14.074,20m
+K7G,20070707,CW,18.070,17m
+N8H,20080808,SSB,21.380,15m
+W9I,20090909,,24.987,12m
+K0J,20101010,CW,28.010,10m
+N1K,20111111,SSB,28.311,10m
+W2L,20121212,FM,146.580,2m
+K3M,20130101,CW,144.013,2m
+-- expectedstderrmax --
+Wrote 2 records to CW+1-of-3.csv
+Wrote 2 records to CW+2-of-3.csv
+Wrote 1 records to CW+3-of-3.csv
+Wrote 2 records to FM+1-of-1.csv
+Wrote 1 records to FT8+1-of-1.csv
+Wrote 1 records to MODE-EMPTY+1-of-1.csv
+Wrote 2 records to SSB+1-of-2.csv
+Wrote 2 records to SSB+2-of-2.csv
+-- expectedstderrcount --
+Wrote 1 records to 10M+1-of-2.csv
+Wrote 1 records to 10M+2-of-2.csv
+Wrote 1 records to 12M+1-of-2.csv
+Wrote 0 records to 12M+2-of-2.csv
+Wrote 1 records to 15M+1-of-2.csv
+Wrote 0 records to 15M+2-of-2.csv
+Wrote 1 records to 17M+1-of-2.csv
+Wrote 0 records to 17M+2-of-2.csv
+Wrote 1 records to 20M+1-of-2.csv
+Wrote 1 records to 20M+2-of-2.csv
+Wrote 2 records to 2M+1-of-2.csv
+Wrote 1 records to 2M+2-of-2.csv
+Wrote 1 records to 30M+1-of-2.csv
+Wrote 0 records to 30M+2-of-2.csv
+Wrote 1 records to 40M+1-of-2.csv
+Wrote 0 records to 40M+2-of-2.csv
+Wrote 1 records to 80M+1-of-2.csv
+Wrote 0 records to 80M+2-of-2.csv
+-- expectedCW1.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+K1A,20010101,CW,3.501,80m
+K4D,20040404,CW,10.114,30m
+-- expectedCW2.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+K7G,20070707,CW,18.070,17m
+K0J,20101010,CW,28.010,10m
+-- expectedCW3.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+K3M,20130101,CW,144.013,2m
+-- expectedFM1.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+W3C,20030303,FM,146.520,2m
+W2L,20121212,FM,146.580,2m
+-- expectedFT81.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+W6F,20060606,FT8,14.074,20m
+-- expectedMODE-EMPTY1.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+W9I,20090909,,24.987,12m
+-- expectedSSB1.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+N2B,20020202,SSB,7.200,40m
+N5E,20050505,SSB,14.250,20m
+-- expectedSSB2.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+N8H,20080808,SSB,21.380,15m
+N1K,20111111,SSB,28.311,10m
+-- expected80m.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+K1A,20010101,CW,3.501,80m
+-- expected40m.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+N2B,20020202,SSB,7.200,40m
+-- expected30m.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+K4D,20040404,CW,10.114,30m
+-- expected20m1.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+N5E,20050505,SSB,14.250,20m
+-- expected20m2.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+W6F,20060606,FT8,14.074,20m
+-- expected17m.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+K7G,20070707,CW,18.070,17m
+-- expected15m.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+N8H,20080808,SSB,21.380,15m
+-- expected12m.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+W9I,20090909,,24.987,12m
+-- expected10m1.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+K0J,20101010,CW,28.010,10m
+-- expected10m2.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+N1K,20111111,SSB,28.311,10m
+-- expected2m1.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+W3C,20030303,FM,146.520,2m
+W2L,20121212,FM,146.580,2m
+-- expected2m2.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND
+K3M,20130101,CW,144.013,2m
+-- expectedempty.csv --
+CALL,QSO_DATE,MODE,FREQ,BAND

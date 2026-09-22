@@ -125,6 +125,8 @@ var (
 				"Create any needed parent directories of the output file(s)")
 			fs.BoolVar(&cctx.Quiet, "quiet", false,
 				"Do not print record counts and file names to stderr")
+			fs.IntVar(&cctx.ShardFileCount, "shard-file-count", 0, "Split records across `num` files")
+			fs.IntVar(&cctx.ShardMaxRecords, "shard-max-records", 0, "Split records into multiple files with no more than `num` records each")
 			fs.BoolVar(&cctx.OverwriteExisting, "overwrite-existing", false,
 				"Overwrite output file if it already exists")
 			fs.BoolVar(&cctx.WriteIfEmpty, "write-if-empty", false, "Write output file even if standard input has no records")

@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -37,6 +38,49 @@ type SaveContext struct {
 	WriteIfEmpty      bool
 	CreateDirectory   bool
 	Quiet             bool
+	ShardFileCount    int
+	ShardMaxRecords   int
+}
+
+func (c *SaveContext) wantShards() bool {
+	return c.ShardFileCount > 0 || c.ShardMaxRecords > 0
+}
+
+func (c *SaveContext) shardEnds(records int) ([]int, error) {
+	if c.ShardFileCount <= 0 && c.ShardMaxRecords <= 0 {
+		return []int{records}, nil
+	}
+	if records <= 0 {
+		if c.ShardFileCount <= 0 {
+			return []int{0}, nil
+		}
+		return make([]int, c.ShardFileCount), nil
+	}
+	var num int
+	if c.ShardFileCount > 0 {
+		if c.ShardMaxRecords > 0 && records > c.ShardMaxRecords*c.ShardFileCount {
+			return nil, fmt.Errorf("record count %d with %d shards would put more than %d records in a file",
+				records, c.ShardFileCount, c.ShardMaxRecords)
+		}
+		num = c.ShardFileCount
+	} else {
+		num = records / c.ShardMaxRecords
+		if records%c.ShardMaxRecords != 0 {
+			num++
+		}
+	}
+	size := records / num
+	res := make([]int, num)
+	prev := 0
+	for i := 0; i < num; i++ {
+		cur := size
+		if records%num > i {
+			cur++
+		}
+		res[i] = prev + cur
+		prev = res[i]
+	}
+	return res, nil
 }
 
 func helpSave() string {
@@ -46,6 +90,10 @@ logfiles without any records will not be saved (useful if validate failed).
 File name may be a template with {FIELD} placeholders replaced by field values.
 For example, '{QSO_DATE}_{BAND}.adi' will create a separate file for each
 contact date + band combination.  Quote the name to avoid shell expansion.
+
+If shard options are set, records will be split across multiple files with a
+file number and total file count in the filename, e.g. "mylog+1-of-3.adi".
+The number of records in each shard is unspecified and may change.
 `
 }
 
@@ -89,22 +137,17 @@ func runSave(ctx *Context, args []string) error {
 		if !cctx.OverwriteExisting && fs.Exists(file) {
 			return fmt.Errorf("output file %s already exists", file)
 		}
-		if len(l.Records) == 0 {
-			if !cctx.WriteIfEmpty {
-				return fmt.Errorf("no records in input, not saving to %s", file)
-			}
-			if !cctx.Quiet {
-				fmt.Fprintf(os.Stderr, "Warning: saving %s with no records\n", file)
-			}
-		}
+		dir := path.Dir(file)
 		if cctx.CreateDirectory {
-			dir := path.Dir(file)
 			if err := fs.MkdirAll(dir); err != nil && !errors.Is(err, os.ErrExist) {
 				return err
 			}
 		}
 		out, err := fs.Create(file)
 		if err != nil {
+			if !fs.Exists(dir) {
+				return fmt.Errorf("missing directory %s, use the create-dirs option: %w", dir, err)
+			}
 			return err
 		}
 		defer out.Close()
@@ -117,13 +160,25 @@ func runSave(ctx *Context, args []string) error {
 		return err
 	}
 
+	logs := make(map[string]*accumulator)
 	if len(l.Records) == 0 {
-		if cctx.WriteIfEmpty {
-			return saveLog(l, st.format(adif.NewRecord()))
+		if !cctx.WriteIfEmpty {
+			return fmt.Errorf("no records in input, not saving to %s", fname)
 		}
-		return fmt.Errorf("no records in input, not saving to %s", fname)
+		if !cctx.Quiet {
+			fmt.Fprintf(os.Stderr, "Warning: saving %s with no records\n", fname)
+		}
+		emptyfile := st.format(adif.NewRecord())
+		a, err := newAccumulator(ctx)
+		if err != nil {
+			return err
+		}
+		if err := a.initFromHeader(l); err != nil {
+			return err
+		}
+		a.Out.Filename = emptyfile
+		logs[emptyfile] = a
 	}
-	logs := make(map[string]*adif.Logfile)
 	for _, r := range l.Records {
 		file := st.format(r)
 		if logs[file] == nil {
@@ -136,24 +191,78 @@ func runSave(ctx *Context, args []string) error {
 					return err
 				}
 			}
-			// TODO use newAccumulator?
-			logs[file] = adif.NewLogfile()
-			logs[file].FieldOrder = l.FieldOrder
-			for _, f := range l.Header.Fields() {
-				logs[file].Header.Set(f)
+			a, err := newAccumulator(ctx)
+			if err != nil {
+				return err
 			}
-			for _, u := range l.Userdef {
-				logs[file].AddUserdef(u)
+			if err := a.initFromHeader(l); err != nil {
+				return err
 			}
+			a.Out.Filename = file
+			logs[file] = a
 		}
-		logs[file].AddRecord(r)
+		logs[file].Out.AddRecord(r)
 	}
 
+	if cctx.wantShards() {
+		sharded := make(map[string]*accumulator)
+		for k, v := range logs {
+			ends, err := cctx.shardEnds(len(v.Out.Records))
+			if err != nil {
+				return fmt.Errorf("could not split %s: %v", k, err)
+			}
+			ext := filepath.Ext(k)
+			base := k[:len(k)-len(ext)]
+			glob := base + "+*-of-*" + ext
+			matches, err := filepath.Glob(glob)
+			if err != nil {
+				return fmt.Errorf("could not scan for existing files matching %s: %v", glob, err)
+			}
+			for _, m := range matches {
+				b := filepath.Base(m)
+				b = b[:len(b)-len(ext)]
+				s := strings.Split(b, "+")
+				var mi, mcount int
+				if n, err := fmt.Sscanf(s[len(s)-1], "%d-of-%d", &mi, &mcount); err == nil && n == 2 {
+					if mcount != len(ends) {
+						return fmt.Errorf("existing file with a different shard count; delete matching files or save with a different name: %s", m)
+					}
+				}
+			}
+			cstr := fmt.Sprintf("%d", len(ends))
+			ifmt := fmt.Sprintf("%%0%dd", len(cstr))
+			for i, end := range ends {
+				istr := fmt.Sprintf(ifmt, i+1)
+				fname := fmt.Sprintf("%s+%s-of-%s%s", base, istr, cstr, ext)
+				a, err := newAccumulator(ctx)
+				if err != nil {
+					return err
+				}
+				if err := a.initFromHeader(l); err != nil {
+					return err
+				}
+				a.Out.Filename = fname
+				sharded[fname] = a
+				prev := 0
+				if i > 0 {
+					prev = ends[i-1]
+				}
+				a.Out.Records = v.Out.Records[prev:end]
+			}
+		}
+		logs = sharded
+	}
+
+	for _, a := range logs {
+		if err := a.prepare(); err != nil {
+			return err
+		}
+	}
 	errs := make([]error, len(logs))
 	files := maps.Keys(logs)
 	sort.Strings(files)
 	for i, f := range files {
-		errs[i] = saveLog(logs[f], f)
+		errs[i] = saveLog(logs[f].Out, f)
 	}
 	return errorsJoin(errs...)
 }
@@ -177,7 +286,9 @@ func newSaveTemplate(s string) saveTemplate {
 	fields := templateFieldPat.FindAllString(s, -1)
 	if len(fields) == 0 {
 		return saveTemplate{
-			pieces: []func(*adif.Record) string{func(_ *adif.Record) string { return s }}, static: true,
+			pieces: []func(*adif.Record) string{
+				func(_ *adif.Record) string { return s },
+			},
 		}
 	}
 	for i, f := range fields {

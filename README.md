@@ -888,11 +888,27 @@ band/mode pair to a separate file, perhaps producing `10M-SSB.adi 10M-FM.adi
 20M-CW.adi 20M-DIGITAL.adi 20M-SSB.adi 40M-CW.adi 80M-SSB.adi`.  Another example
 using the [Parks on the Air filename format](https://docs.pota.app/docs/activator_reference/submitting_logs.html)
 is `adifmt save '{station_callsign}@{my_sig_info}-{qso_date}.adi'`.  All field
-values will be converted to upper case and special file system characters are
-replaced by `-` (so `{CALL}.csv` with `w1aw/2` becomes `W1AW-2.csv`).  Fields
-without a value are replaced with `FIELD_NAME-EMPTY`.  Special characters in the
+values will be converted to upper case, spaces are replaced by `_`, and special
+file system characters are replaced by `-` (so `{CALL}@{COUNTRY}.csv` with
+`w1aw/kp4` in `Puerto Rico` becomes `W1AW-KP4@PUERTO_RICO.csv`).  Fields without
+a value are replaced with `FIELD_NAME-EMPTY`.  Special characters in the
 template itself are not replaced, and can be used to split a log into separate
 directories: `adifmt save --create-dirs '{operator}/{band}.adx’`.
+
+`save` can also split a large input into multiple shard files to accomodate
+import into a program with size limits.  Files can be split with a maximum
+number of records per file using `--shard-max-records` or into a specific number
+of shard files with `--shard-file-count`; the two options may be used together.
+For example, when saving input with 955 records
+`adifmt save --shard-max-records 100 mylog.adi` will create `mylog+1-of-10.adi`
+through `mylog+10-of-10.adi` while
+`adifmt save --shard-file-count 5 mylog.adi` will create `mylog+1-of-5.adi`
+through `mylog+5-of-5.adi`.  The exact number of records in each shard is not
+specified and may change, but shards are presently roughly equal sizes.
+Sharding may be used with template files; the number of shards will be
+computed based on the resolved filenames:
+`save --shard-max-records=100 '{BAND}.adi'` might produce `40M+1-of-5.adi`
+through `40M+5-of-5.adi` but just a single `12M+1-of-1.adi`.
 
 #### select
 

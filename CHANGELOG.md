@@ -16,6 +16,13 @@ input.
 
 ### Added
 
+* `save` can split a large file over multiple smaller shards, which may make
+  upload easier to a service with a size limit.  For example, when saving input
+  with 955 records `adifmt save --shard-max-records 100 mylog.adi` will create
+  `mylog+1-of-10.adi` through `mylog+10-of-10.adi` while
+  `adifmt save --shard-file-count 5 mylog.adi` will create `mylog+1-of-5.adi`
+  through `mylog+5-of-5.adi`.  The exact number of records in each shard is not
+  specified and may change, but shards are presently roughly equal sizes.
 * `infer` accepts a `--sig-only` option which will only infer a specific program
   (IOTA, POTA, SOTA, WWFF) for `SIG`/`MY_SIG` and `SIG_INFO`/`MY_SIG_INFO`.
   This option also ensures those fields get inferred even if there are multiple

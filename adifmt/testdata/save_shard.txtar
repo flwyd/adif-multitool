@@ -1,0 +1,80 @@
+# Test that save shard flags effectively split into files.
+# Note that distribution of records between shard files is documented as subject
+# to change, so this test may update if the implementation changes.
+
+# Maximum records per shard
+stdin tenqsos.adi
+exec adifmt save --shard-max-records 3 maxrecords.csv
+cmp stderr expectedmaxstderr
+cmp maxrecords+1-of-4.csv expectedmax1.csv
+cmp maxrecords+2-of-4.csv expectedmax2.csv
+cmp maxrecords+3-of-4.csv expectedmax3.csv
+cmp maxrecords+4-of-4.csv expectedmax4.csv
+
+# Explicit number of shards
+stdin tenqsos.adi
+exec adifmt save --shard-file-count 3 shardcount.csv
+cmp stderr expectedcountstderr
+cmp shardcount+1-of-3.csv expectedcount1.csv
+cmp shardcount+2-of-3.csv expectedcount2.csv
+cmp shardcount+3-of-3.csv expectedcount3.csv
+
+# Incompatible shard desires
+stdin tenqsos.adi
+! exec adifmt save --shard-file-count 2 --shard-max-records 4 bad.csv
+stderr 'could not split bad.csv: record count 10 with 2 shards would put more than 4 records in a file'
+
+-- tenqsos.adi --
+<CALL:3>K1A <QSO_DATE:8>20010101 <EOR>
+<CALL:3>N2B <QSO_DATE:8>20020202 <EOR>
+<CALL:3>W3C <QSO_DATE:8>20030303 <EOR>
+<CALL:3>K4D <QSO_DATE:8>20040404 <EOR>
+<CALL:3>N5E <QSO_DATE:8>20050505 <EOR>
+<CALL:3>W6F <QSO_DATE:8>20060606 <EOR>
+<CALL:3>K7G <QSO_DATE:8>20070707 <EOR>
+<CALL:3>N8H <QSO_DATE:8>20080808 <EOR>
+<CALL:3>W9I <QSO_DATE:8>20090909 <EOR>
+<CALL:3>K0J <QSO_DATE:8>20101010 <EOR>
+-- expectedmaxstderr --
+Wrote 3 records to maxrecords+1-of-4.csv
+Wrote 3 records to maxrecords+2-of-4.csv
+Wrote 2 records to maxrecords+3-of-4.csv
+Wrote 2 records to maxrecords+4-of-4.csv
+-- expectedcountstderr --
+Wrote 4 records to shardcount+1-of-3.csv
+Wrote 3 records to shardcount+2-of-3.csv
+Wrote 3 records to shardcount+3-of-3.csv
+-- expectedmax1.csv --
+CALL,QSO_DATE
+K1A,20010101
+N2B,20020202
+W3C,20030303
+-- expectedmax2.csv --
+CALL,QSO_DATE
+K4D,20040404
+N5E,20050505
+W6F,20060606
+-- expectedmax3.csv --
+CALL,QSO_DATE
+K7G,20070707
+N8H,20080808
+-- expectedmax4.csv --
+CALL,QSO_DATE
+W9I,20090909
+K0J,20101010
+-- expectedcount1.csv --
+CALL,QSO_DATE
+K1A,20010101
+N2B,20020202
+W3C,20030303
+K4D,20040404
+-- expectedcount2.csv --
+CALL,QSO_DATE
+N5E,20050505
+W6F,20060606
+K7G,20070707
+-- expectedcount3.csv --
+CALL,QSO_DATE
+N8H,20080808
+W9I,20090909
+K0J,20101010

@@ -158,6 +158,19 @@ func newAccumulator(c *Context) (*accumulator, error) {
 	return &a, nil
 }
 
+func (a *accumulator) initFromHeader(l *adif.Logfile) error {
+	updateFieldOrder(a.Out, l.FieldOrder)
+	for _, u := range l.Userdef {
+		if err := a.Out.AddUserdef(u); err != nil {
+			return err
+		}
+	}
+	for _, f := range l.Header.Fields() {
+		a.Out.Header.Set(f)
+	}
+	return nil
+}
+
 func (a *accumulator) read(filename string) (*adif.Logfile, error) {
 	l, err := readFile(a.Ctx, filename)
 	if err != nil {
