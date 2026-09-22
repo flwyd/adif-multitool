@@ -146,14 +146,14 @@ TIME_ON,FREQ,MODE,CALL,STATE,COUNTRY
 ```
 
 ```sh
-adiifmt edit mylog.csv \
+adifmt edit mylog.csv \
   --add qso_date=20240704 \
   --add operator=WT0RJ \
   --add my_pota_ref=US-0791,US-4567 \
   --add my_state=DC --add my_country=USA \
   --add my_lat=38.899736 --add my_lon=-77.063331 \
 | adifmt fix \
-| adifmt flatten --fields pota_ref,my_pota_ref \
+| adifmt flatten --fields my_pota_ref \
 | adifmt infer --fields band,my_gridsquare,station_callsign
 ```
 
