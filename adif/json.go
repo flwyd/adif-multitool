@@ -94,7 +94,7 @@ func NewJSONIO() *JSONIO { return &JSONIO{} }
 func (_ *JSONIO) String() string { return "json" }
 
 func (o *JSONIO) Read(in io.Reader) (*Logfile, error) {
-	d := json.NewDecoder(in)
+	d := json.NewDecoder(utf8NormalizingReader(in))
 	d.UseNumber()
 	var f jsonFile
 	if err := d.Decode(&f); err != nil {

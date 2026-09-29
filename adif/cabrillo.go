@@ -60,7 +60,7 @@ func (_ *CabrilloIO) String() string { return "cabrillo" }
 
 func (o *CabrilloIO) Read(in io.Reader) (*Logfile, error) {
 	headers := make(map[string]string)
-	s := bufio.NewScanner(in)
+	s := bufio.NewScanner(utf8NormalizingReader(in))
 	readLine := func() (k, v string, err error) {
 		if !s.Scan() {
 			err = s.Err()

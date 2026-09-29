@@ -33,8 +33,8 @@ func NewTSVIO() *TSVIO { return &TSVIO{} }
 
 func (_ *TSVIO) String() string { return "tsv" }
 
-func (o *TSVIO) Read(r io.Reader) (*Logfile, error) {
-	scan := bufio.NewScanner(r)
+func (o *TSVIO) Read(in io.Reader) (*Logfile, error) {
+	scan := bufio.NewScanner(utf8NormalizingReader(in))
 	if !scan.Scan() {
 		return nil, errors.New("no TSV header row")
 	}

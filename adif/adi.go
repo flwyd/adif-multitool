@@ -38,7 +38,7 @@ func (_ *ADIIO) String() string { return "adi" }
 func (o *ADIIO) Read(in io.Reader) (*Logfile, error) {
 	var comments []string
 	l := NewLogfile()
-	r := bufio.NewReader(in)
+	r := bufio.NewReader(utf8NormalizingReader(in))
 	s, err := r.ReadString('<')
 	if errors.Is(err, io.EOF) {
 		if s != "" {

@@ -25,6 +25,8 @@ import (
 	"regexp"
 	"strings"
 	"unicode"
+
+	"golang.org/x/text/transform"
 )
 
 // ENUM(ADI, ADX, Cabrillo, CSV, JSON, TSV)
@@ -50,7 +52,7 @@ func GuessFormatFromName(filename string) (Format, error) {
 
 var (
 	// ADI files can start with an arbitrary-length comment
-	firstADITagPat = regexp.MustCompile(`^[^<]*<\w+:\d+(:\w)?>`)
+	firstADITagPat = regexp.MustCompile(`^[^<]*<(?i:\w+:\d+(:\w)?|EO[HR])>`)
 	// Require CSV and TSV files to have a header with purely alphanumeric columns
 	csvHeaderPat = regexp.MustCompile(`^\w+(,\w+)+[\r\n]`)
 	tsvHeaderPat = regexp.MustCompile(`^\w+(\t\w+)+[\r\n]`)
@@ -62,13 +64,21 @@ const contentPeekSize = 4096
 // Format the data is in.  Returns Format("") and an error  if no heuristic
 // matched the content.
 func GuessFormatFromContent(r *bufio.Reader) (Format, error) {
-	buf, err := r.Peek(contentPeekSize)
+	rawbuf, err := r.Peek(contentPeekSize)
 	if err != nil && !errors.Is(err, bufio.ErrBufferFull) && !errors.Is(err, io.EOF) {
 		return Format(""), err
 	}
-	start := bytes.TrimLeftFunc(buf, unicode.IsSpace)
+	var buf bytes.Buffer
+	tr := utf8NormalizingReader(bytes.NewReader(rawbuf))
+	if _, err := io.Copy(&buf, tr); err != nil {
+		// It's okay if the 4096th byte is in the middle of a multi-byte Unicode sequence
+		if !errors.Is(err, transform.ErrShortDst) && !errors.Is(err, transform.ErrShortSrc) && !errors.Is(err, transform.ErrEndOfSpan) {
+			return Format(""), err
+		}
+	}
+	start := bytes.TrimLeftFunc(buf.Bytes(), unicode.IsSpace)
 	if len(start) == 0 {
-		return Format(""), fmt.Errorf("could not determine data format, input is empty")
+		return Format(""), fmt.Errorf("could not determine data format, input is empty: %v", buf)
 	}
 	if bytes.HasPrefix(start, []byte("<?xml")) || bytes.HasPrefix(start, []byte("<ADX>")) {
 		return FormatADX, nil
@@ -88,5 +98,5 @@ func GuessFormatFromContent(r *bufio.Reader) (Format, error) {
 	if tsvHeaderPat.Find(start) != nil {
 		return FormatTSV, nil
 	}
-	return Format(""), fmt.Errorf("could not determine data format, use the -input option")
+	return Format(""), fmt.Errorf("could not determine data format, use the --input option")
 }

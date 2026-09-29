@@ -202,7 +202,7 @@ func (_ *ADXIO) String() string { return "adx" }
 func (o *ADXIO) Read(in io.Reader) (*Logfile, error) {
 	l := NewLogfile()
 	f := adxFile{}
-	d := xml.NewDecoder(in)
+	d := xml.NewDecoder(utf8NormalizingReader(in))
 	if err := d.Decode(&f); err != nil {
 		return nil, fmt.Errorf("could not decode ADX file: %w", err)
 	}

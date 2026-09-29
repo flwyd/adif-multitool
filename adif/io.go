@@ -17,6 +17,9 @@ package adif
 import (
 	"fmt"
 	"io"
+
+	"golang.org/x/text/encoding/unicode"
+	"golang.org/x/text/transform"
 )
 
 type Reader interface {
@@ -31,4 +34,9 @@ type ReadWriter interface {
 	Reader
 	Writer
 	fmt.Stringer
+}
+
+func utf8NormalizingReader(r io.Reader) io.Reader {
+	// TODO Provide a way to specify non-UTF encodings e.g. charmap.Windows1251
+	return transform.NewReader(r, unicode.BOMOverride(unicode.UTF8.NewDecoder()))
 }

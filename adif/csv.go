@@ -40,7 +40,7 @@ func (o *CSVIO) String() string { return "csv" }
 
 func (o *CSVIO) Read(in io.Reader) (*Logfile, error) {
 	l := NewLogfile()
-	c := csv.NewReader(in)
+	c := csv.NewReader(utf8NormalizingReader(in))
 	c.ReuseRecord = true
 	c.Comma = o.Comma
 	c.Comment = o.Comment
