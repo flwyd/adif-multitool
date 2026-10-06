@@ -16,7 +16,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -40,7 +39,6 @@ func runValidate(ctx *Context, args []string) error {
 	cctx := ctx.CommandCtx.(*ValidateContext)
 	now := time.Now().UTC() // consistent for the whole log
 	cond := cctx.Cond.Get()
-	log := os.Stderr
 	var errors, warnings int
 	appFields := make(map[string]adif.DataType)
 	acc, err := newAccumulator(ctx)
@@ -70,7 +68,7 @@ func runValidate(ctx *Context, args []string) error {
 				}
 				if len(missing) > 0 {
 					errors++
-					fmt.Fprintf(log, "ERROR on %s record %d: missing fields %s\n", l, i+1, strings.Join(missing, ", "))
+					ctx.Warn("ERROR on %s record %d: missing fields %s\n", l, i+1, strings.Join(missing, ", "))
 				}
 			}
 			for _, f := range r.Fields() {
@@ -80,7 +78,7 @@ func runValidate(ctx *Context, args []string) error {
 						appFields[name] = f.Type
 					} else if f.Type != adif.TypeUnspecified && f.Type != adt {
 						warnings++
-						fmt.Fprintf(log, "WARNING on %s record %d: inconsistent types for %s\n", l, i+1, f.Name)
+						ctx.Warn("WARNING on %s record %d: inconsistent types for %s\n", l, i+1, f.Name)
 					}
 				}
 				if f.Value == "" {
@@ -91,10 +89,10 @@ func runValidate(ctx *Context, args []string) error {
 						switch v := fv(f.Value, fs, vctx); v.Validity {
 						case spec.InvalidError:
 							errors++
-							fmt.Fprintf(log, "ERROR on %s record %d: %s\n", l, i+1, v)
+							ctx.Warn("ERROR on %s record %d: %s\n", l, i+1, v)
 						case spec.InvalidWarning:
 							warnings++
-							fmt.Fprintf(log, "WARNING on %s record %d: %s\n", l, i+1, v)
+							ctx.Warn("WARNING on %s record %d: %s\n", l, i+1, v)
 							msgs = append(msgs, fmt.Sprintf("%s: %s", f.Name, v.Message))
 						}
 					}
@@ -105,7 +103,7 @@ func runValidate(ctx *Context, args []string) error {
 					if len(u.EnumValues) > 0 || u.Min != 0.0 || u.Max != 0.0 {
 						if err := u.Validate(f); err != nil {
 							errors++
-							fmt.Fprintf(log, "ERROR on %s record %d: %s\n", l, i+1, err)
+							ctx.Warn("ERROR on %s record %d: %s\n", l, i+1, err)
 						}
 					} else { // spec enum validator can't handle userdef enums
 						dt := spec.DataTypes[u.Type.Indicator()]
@@ -131,7 +129,7 @@ func runValidate(ctx *Context, args []string) error {
 	}
 	err = write(ctx, acc.Out)
 	if warnings > 0 {
-		fmt.Fprintf(log, "validate got %d warnings\n", warnings)
+		ctx.Warn("validate got %d warnings\n", warnings)
 	}
 	return err
 }

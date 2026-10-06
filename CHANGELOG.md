@@ -28,6 +28,11 @@ input.
   This option also ensures those fields get inferred even if there are multiple
   program references in a record, e.g. a contact on the summit in a park on an
   island that is also a WWFF natural area.
+* `fix` changes full state names to abbreviations, e.g. `Québec` to `QC`.
+  Capitalization and accents don’t need to match: `QUÉBEC` and `quebec` also
+  work.  Input values need to match the full name in the ADIF enumeration:
+  The Mexican state of `Veracruz` doesn’t match because the full name is
+  `Veracruz de Ignacio de la Llave`.
 
 ### Changed
 

@@ -24,6 +24,8 @@ import (
 
 	"github.com/flwyd/adif-multitool/adif"
 	"github.com/flwyd/adif-multitool/adif/spec"
+	"golang.org/x/text/collate"
+	"golang.org/x/text/language"
 )
 
 var Fix = Command{Name: "fix", Run: runFix, Help: helpFix,
@@ -38,6 +40,7 @@ func helpFix() string {
   Time fields (no seconds): 15:04, 3:04 PM, 3:04pm
   Location fields: decimal degrees (GPS coordinates)
   Country fields: ISO 3166-1 alpha-2 and alpha-3 codes
+	State fields: full name to ADIF code
 `
 }
 
@@ -53,7 +56,7 @@ func runFix(ctx *Context, args []string) error {
 		}
 		updateFieldOrder(acc.Out, l.FieldOrder)
 		for _, rec := range l.Records {
-			acc.Out.AddRecord(fixRecord(rec, l))
+			acc.Out.AddRecord(fixRecord(ctx, rec, l))
 		}
 	}
 	if err := acc.prepare(); err != nil {
@@ -71,12 +74,35 @@ func runFix(ctx *Context, args []string) error {
 	return write(ctx, acc.Out)
 }
 
-func fixRecord(r *adif.Record, l *adif.Logfile) *adif.Record {
+func fixRecord(ctx *Context, r *adif.Record, l *adif.Logfile) *adif.Record {
 	fields := r.Fields()
 	for i, f := range fields {
 		fields[i] = fixField(f, r, l)
 	}
-	return adif.NewRecord(fields...)
+	newr := adif.NewRecord(fields...)
+	stateFields := []struct{ state, dxcc, country string }{
+		{spec.StateField.Name, spec.DxccField.Name, spec.CountryField.Name},
+		{spec.MyStateField.Name, spec.MyDxccField.Name, spec.MyCountryField.Name},
+	}
+	for _, x := range stateFields {
+		if sf, ok := newr.Get(x.state); ok && sf.Value != "" {
+			var dxcc string
+			if f, ok := newr.Get(x.dxcc); ok && f.Value != "" {
+				dxcc = f.Value
+			} else if f, ok := newr.Get(x.country); ok && f.Value != "" {
+				if vs := spec.CountryEnumeration.Value(f.Value); len(vs) == 1 {
+					dxcc = vs[0].(spec.CountryEnum).EntityCode
+				}
+			}
+			if dxcc != "" {
+				if s := fixState(ctx, sf.Value, dxcc); s != sf.Value {
+					sf.Value = s
+					newr.Set(sf)
+				}
+			}
+		}
+	}
+	return newr
 }
 
 func fixField(f adif.Field, r *adif.Record, l *adif.Logfile) adif.Field {
@@ -90,11 +116,12 @@ func fixField(f adif.Field, r *adif.Record, l *adif.Logfile) adif.Field {
 		f.Value = fixLocation(f.Value, f.Name)
 	} else if f.Name == spec.CountryField.Name || f.Name == spec.MyCountryField.Name {
 		var state string
-		if f.Name == spec.CountryField.Name {
+		switch f.Name {
+		case spec.CountryField.Name:
 			if s, ok := r.Get(spec.StateField.Name); ok {
 				state = s.Value
 			}
-		} else if f.Name == spec.MyCountryField.Name {
+		case spec.MyCountryField.Name:
 			if s, ok := r.Get(spec.MyStateField.Name); ok {
 				state = s.Value
 			}
@@ -256,4 +283,45 @@ func formatLocation(degrees float64, dir rune) string {
 	deg := int(f)
 	min := (f - float64(deg)) * 60.0
 	return fmt.Sprintf("%c%03d %06.3f", dir, deg, min)
+}
+
+var stateCollator = collate.New(language.English, collate.Loose)
+
+func fixState(ctx *Context, state, dxcc string) string {
+	if state == "" {
+		return state
+	}
+	vals := spec.PrimaryAdministrativeSubdivisionEnumeration.ScopeValues(dxcc)
+	if len(vals) == 0 {
+		return state
+	}
+	var active, deleted []string
+	for _, v := range vals {
+		p := v.(spec.PrimaryAdministrativeSubdivisionEnum)
+		if strings.EqualFold(p.Code, state) {
+			return state // already a valid abbreviation
+		}
+		if stateCollator.CompareString(p.PrimaryAdministrativeSubdivision, state) == 0 {
+			if p.Deleted == "true" || p.ImportOnly == "true" {
+				deleted = append(deleted, p.Code)
+			} else {
+				active = append(active, p.Code)
+			}
+		}
+	}
+	if len(active) == 1 {
+		return active[0]
+	}
+	if len(active) > 1 {
+		ctx.Warn("%d subdivisions in DXCC %q match %q: %v", len(active), dxcc, state, active)
+		return state
+	}
+	if len(deleted) == 1 {
+		return deleted[0]
+	}
+	if len(deleted) > 1 {
+		ctx.Warn("%d old subdivisions in DXCC %q match %q: %v", len(deleted), dxcc, state, deleted)
+		return state
+	}
+	return state
 }

@@ -738,13 +738,24 @@ codes in the `COUNTRY` and `MY_COUNTRY` to
 if a match is found.  This can save a lot of typing for `BA` -> `BOSNIA-HERZEGOVINA`
 or `USA` → `UNITED STATES OF AMERICA`  Note that some DXCC entities like
 Alaska, Hawaii, Crete, Corsica, Sardinia, many other remote islands, and
-international organizations do not have ISO 3166 codes.  A few countries do not
-have a single DXCC entity for “the mainland”, including the United Kingdom
-(separated into England, Wales, Scotland, and Northern Ireland), Russia
-(European Russia, Asiatic Russia, and Kaliningrad), Kiribati (separated into
-island chains), and a few dependent island territories.  Country code
-translations will not be applied for those since it’s not obvious which DXCC
-entity was contacted.
+international organizations do not have ISO 3166 codes; in some cases `fix` can
+set these based on the state code, e.g. `COUNTRY=US STATE=AK` becomes
+`COUNTRY=ALASKA STATE=AK`.  A few countries do not have a single DXCC entity
+for “the mainland”, including the United Kingdom (separated into England,
+Wales, Scotland, and Northern Ireland), Russia (European Russia, Asiatic
+Russia, and Kaliningrad), Kiribati (separated into island chains), and a few
+dependent island territories.  Country code translations will not be applied
+for those since it’s not obvious which DXCC entity was contacted.
+
+If DXCC or country fields are set, `fix` changes full names to code for `STATE`
+and `MY_STATE` fields.  The non-abbreviated value must match the name in the
+[Primary Administrative Subdivision enumeration](https://adif.org.uk/adif#Primary_Administrative_Subdivision),
+e.g. the Mexican state of `Veracruz de Ignacio de la Llave` is changed to `VER`
+but `Veracruz` (common name) is not changed.  Multilingual states only match
+one name: the Belgian province of `Antwerpen` (Dutch) becomes `AN` but `Anvers`
+(French) is not in the ADIF list.  State names are matched regardless of
+capitalization and accents: for Mexico both `Yucatán` and `YUCATAN` will be
+fixed to `YUC`.
 
 In the future, other formats may be fixable, including varieties of the Boolean
 data types, forcing some string fields to upper case, and perhaps correcting

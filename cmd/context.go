@@ -20,7 +20,10 @@
 package cmd
 
 import (
+	"fmt"
 	"io"
+	"os"
+	"strings"
 
 	"github.com/flwyd/adif-multitool/adif"
 	"github.com/flwyd/adif-multitool/adif/spec"
@@ -33,6 +36,7 @@ type Context struct {
 	Readers            map[adif.Format]adif.Reader
 	Writers            map[adif.Format]adif.Writer
 	Out                io.Writer
+	Err                io.Writer
 	Locale             language.Tag
 	CommandCtx         any
 	FieldOrder         FieldList
@@ -40,6 +44,17 @@ type Context struct {
 	SuppressAppHeaders bool
 	Prepare            func(*adif.Logfile)
 	fs                 filesystem
+}
+
+func (c *Context) Warn(format string, a ...any) {
+	w := c.Err
+	if w == nil {
+		w = os.Stderr
+	}
+	if !strings.HasSuffix(format, "\n") {
+		format += "\n"
+	}
+	fmt.Fprintf(w, format, a...)
 }
 
 func testPrepare(comment, adifVer, progName, progVer string) func(l *adif.Logfile) {

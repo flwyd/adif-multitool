@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/flwyd/adif-multitool/adif"
+	"github.com/flwyd/adif-multitool/adif/spec"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -289,6 +290,99 @@ func TestFixCountry(t *testing.T) {
 				want := fmt.Sprintf("%s<OTHER_FIELD:2>JP <%s:%d>%s <%s:%d>%s <EOR>\n", header, f, len(tc.want), tc.want, statef, len(tc.state), tc.state)
 				if diff := cmp.Diff(want, got); diff != "" {
 					t.Errorf("fix %s=%s want %s got diff %s", f, tc.source, tc.want, diff)
+				}
+			}
+		}
+	}
+}
+
+func TestFixState(t *testing.T) {
+	adi := adif.NewADIIO()
+	csv := adif.NewCSVIO()
+	header := "My Comment\n<ADIF_VER:5>3.1.4 <PROGRAMID:8>fix test <PROGRAMVERSION:5>1.2.3 <EOH>\n"
+	fields := []struct{ state, dxcc, country string }{
+		{spec.StateField.Name, spec.DxccField.Name, spec.CountryField.Name},
+		{spec.MyStateField.Name, spec.MyDxccField.Name, spec.MyCountryField.Name},
+	}
+
+	tests := []struct{ want, state, dxcc, country, wantCountry string }{
+		{want: "", state: "", dxcc: "", country: ""},
+		// Canada
+		{want: "", state: "", dxcc: spec.CountryCanada.EntityCode, country: spec.CountryCanada.EntityName},
+		{want: "BC", state: "BC", dxcc: spec.CountryCanada.EntityCode, country: spec.CountryCanada.EntityName},
+		{want: "BC", state: "BRITISH COLUMBIA", dxcc: spec.CountryCanada.EntityCode, country: spec.CountryCanada.EntityName},
+		{want: "BC", state: "BrItIsH cOLUmbia", dxcc: spec.CountryCanada.EntityCode, country: spec.CountryCanada.EntityName},
+		{want: "BC", state: "British Columbia", dxcc: spec.CountryCanada.EntityCode, country: ""},
+		{want: "BC", state: "British Columbia", dxcc: "", country: spec.CountryCanada.EntityName},
+		{want: "BC", state: "British Columbia", dxcc: "", country: "CA", wantCountry: "CANADA"},
+		{want: "QC", state: "QC", dxcc: spec.CountryCanada.EntityCode, country: spec.CountryCanada.EntityName},
+		{want: "QC", state: "Québec", dxcc: spec.CountryCanada.EntityCode, country: spec.CountryCanada.EntityName},
+		{want: "QC", state: "quebec", dxcc: spec.CountryCanada.EntityCode, country: spec.CountryCanada.EntityName},
+		// Mexico
+		{want: "BCN", state: "BCN", dxcc: spec.CountryAlandIslands.EntityCode, country: spec.CountryAlandIslands.EntityName},
+		{want: "BCN", state: "Baja California", dxcc: spec.CountryMexico.EntityCode, country: spec.CountryMexico.EntityName}, // and not deprecated BC
+		{want: "BCS", state: "Baja California Sur", dxcc: spec.CountryMexico.EntityCode, country: spec.CountryMexico.EntityName},
+		{want: "Veracruz", state: "Veracruz", dxcc: spec.CountryMexico.EntityCode, country: spec.CountryMexico.EntityName}, // full name (not common name) in enum
+		{want: "VER", state: "Veracruz de Ignacio de la Llave", dxcc: spec.CountryMexico.EntityCode, country: spec.CountryMexico.EntityName},
+		{want: "CMX", state: "Ciudad de México", dxcc: spec.CountryMexico.EntityCode, country: spec.CountryMexico.EntityName},    // accented
+		{want: "CMX", state: "CIUDAD DE MÉXICO", dxcc: spec.CountryMexico.EntityCode, country: spec.CountryMexico.EntityName},    // accented
+		{want: "CMX", state: "Ciudad de Mexico", dxcc: spec.CountryMexico.EntityCode, country: spec.CountryMexico.EntityName},    // not accented
+		{want: "CMX", state: "CIUDAD DE MEXICO", dxcc: spec.CountryMexico.EntityCode, country: spec.CountryMexico.EntityName},    // not accented
+		{want: "Mexico City", state: "Mexico City", dxcc: spec.CountryMexico.EntityCode, country: spec.CountryMexico.EntityName}, // English name not in enum
+		{want: "MEX", state: "México", dxcc: spec.CountryMexico.EntityCode, country: spec.CountryMexico.EntityName},              // accented
+		{want: "MEX", state: "MÉXICO", dxcc: spec.CountryMexico.EntityCode, country: spec.CountryMexico.EntityName},              // accented
+		{want: "MEX", state: "Mexico", dxcc: spec.CountryMexico.EntityCode, country: spec.CountryMexico.EntityName},              // not accented
+		{want: "MEX", state: "MEXICO", dxcc: spec.CountryMexico.EntityCode, country: spec.CountryMexico.EntityName},              // not accented
+		{want: "DF", state: "Distrito Federal", dxcc: spec.CountryMexico.EntityCode, country: spec.CountryMexico.EntityName},     // deprecated code
+		// Åland Islands
+		{want: "016", state: "vardo", dxcc: "", country: "ax", wantCountry: "ALAND IS."},
+		{want: "016", state: "VARDO", dxcc: spec.CountryAlandIslands.EntityCode, country: spec.CountryAlandIslands.EntityName},
+		{want: "016", state: "Vårdö", dxcc: spec.CountryAlandIslands.EntityCode, country: spec.CountryAlandIslands.EntityName},  // accented
+		{want: "016", state: "Várdò", dxcc: spec.CountryAlandIslands.EntityCode, country: spec.CountryAlandIslands.EntityName},  // wrong accents
+		{want: "051", state: "Märket", dxcc: spec.CountryAlandIslands.EntityCode, country: spec.CountryAlandIslands.EntityName}, // deleted subdivision
+		{want: "051", state: "market", dxcc: spec.CountryAlandIslands.EntityCode, country: spec.CountryAlandIslands.EntityName}, // deleted subdivision
+		// China
+		{want: "SC", state: "Sichuan", dxcc: spec.CountryChina.EntityCode, country: ""},                  // spec doesn't have tones
+		{want: "SC", state: "Sìchuān", dxcc: spec.CountryChina.EntityCode, country: ""},                  // tones added
+		{want: "SC", state: "SÌCHUĀN", dxcc: spec.CountryChina.EntityCode, country: ""},                  // tones and uppercase added
+		{want: "Sìchuān Shěng", state: "Sìchuān Shěng", dxcc: spec.CountryChina.EntityCode, country: ""}, // full name not in spec
+		// Chile
+		{want: "NB", state: "Ñuble", dxcc: "", country: "CL", wantCountry: "CHILE"},                                                                    // accented
+		{want: "NB", state: "Nuble", dxcc: "", country: "CL", wantCountry: "CHILE"},                                                                    // not accented
+		{want: "AI", state: "Aisén del General Carlos Ibañez del Campo", dxcc: "", country: "CL", wantCountry: "CHILE"},                                // active code, not old XI
+		{want: "LI", state: "Libertador General Bernardo O'Higgins", dxcc: "", country: "CL", wantCountry: "CHILE"},                                    // active code, not old VI; apostraphe
+		{want: "Libertador General Bernardo O‘Higgins", state: "Libertador General Bernardo O‘Higgins", dxcc: "", country: "CL", wantCountry: "CHILE"}, // curly quote
+		{want: "Bernardo O'Higgins", state: "Bernardo O'Higgins", dxcc: "", country: "CL", wantCountry: "CHILE"},                                       // incomplete name
+		// South Korea
+		{want: "S", state: "Ulsan", dxcc: spec.CountryRepublicOfKorea.EntityCode, country: spec.CountryRepublicOfKorea.EntityName}, // ignoring comment (Ulsan Gwanq'yeogsi)
+		{want: "A", state: "seoul", dxcc: "", country: "kr", wantCountry: spec.CountryRepublicOfKorea.EntityName},
+	}
+
+	for _, tc := range tests {
+		for _, f := range fields {
+			out := &bytes.Buffer{}
+			file1 := fmt.Sprintf("MODE,%s,%s,%s\nCW,%s,%s,%s\n", f.state, f.dxcc, f.country, tc.state, tc.dxcc, tc.country)
+			ctx := &Context{
+				OutputFormat: adif.FormatADI,
+				Readers:      readers(adi, csv),
+				Writers:      writers(adi, csv),
+				Out:          out,
+				Prepare:      testPrepare("My Comment", "3.1.4", "fix test", "1.2.3"),
+				fs:           fakeFilesystem{map[string]string{"foo.csv": file1}}}
+			if err := Fix.Run(ctx, []string{"foo.csv"}); err != nil {
+				t.Errorf("Fix.Run(ctx, foo.csv) got error %v", err)
+			} else {
+				got := out.String()
+				country := tc.wantCountry // if fixing abbreviations
+				if country == "" {
+					country = tc.country
+				}
+				want := fmt.Sprintf("%s<MODE:2>CW <%s:%d>%s <%s:%d>%s <%s:%d>%s <EOR>\n",
+					header, f.state, len(tc.want), tc.want,
+					f.dxcc, len(tc.dxcc), tc.dxcc,
+					f.country, len(country), country)
+				if diff := cmp.Diff(want, got); diff != "" {
+					t.Errorf("fix %s=%q want %q got diff %s", f.state, tc.state, tc.want, diff)
 				}
 			}
 		}
