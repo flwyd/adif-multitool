@@ -40,7 +40,7 @@ func helpFix() string {
   Time fields (no seconds): 15:04, 3:04 PM, 3:04pm
   Location fields: decimal degrees (GPS coordinates)
   Country fields: ISO 3166-1 alpha-2 and alpha-3 codes
-	State fields: full name to ADIF code
+  State fields: full name to ADIF code
 `
 }
 
