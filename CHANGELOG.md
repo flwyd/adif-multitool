@@ -48,6 +48,7 @@ input.
   UTF-16 encoded files with a BOM.  `adifmt` output is still always UTF-8
   without a BOM.
 * Properly detect an ADI file with a header but no header fields, e.g. ` <EOH>`.
+* `infer`: Fix spelling of “inferred” in record comments.
 
 
 ## [0.1.22] - 2026-03-24

@@ -169,7 +169,7 @@ func runInfer(ctx *Context, args []string) error {
 				}
 			}
 			if cctx.CommentLog && len(did) > 0 {
-				c := "adif-multitool infered value for " + strings.Join(did, ", ")
+				c := "adif-multitool inferred value for " + strings.Join(did, ", ")
 				if r.GetComment() == "" {
 					r.SetComment(c)
 				} else {
