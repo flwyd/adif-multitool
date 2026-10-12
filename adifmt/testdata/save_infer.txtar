@@ -43,7 +43,7 @@ North Chatham, MA 02650 <EOR>
 <address:15>123 O'Brien Ln.  <CALL:3>W4D <name:7>UNKNOWN <MODE:4>RTTY <EOR>
 -- expected.adi --
 Generated with 4 records by https://github.com/flwyd/adif-multitool
-<ADIF_VER:5>3.1.7 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:15>adifmt-cli-test <PROGRAMVERSION:9>8.67.5309 <EOH>
+<ADIF_VER:5>3.1.8 <CREATED_TIMESTAMP:15>23450607 080910 <PROGRAMID:15>adifmt-cli-test <PROGRAMVERSION:9>8.67.5309 <EOH>
 <CALL:3>K1A <MODE:2>CW <NAME:12>A Radio Club <EOR>
 <CALL:3>W2B <NAME:11>Bond, James <MODE:3>SSB <EOR>
 <CALL:3>K3C <MODE:2>FM <ADDRESS:39>847 Orleans Rd
@@ -54,7 +54,7 @@ North Chatham, MA 02650 <EOR>
 <ADX>
  <HEADER>
   <!--Generated with 4 records by https://github.com/flwyd/adif-multitool-->
-  <ADIF_VER>3.1.7</ADIF_VER>
+  <ADIF_VER>3.1.8</ADIF_VER>
   <CREATED_TIMESTAMP>23450607 080910</CREATED_TIMESTAMP>
   <PROGRAMID>adifmt-cli-test</PROGRAMID>
   <PROGRAMVERSION>8.67.5309</PROGRAMVERSION>
@@ -93,7 +93,7 @@ W4D,RTTY,UNKNOWN,123 O'Brien Ln.
 -- expected.json --
 {
  "HEADER": {
-  "ADIF_VER": "3.1.7",
+  "ADIF_VER": "3.1.8",
   "CREATED_TIMESTAMP": "23450607 080910",
   "PROGRAMID": "adifmt-cli-test",
   "PROGRAMVERSION": "8.67.5309"

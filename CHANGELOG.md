@@ -36,6 +36,7 @@ input.
 
 ### Changed
 
+* Upgraded ADIF specification to [3.1.8](https://adif.org.uk/318/ADIF_318.htm)
 * `save` with a template filename will replace spaces and unprintable characters
   in a field with `_` and all other non-letters, non-digits with `-` rather than
   just disallowing certain punctuation.  Special characters in the filename
