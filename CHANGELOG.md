@@ -12,7 +12,7 @@ be dropped.  During v0 there is no commitment to API stability of the `adif`,
 program I would appreciate hearing about it so the API can be evolved with your
 input.
 
-## [Unreleased]
+## [0.1.23-rc0] - 2026-10-12
 
 ### Added
 
