@@ -6,7 +6,11 @@ with `chmod a+x adifmt`, and put it somewhere in your `PATH` environment like
 `~/bin/`.  Verify it was installed by running `adifmt version`.
 
 * macOS users: Download `adifmt-darwin-arm64` for Macs with M1 chips or newer.
-  Download `adifmt-darwin-amd64` for older Macs.
+  Download `adifmt-darwin-amd64` for older Macs. <br />
+  If you get an error that `Apple could not verify "adifmt-darwin-amd64"`, open
+  System Settings, click “Privacy & Security” on the left, scroll to “Security”,
+  and click the `Allow Anyway` button next to
+  `"adifmt-darwin-amd64" was blocked to protect your Mac.`
 * Windows users: Download `adifmt-windows-amd64` for most modern PCs,
   `adifmt-windows-arm64` for tablets and other ARM devices, and
   `adifmt-windows-386` for older 32-bit computers.

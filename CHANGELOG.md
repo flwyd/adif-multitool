@@ -12,7 +12,9 @@ be dropped.  During v0 there is no commitment to API stability of the `adif`,
 program I would appreciate hearing about it so the API can be evolved with your
 input.
 
-## [0.1.23-rc0] - 2026-10-12
+## [0.1.23] - 2026-10-12
+
+Updated to [ADIF 3.1.8 specification](https://adif.org.uk/318/ADIF_318.htm)
 
 ### Added
 
@@ -36,7 +38,6 @@ input.
 
 ### Changed
 
-* Upgraded ADIF specification to [3.1.8](https://adif.org.uk/318/ADIF_318.htm)
 * `save` with a template filename will replace spaces and unprintable characters
   in a field with `_` and all other non-letters, non-digits with `-` rather than
   just disallowing certain punctuation.  Special characters in the filename
