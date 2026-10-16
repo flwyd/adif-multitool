@@ -157,7 +157,7 @@ adifmt edit mylog.csv \
   --add my_state=DC --add my_country=USA \
   --add my_lat=38.899736 --add my_lon=-77.063331 \
 | adifmt fix \
-| adifmt flatten --fields pota_ref,my_pota_ref \
+| adifmt flatten --fields my_pota_ref \
 | adifmt infer --fields band,my_gridsquare,station_callsign
 ```
 
